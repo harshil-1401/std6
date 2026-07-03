@@ -1,0 +1,124 @@
+{
+    "toolId": "WINNOW.SEP.2D1",
+  
+    "title": "Blowing-Air Separation Lab (Winnowing)",
+    "description": "Predict which part of a mixture the wind will carry off, then pour it into the air and watch the light husk drift downwind while the heavy grain falls into a pile.",
+    "context": "Class 6 Science - Separation of Substances (winnowing). An on-screen version of the farmyard activity: a farmer on a raised platform pours threshed wheat (grain mixed with husk) into moving air. The air carries the light chaff away while the heavy grain falls straight down, showing how a difference in weight plus a stream of air separates a mixture. Reaches the same idea as the tray-and-breeze demonstration without needing real grain or wind.",
+    "teachingNotes": "Predict-then-reveal (POE): the student commits a prediction of which part will leave before the pour runs, then observes and explains. Re-run at gentle / steady / strong wind to show that too gentle leaves husk behind, a steady wind winnows cleanly, and too strong wastes a little grain - motivating that winnowing separates a lighter component from a heavier one using moving air.",
+    "instructionsForStudent": "Predict whether the light part or the heavy part will blow away. Pick a wind strength (gentle, steady, or strong), press Blow, and watch which part is carried off and which stays. Then try another wind strength and compare how cleanly it separates.",
+  
+    "subtype": "simulation",
+    "conceptId": "WINNOW.SEP",
+    "relatedConceptIds": ["SEP.HANDPICKING", "SEP.SIEVING", "SEP.THRESHING"],
+    "module": "Separation of Substances",
+  
+    "placement": {
+      "beat": "Observe",
+      "where": "replaces the classroom winnowing demo; the teacher runs a pour at each wind strength while students predict and explain which part the moving air carries away"
+    },
+  
+    "sharedState": {
+      "fields": ["material", "strength", "prediction", "stayed", "blown", "operatorMode", "depth", "runsDone", "muted"]
+    },
+  
+    "agentControl": {
+      "postmessage": {
+        "in": "{type:'command', id, method, args}",
+        "out": [
+          "{type:'ready', toolId}",
+          "{type:'state', state}",
+          "{type:'event', name, detail}",
+          "{type:'response', id, result}"
+        ]
+      },
+      "windowMethods": [
+        "setParam(name,value)",
+        "play()",
+        "pause()",
+        "reset()",
+        "highlight(target)",
+        "getState()",
+        "setOperatorMode(mode)",
+        "predict(part)",
+        "setWind(level)",
+        "setMaterial(material)",
+        "blow()"
+      ]
+    },
+  
+    "studentControls": [
+      { "control": "Tap 'The light ...' or 'The heavy ...'", "effect": "locks a prediction of which part will blow away" },
+      { "control": "Tap a wind strength (Gentle breeze / Steady wind / Strong gust)", "effect": "sets how hard the air blows (ids gentle / medium / strong)" },
+      { "control": "Tap 'Blow the air'", "effect": "pours the mixture into the wind and separates it" },
+      { "control": "Tap 'Try a different wind' or 'Try again'", "effect": "resets so a new strength or a fresh prediction can be tried" },
+      { "control": "Tap the Teacher | Your turn toggle", "effect": "switches between the lean teacher demo and the full student practice" },
+      { "control": "Tap the mute button", "effect": "turns the sound cues on or off" }
+    ],
+  
+    "validIds": {
+      "predictions": ["light", "heavy"],
+      "windLevels": ["gentle", "medium", "strong"],
+      "materials": ["wheat"],
+      "highlightTargets": [
+        "tray", "grainPile", "huskZone", "windArrows",
+        "predictLight", "predictHeavy", "windControls", "blowButton",
+        "stayedCount", "blownCount", "modeToggle"
+      ],
+      "operatorModes": ["ai", "student"],
+      "setParamNames": ["muted", "operatorMode", "material", "strength", "prediction"]
+    },
+  
+    "answerKey": {
+      "correctPrediction": "light"
+    },
+  
+    "props": {
+      "defaults": {
+        "themeColor": "#4A4DC9",
+        "darkMode": false,
+        "operatorMode": "student",
+        "device": "mobile",
+        "showModeToggle": true,
+        "muted": false,
+        "gradeLevel": 6,
+        "animationSpeed": 1
+      },
+      "additionalProps": {
+        "material": "wheat",
+        "lockMaterial": false,
+        "defaultStrength": "medium",
+        "heavyCount": 26,
+        "lightCount": 30,
+        "instructions": "First predict which part will blow away. Then pick an air strength, press Blow, and watch which part leaves and which stays.",
+        "seed": 42
+      }
+    },
+  
+    "events": [
+      "ready",
+      "prediction_made",
+      "wind_changed",
+      "material_changed",
+      "blowing_started",
+      "run_completed",
+      "answer_correct",
+      "answer_incorrect",
+      "completed",
+      "reset",
+      "operator_mode_changed",
+      "highlighted"
+    ],
+  
+    "scientificFacts": [
+      "Moving air (wind) can carry away light particles while heavier ones fall almost straight down.",
+      "Winnowing separates a lighter component (like husk or chaff) from a heavier one (like grain) using a stream of air.",
+      "The wind strength matters: too gentle leaves some husk behind, while too strong blows a little grain away as well."
+    ],
+  
+    "agentInstructions": {
+      "description": "<description>A winnowing simulation: a farmer pours a heavy+light mixture into moving air so the light part is carried downwind while the heavy part falls into a pile, showing how wind separates a mixture by weight.</description>",
+      "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS set the wind with setWind before a pour, then call blow (or play) and let the student watch which part is carried off. ALWAYS commit a guess with predict(part) using only 'light' or 'heavy', and ask what the student OBSERVED before the run shows whether 'light' was correct. ALWAYS use highlight(target) with 'windArrows', 'grainPile' or 'huskZone' to point while you narrate; it never runs or scores the activity. ALWAYS contrast the outcomes by running setWind('gentle'), then setWind('medium'), then setWind('strong') across separate pours, calling reset between fresh predictions. NEVER ask the student to tap or operate the tool in this mode - driving it is YOUR job.</teacher_tool_instruction>",
+      "studentToolInstruction": "<student_tool_instruction>ALWAYS predict whether the light part or the heavy part will blow away before you press Blow, and be ready to say WHY. ALWAYS try each wind strength - gentle, steady and strong - and compare how cleanly the mixture separates. NEVER expect a gentle breeze to remove every bit of husk, and watch the grain pile closely on a strong gust to spot the little that is wasted.</student_tool_instruction>",
+      "teacherRealInstruction": "<teacher_real_instruction>A winnowing simulation for the 'separating substances using moving air' beat. Reach for it to stand in for the tray-and-breeze demo when real grain and wind are not practical, or to compare wind strengths side by side and let students predict, observe and explain.</teacher_real_instruction>"
+    }
+  }

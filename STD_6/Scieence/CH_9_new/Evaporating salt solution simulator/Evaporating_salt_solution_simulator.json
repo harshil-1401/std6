@@ -1,0 +1,124 @@
+{
+    "toolId": "M2.S6.T8.C19.2D1",
+  
+    "title": "Evaporating salt solution simulator",
+    "description": "The student predicts what will be left, heats a china dish of salt solution until the water boils away as vapour, cools it, and reveals the solid salt that stayed behind.",
+    "context": "Grade 6 Science (CBSE), 'Methods of Separation in Everyday Life'. A safe on-screen stand-in for the teacher's live-flame demo: heating a salt solution in a china dish boils the water off as vapour while the dissolved salt, which cannot vaporise, stays as a white solid — showing how evaporation separates a dissolved solid from a liquid.",
+    "teachingNotes": "Predict-then-reveal. Keep the salt result hidden until the student commits a prediction (salt / nothing / water stays), then heat until the water boils off, cool the dish, and reveal the salt. In Student mode the tool runs three mixtures with more and more salt so the student sees that more dissolved salt leaves more solid salt; in Teacher mode it collapses to one quick demonstration.",
+    "instructionsForStudent": "Predict what will be left when all the water boils away. Turn the flame on and watch the water bubble into vapour and the level drop. When the water is gone, cool the dish, then see what stayed behind and check your prediction. Try the next mixture with more salt and compare.",
+  
+    "subtype": "simulation",
+    "conceptId": "M2.S6.T8.C19",
+    "relatedConceptIds": ["M2.S6.T8.C18", "M2.S6.T8.C20", "M2.S6.T8.C27", "M2.S6.T8.C30", "M2.S6.T8.C31"],
+    "module": "Separating solids from liquids",
+  
+    "placement": {
+      "beat": "Observe",
+      "where": "replaces the teacher-demonstrated live-flame heating of the salt solution; run right after the prediction prompt so the student watches the water leave as vapour and the salt stay behind"
+    },
+  
+    "sharedState": {
+      "fields": ["stage", "heating", "flameLevel", "saltAmount", "waterLevel", "boilProgress", "vaporRising", "saltVisible", "dishCooled", "prediction", "predictionCommitted", "temp", "operatorMode", "depth", "roundIndex", "totalRounds", "score", "completed"]
+    },
+  
+    "agentControl": {
+      "postmessage": {
+        "in": "{type:'command', id, method, args}",
+        "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+      },
+      "windowMethods": [
+        "setParam(name,value)",
+        "play()",
+        "pause()",
+        "reset()",
+        "highlight(target)",
+        "getState()",
+        "setOperatorMode(mode)",
+        "commitPrediction(choice)",
+        "setSalt(amount)",
+        "setFlame(level)",
+        "toggleLamp(on)",
+        "setBoilProgress(value)",
+        "coolDown()",
+        "nextRound()"
+      ]
+    },
+  
+    "studentControls": [
+      { "control": "Teacher | Your turn toggle (top-right)", "effect": "switches between the teacher's lean one-run demo and the student's full three-mixture practice" },
+      { "control": "Tap a prediction card (water stays / nothing / solid salt)", "effect": "locks the prediction and unlocks the experiment; the result stays hidden until this is chosen" },
+      { "control": "Salt dissolved slider", "effect": "sets how much salt is dissolved before heating, controlling how much solid salt is left at the end" },
+      { "control": "Flame buttons (Off / low / medium / high)", "effect": "turns the spirit lamp on at that strength; a stronger flame boils the water away faster" },
+      { "control": "Heat / Pause button", "effect": "starts or pauses the boiling so the water level falls and vapour rises" },
+      { "control": "Cool the dish button", "effect": "stops heating and lets the dish cool so the dry salt can be safely revealed" },
+      { "control": "Next mixture button", "effect": "moves on to the next practice mixture (with more salt) to compare the amount left" },
+      { "control": "Play again / Reset button", "effect": "restarts the activity from a fresh dish of salt solution" },
+      { "control": "Mute button", "effect": "toggles the sizzle and chime sounds on or off" }
+    ],
+  
+    "validIds": {
+      "predictionChoices": ["salt", "nothing", "water"],
+      "flameLevels": ["off", "low", "medium", "high"],
+      "highlightTargets": ["dish", "salt_solution", "flame", "lamp", "gauze", "tripod", "salt_crystals", "predict"],
+      "operatorModes": ["ai", "student"],
+      "saltAmount": "number 0.0 (none) .. 1.0 (a lot) — argument to setSalt(amount)",
+      "boilProgress": "number 0.0 (full dish) .. 1.0 (water fully gone) — argument to setBoilProgress(value)",
+      "operatorModeNote": "'ai' collapses to the lean one-mixture teacher demo (controls hidden, watch caption); 'student' shows the full three-mixture practice with the control panel and score."
+    },
+  
+    "answerKey": {
+      "correctPrediction": "salt"
+    },
+  
+    "props": {
+      "defaults": { "themeColor": "#4A4DC9", "darkMode": false, "operatorMode": "student", "device": "mobile", "muted": false, "showModeToggle": true },
+      "additionalProps": { "saltAmount": 0.55 }
+    },
+  
+    "events": [
+      "ready",
+      "prediction_made",
+      "flame_changed",
+      "salt_amount_changed",
+      "water_boiled_away",
+      "cool_down",
+      "salt_revealed",
+      "answer_correct",
+      "answer_incorrect",
+      "round_advanced",
+      "completed",
+      "highlighted",
+      "operator_mode_changed",
+      "reset"
+    ],
+  
+    "scientificFacts": [
+      "Heating turns the water in the solution into vapour, which rises and leaves the dish.",
+      "The dissolved salt cannot vaporise, so it remains behind as a white solid.",
+      "More dissolved salt leaves more solid salt at the end.",
+      "The dish must be allowed to cool before the salt is touched."
+    ],
+  
+    "agentInstructions": {
+      "description": "<description>Shows that heating a salt solution boils the water away as vapour and leaves solid salt behind. The student predicts what will remain, heats the dish, cools it, and reveals the salt — across one lean demo mixture (Teacher) or three practice mixtures with more salt each time (Student).</description>",
+      "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS ask the student to predict what will be left before you heat, then commit it with commitPrediction(choice) using only 'salt','nothing','water'. ALWAYS start the boil with setFlame('high') or play(), and narrate the falling water level and rising vapour. ALWAYS wait until the water is gone, then call coolDown() and highlight('salt_crystals') to reveal the solid salt. ALWAYS use highlight(target) with only dish, salt_solution, flame, lamp, gauze, tripod, salt_crystals, or predict. ALWAYS ask what the student OBSERVED (what left the dish, what stayed) before explaining. NEVER ask the student to tap or drag anything in this mode — YOU drive it.</teacher_tool_instruction>",
+      "studentToolInstruction": "<student_tool_instruction>ALWAYS predict what will be left — solid salt, nothing, or the water — before you light the flame. ALWAYS turn the flame on and watch the water bubble into vapour and the level fall. ALWAYS cool the dish once the water is gone, then check whether your prediction was right. ALWAYS try the next mixture with more salt and compare how much solid salt is left, and be ready to explain WHY the salt stays but the water leaves.</student_tool_instruction>",
+      "teacherRealInstruction": "<teacher_real_instruction>An evaporation simulation for the 'boil the water away to recover the salt' beat. Use it in place of the live spirit-lamp demo: it heats a salt solution until the water evaporates and the solid salt is left in the dish, safely and repeatably.</teacher_real_instruction>"
+    },
+  
+    "sources": {
+      "learning_plan": "cbse_eng_sci6_ch9_v27 (M2.S6.T8, concept M2.S6.T8.C19)",
+      "objective_ids": ["O12", "O13"],
+      "chapter_pdf": "NCERT Curiosity — Textbook of Science, Grade 6, Chapter 9 (fecu109.pdf)",
+      "pdf_section": "Let us investigate: heating a salt solution (Fig. 9.8), p.170"
+    },
+  
+    "teaching_sequence": {
+      "order": "tool_first",
+      "rationale": "Predict-then-reveal: let the student predict and watch the water leave while the salt stays, then name it as evaporation from what they saw.",
+      "options": {
+        "concept_first": "Explain that evaporation turns a liquid into vapour to separate a dissolved solid, then run the demo so the student sees it confirmed.",
+        "tool_first": "Run the heating demo first so the student observes the water boiling away and the salt staying, then define evaporation from what they just watched."
+      }
+    }
+  }
