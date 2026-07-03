@@ -1,0 +1,267 @@
+{
+    "toolName": "fishing_rod_matcher",
+    "version": "1.0.0",
+    "title": "WISE FISH — Methods of Separation Matcher",
+    "description": "An interactive fishing-rod themed matching game where students match separation methods (red fish in Tank 1) with their descriptions (blue slips in Tank 2). Correct pairs lock green with confetti; wrong pairs shake and show a hint.",
+    "subject": "Science",
+    "grade": 6,
+    "chapter": "Chapter 9 — Methods of Separation in Everyday Life",
+    "curriculum": "NCERT Curiosity Textbook of Science",
+  
+    "colorTheme": {
+      "source": "Singularity UI Theme v2",
+      "primaryBlue": "#4A4DC9",
+      "primaryOrange": "#FF7212",
+      "gradientStart": "#533086",
+      "gradientEnd": "#FC9145",
+      "dark": "#4E4E4E",
+      "medium": "#CACACA",
+      "light": "#EBEBEB",
+      "lightest": "#F5F5F5",
+      "accentPurple": "#C1C1EA",
+      "accentCream": "#FFF3E4",
+      "font": "Poppins"
+    },
+  
+    "gameRules": {
+      "tank1": "Red fish cards display method names — click to SELECT (hook) a fish",
+      "tank2": "Blue slip cards display descriptions — click to MATCH with selected fish",
+      "correctMatch": "Both cards lock in GREEN with confetti celebration + progress update",
+      "wrongMatch": "Selected fish shakes with shake animation and a contextual hint appears",
+      "completion": "Trophy overlay appears with stats (pairs, attempts, accuracy) when all matched",
+      "reset": "Reset button reshuffles Tank 2 slips and starts fresh"
+    },
+  
+    "defaultParameters": {
+      "width": null,
+      "height": null,
+      "showModeSelector": false,
+      "showNavigation": false,
+      "showPlayPause": false,
+      "showStepIndicator": true,
+      "animationSpeed": 1,
+      "autoPlayDuration": 0,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "additionalProps": {
+        "showHints": true,
+        "celebrationEffect": "confetti"
+      }
+    },
+  
+    "additionalPropsSchema": {
+      "pairs": {
+        "type": "array",
+        "description": "Custom pairs to override the default 11 separation method pairs",
+        "items": {
+          "id": { "type": "number", "description": "Unique identifier for the pair" },
+          "method": { "type": "string", "description": "Method name shown on red fish in Tank 1" },
+          "description": { "type": "string", "description": "Description shown on blue slip in Tank 2" },
+          "hint": { "type": "string", "description": "Hint shown after a wrong attempt" },
+          "emoji": { "type": "string", "description": "Emoji icon shown beside the method name" },
+          "color": { "type": "string", "description": "Hex color for this pair's accent (unused in current UI but extensible)" }
+        }
+      },
+      "showHints": {
+        "type": "boolean",
+        "default": true,
+        "description": "Whether to show contextual hints after wrong answers"
+      },
+      "celebrationEffect": {
+        "type": "string",
+        "enum": ["confetti", "stars", "both"],
+        "default": "confetti",
+        "description": "Type of celebration animation on correct match"
+      }
+    },
+  
+    "defaultPairs": [
+      {
+        "id": 1,
+        "method": "Handpicking",
+        "description": "Larger particles picked by hand based on size, colour & shape",
+        "hint": "Think of picking stones from rice!",
+        "emoji": "👋",
+        "color": "#e74c3c"
+      },
+      {
+        "id": 2,
+        "method": "Threshing",
+        "description": "Beating stalks on a log to separate grains from them",
+        "hint": "Farmers beat wheat stalks on a wooden log!",
+        "emoji": "🌾",
+        "color": "#e67e22"
+      },
+      {
+        "id": 3,
+        "method": "Winnowing",
+        "description": "Lighter husk blown away from heavier grains by wind or air",
+        "hint": "Use a bamboo soop (tray) in the direction of wind!",
+        "emoji": "💨",
+        "color": "#f39c12"
+      },
+      {
+        "id": 4,
+        "method": "Sieving",
+        "description": "Separating solids based on difference in size of particles",
+        "hint": "Flour passes through holes; bran stays on sieve!",
+        "emoji": "🪣",
+        "color": "#27ae60"
+      },
+      {
+        "id": 5,
+        "method": "Evaporation",
+        "description": "Liquid converts to vapour — used to get salt from seawater",
+        "hint": "Salt flats use sunlight to evaporate seawater!",
+        "emoji": "☀️",
+        "color": "#16a085"
+      },
+      {
+        "id": 6,
+        "method": "Sedimentation",
+        "description": "Heavier insoluble component settles at the bottom of liquid",
+        "hint": "Tea leaves settle at the bottom of your cup!",
+        "emoji": "⬇️",
+        "color": "#2980b9"
+      },
+      {
+        "id": 7,
+        "method": "Decantation",
+        "description": "Liquid removed by gently tilting vessel — separates oil & water",
+        "hint": "Tilt the vessel to pour off the clear water!",
+        "emoji": "🫗",
+        "color": "#8e44ad"
+      },
+      {
+        "id": 8,
+        "method": "Filtration",
+        "description": "Insoluble solids filtered as residue using filter paper or cloth",
+        "hint": "A tea strainer filters out tea leaves!",
+        "emoji": "🔽",
+        "color": "#c0392b"
+      },
+      {
+        "id": 9,
+        "method": "Churning",
+        "description": "Used to extract butter from curd using a churner (mathni)",
+        "hint": "Buttermilk is the liquid left after churning!",
+        "emoji": "🧈",
+        "color": "#d35400"
+      },
+      {
+        "id": 10,
+        "method": "Magnetic Separation",
+        "description": "Uses a magnet to separate magnetic from non-magnetic substances",
+        "hint": "Iron nails stick to a magnet, sawdust does not!",
+        "emoji": "🧲",
+        "color": "#1abc9c"
+      },
+      {
+        "id": 11,
+        "method": "Condensation",
+        "description": "Conversion of water vapour into its liquid state",
+        "hint": "Water droplets on a cold glass on a hot day!",
+        "emoji": "💧",
+        "color": "#3498db"
+      }
+    ],
+  
+    "agentUsageExamples": [
+      {
+        "scenario": "Default — full game with all 11 pairs and hints",
+        "toolCall": {
+          "frontend_action": "show_interactive_tool",
+          "title": "WISE FISH — Methods of Separation",
+          "data": {
+            "toolName": "fishing_rod_matcher",
+            "parameters": {
+              "additionalProps": {
+                "showHints": true
+              }
+            }
+          },
+          "instructions_for_student": "Click a red fish (method) then click the matching blue description to make a pair!"
+        }
+      },
+      {
+        "scenario": "Reduced set — only 5 pairs for a quick quiz",
+        "toolCall": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Quick Match — 5 Methods",
+          "data": {
+            "toolName": "fishing_rod_matcher",
+            "parameters": {
+              "additionalProps": {
+                "showHints": false,
+                "pairs": [
+                  { "id": 1, "method": "Handpicking", "description": "Picking by hand based on size, colour & shape", "hint": "Think stones in rice!", "emoji": "👋", "color": "#e74c3c" },
+                  { "id": 3, "method": "Winnowing", "description": "Lighter husk separated by blowing air or wind", "hint": "Use a bamboo tray!", "emoji": "💨", "color": "#f39c12" },
+                  { "id": 8, "method": "Filtration", "description": "Insoluble solids separated using filter paper", "hint": "Tea strainer!", "emoji": "🔽", "color": "#c0392b" },
+                  { "id": 9, "method": "Churning", "description": "Extracts butter from curd using a churner", "hint": "Buttermilk left behind!", "emoji": "🧈", "color": "#d35400" },
+                  { "id": 10, "method": "Magnetic Separation", "description": "Uses a magnet to separate magnetic substances", "hint": "Iron nails + magnet!", "emoji": "🧲", "color": "#1abc9c" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "Can you match all 5 methods without any hints?"
+        }
+      },
+      {
+        "scenario": "Custom topic — any subject's matching game",
+        "toolCall": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Custom Matcher",
+          "data": {
+            "toolName": "fishing_rod_matcher",
+            "parameters": {
+              "additionalProps": {
+                "showHints": true,
+                "pairs": [
+                  { "id": 1, "method": "Photosynthesis", "description": "Process by which plants make food using sunlight", "hint": "Chlorophyll is the green pigment!", "emoji": "🌿", "color": "#27ae60" },
+                  { "id": 2, "method": "Respiration", "description": "Process of releasing energy from glucose", "hint": "We breathe to do this!", "emoji": "💨", "color": "#2980b9" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "Match each term with its correct description!"
+        }
+      }
+    ],
+  
+    "animationInventory": {
+      "waterFlow": "Continuous horizontal scroll of shimmer lines in water background",
+      "bubble": "Bubbles float upward and fade — ambient water effect",
+      "fishSwim": "Gentle up-down sway on idle red fish cards",
+      "fishWiggle": "Scale + rotate wiggle when a fish is selected/hooked",
+      "selectedGlow": "Pulsing box-shadow glow in blue/orange on selected fish",
+      "wrongShake": "Horizontal shake + rotation on wrong answer (0.7s)",
+      "correctPulse": "Scale bounce + green ring pulse on correct match",
+      "hookDrop": "Fishing hook drops in from top when fish is selected",
+      "confettiFall": "Multi-colored confetti particles burst and fall on correct match",
+      "ripple": "Expanding circle on fish click position",
+      "hintSlideIn": "Hint box slides down after wrong answer",
+      "scorePopIn": "Matched pair badge pops into the caught strip",
+      "trophy-appear": "Trophy emoji scales in with rotation on game complete",
+      "shimmer": "Opacity pulse on water lines and interactive elements"
+    },
+  
+    "stateManagement": {
+      "selectedFish": "number | null — ID of currently selected red fish",
+      "matchedPairs": "Set<number> — IDs of successfully matched pairs",
+      "wrongAnimId": "number | null — ID of fish currently playing shake animation",
+      "correctAnimId": "number | null — ID of pair currently playing success animation",
+      "hintId": "number | null — ID of pair whose hint is currently visible",
+      "attempts": "number — total click attempts for accuracy calculation",
+      "confetti": "array — active confetti particles with position/color/id",
+      "gameComplete": "boolean — whether all pairs are matched (shows trophy overlay)",
+      "shuffledSlips": "Pair[] — Tank 2 descriptions in randomized order"
+    },
+  
+    "accessibilityNotes": {
+      "colorBlind": "Green/red states also show text labels (MATCHED, HOOKED, ✓ DONE)",
+      "scrollable": "Both tanks are independently scrollable for small screens",
+      "responsive": "Uses 100vw/100vh — fills any screen size",
+      "fontLoading": "Poppins loaded from Google Fonts via @import in injected keyframes"
+    }
+  }
+  

@@ -1,0 +1,170 @@
+{
+    "toolName": "object_sorter",
+    "version": "4.0.0",
+    "title": "Object Sorter — Fig. 6.4",
+    "description": "Step-by-step classification activity for NCERT Grade 6 Science Chapter 6 'Materials Around Us', Activity 6.2 (Fig. 6.4). The learner sorts a shared set of everyday objects three different ways — by shape, then colour, then material — one focused step at a time. The Shape and Material steps use all 8 objects; the Colour step uses 7 (the key is left out). A progress stepper shows Step 1 → 2 → 3. Each object can be placed by dragging it into a bin or by tapping the object and then tapping a bin, so it works on touch, mouse and stylus alike. Every object's icon honestly matches all of its properties (the coin is shown as a brown coin in the Colour step, where it belongs in the Brown bin), drops are validated (wrong bins shake and reject), and at the end all three boards appear together to show that the same things can be grouped in many different ways.",
+  
+    "curriculum": {
+      "board": "NCERT / CBSE",
+      "grade": 6,
+      "subject": "Science",
+      "book": "Curiosity — Textbook of Science, Grade 6",
+      "chapter": "Chapter 6 — Materials Around Us",
+      "section": "6.2 How to Group Materials? (Activity 6.2 / Fig. 6.4: group the objects in as many ways as possible)",
+      "concepts": [
+        "Classification: arranging objects into groups by a common property",
+        "The same set of objects can be grouped in different ways",
+        "Objects have properties such as shape, colour and the material they are made of",
+        "Grouping reveals patterns in the properties of things"
+      ],
+      "learningObjectives": [
+        "Sort a fixed set of objects by a single chosen property",
+        "Repeat the sort using a different property and notice the groups change",
+        "Conclude that classification depends on the property used",
+        "Connect each object to its real shape, colour and material"
+      ]
+    },
+  
+    "designSystem": {
+      "name": "Singularity",
+      "fonts": ["Baloo 2 (headings)", "Nunito (body)"],
+      "tokens": {
+        "primaryPurple": "#533086",
+        "indigo": "#4A4DC9",
+        "orange": "#FC9145",
+        "purpleSoft": "#C1C1EA",
+        "ink": "#4E4E4E",
+        "muted": "#CACACA",
+        "line": "#EBEBEB",
+        "success": "#22C55E",
+        "stepAccents": ["#4A4DC9", "#FC9145", "#533086"],
+        "brownCoin": { "face": "#9C6B33", "rim": "#5E3F1E", "mark": "#4A2F12" }
+      },
+      "conventions": [
+        "import React (named hooks) as the first line",
+        "function components with typed props",
+        "inline SVG / emoji only — no icon libraries, no Tailwind",
+        "keyframes injected once into a <style> tag via injectStyles()",
+        "seeded mulberry32 Fisher–Yates shuffle for scrambled, non-sequential object order",
+        "max width 720px, responsive from 320px via a useResponsive() hook (isXs < 380, isMobile < 576), clamp() font sizes and fluid grids",
+        "drag handled with Pointer Events (no native HTML5 drag-and-drop) so it works with touch, mouse and stylus; a floating SVG/emoji ghost follows the pointer"
+      ]
+    },
+  
+    "structure": {
+      "stepByStep": "Only ONE step is shown in the working area at a time. When Step 2 opens, Step 1 is hidden; when Step 3 opens, Steps 1 and 2 are hidden.",
+      "progressStepper": "A rail at the top shows the three steps as numbered circles joined by connectors. The active step pulses, connectors fill with colour as you advance, and each circle becomes a green checkmark on completion. Finished steps remain visible here as checkmarks even though their working panel is hidden.",
+      "activeStepPanel": "Title + guiding question (e.g. 'What shape is each object?'), a live N/total counter (total is 8 for Shape and Material, 7 for Colour), a progress bar, ① the three bins to place objects into, and ② the scrambled objects to sort.",
+      "completionView": "After all three steps are saved, the working panel is replaced by all three collapsed summary boards stacked together, plus a result banner explaining classification and a 'Try again' button."
+    },
+  
+    "interactionModel": {
+      "input": "Two equivalent ways to place an object, both available on every device: (1) DRAG the object onto a bin, or (2) TAP the object to select it (it lifts and rings), then TAP the destination bin. Dragging is implemented with Pointer Events + setPointerCapture and hit-tests bins with elementFromPoint, so a short move becomes a drag while a stationary press becomes a tap.",
+      "flow": "Place each object into the correct bin for the current property. A correct placement snaps in and shows ✓; a wrong one makes the bin flash red and shake, and is rejected (the object stays available). When all objects in the step are placed, a Save button appears reading 'Save & go to Step N →' (or 'Finish — see the result!' on Step 3) and auto-advances to the next step.",
+      "validation": "A placement is accepted only if tile[passKey] === binId. There is exactly one correct bin per object per pass, so the activity cannot be completed incorrectly.",
+      "objectOrder": "Objects are shown in a seeded-scrambled order that differs per step, so the correct answers never fall into an obvious sequence.",
+      "navigation": "The stepper lets the learner tap back to the current or an earlier not-yet-completed step. Reset clears everything and returns to Step 1."
+    },
+  
+    "objects": {
+      "description": "The fixed set of 8 objects. Every icon truthfully matches its shape, colour and material so all three sorts are meaningful. Objects can be omitted from individual passes (see passes[].omits); the coin's gold 🪙 emoji is replaced by a brown coin SVG in the Colour step, where it sits in the Brown bin.",
+      "items": [
+        { "id": "apple",    "label": "Apple",      "emoji": "🍎", "shape": "round", "colour": "red",   "material": "plant" },
+        { "id": "straw",    "label": "Strawberry", "emoji": "🍓", "shape": "round", "colour": "red",   "material": "plant" },
+        { "id": "leaf",     "label": "Leaf",       "emoji": "🍃", "shape": "flat",  "colour": "green", "material": "plant" },
+        { "id": "cucumber", "label": "Cucumber",   "emoji": "🥒", "shape": "long",  "colour": "green", "material": "plant" },
+        { "id": "coin",     "label": "Coin",       "emoji": "🪙", "shape": "round", "colour": "brown", "material": "metal", "iconOverrides": { "colour": "brownCoinSvg" } },
+        { "id": "key",      "label": "Key",        "emoji": "🗝️", "shape": "long",  "colour": "brown", "material": "metal" },
+        { "id": "log",      "label": "Wooden log", "emoji": "🪵", "shape": "long",  "colour": "brown", "material": "wood"  },
+        { "id": "plank",    "label": "Wood block", "emoji": "🟫", "shape": "flat",  "colour": "brown", "material": "wood"  }
+      ]
+    },
+  
+    "passes": [
+      {
+        "key": "shape", "stepNum": 1, "label": "Shape", "question": "What shape is each object?",
+        "bins": ["round", "long", "flat"],
+        "omits": [],
+        "objectCount": 8,
+        "correctGroups": {
+          "round": ["apple", "straw", "coin"],
+          "long":  ["cucumber", "key", "log"],
+          "flat":  ["leaf", "plank"]
+        }
+      },
+      {
+        "key": "colour", "stepNum": 2, "label": "Colour", "question": "What colour is each object?",
+        "bins": ["red", "green", "brown"],
+        "omits": ["key"],
+        "objectCount": 7,
+        "iconOverrides": { "coin": "Rendered as a brown coin (SVG) instead of the gold 🪙 emoji, since it belongs in the Brown bin." },
+        "correctGroups": {
+          "red":   ["apple", "straw"],
+          "green": ["leaf", "cucumber"],
+          "brown": ["coin", "log", "plank"]
+        }
+      },
+      {
+        "key": "material", "stepNum": 3, "label": "Material", "question": "What is each object made of?",
+        "bins": ["plant", "metal", "wood"],
+        "omits": [],
+        "objectCount": 8,
+        "correctGroups": {
+          "plant": ["apple", "straw", "leaf", "cucumber"],
+          "metal": ["coin", "key"],
+          "wood":  ["log", "plank"]
+        }
+      }
+    ],
+  
+    "parameters": {
+      "note": "This tool is self-contained and currently takes no external props. The fields below describe how an agent would extend it if customisation is added.",
+      "potentialCustomisation": {
+        "objects": "Override the 8 objects, keeping every object's shape/colour/material truthful and each value drawn from the bin sets below.",
+        "binSets": {
+          "shape": ["round", "long", "flat"],
+          "colour": ["red", "green", "brown"],
+          "material": ["plant", "metal", "wood"]
+        },
+        "omitPerPass": "Each pass may exclude specific object ids via its 'omits' list (e.g. the Colour pass omits 'key'); omitted objects are hidden from that step's tray, bins, counter and summary board.",
+        "iconOverrides": "A pass may swap an object's emoji for a custom inline-SVG icon (e.g. the brown coin in the Colour pass) when the emoji's appearance would conflict with the property being sorted.",
+        "balanceRule": "After any omissions, each bin in every pass should still receive at least 2 objects so all three sorts are meaningful and balanced."
+      }
+    },
+  
+    "agentDecisionTree": {
+      "Student opens Activity 6.2 / 'group the objects' / classification": "Use as-is; it starts at Step 1 (Shape).",
+      "Teacher wants to demonstrate that the same objects regroup differently": "Walk through all three steps; the completion view shows the three boards side by side.",
+      "Student struggles with what 'classification' means": "Point to the result banner after Step 3 — the same objects, three different groupings.",
+      "Student is on a phone or tablet": "Both drag and tap-to-place work on touch; if dragging is fiddly, tap the object then tap the bin.",
+      "Want to retry": "Use the Reset button (header) or 'Try again' (end screen)."
+    },
+  
+    "toolCallExamples": [
+      {
+        "title": "Default classification activity",
+        "frontend_action": "show_interactive_tool",
+        "data": { "toolName": "object_sorter" },
+        "instructions_for_student": "Sort the objects by shape, then colour, then material — one step at a time. Drag each object into a bin, or tap the object then tap a bin. Watch how the same objects form different groups each time!"
+      },
+      {
+        "title": "Focused intro to classification",
+        "frontend_action": "show_interactive_tool",
+        "data": { "toolName": "object_sorter" },
+        "instructions_for_student": "Start with Step 1: drag each object into the bin that matches its shape (or tap the object, then tap a bin). A wrong bin will shake — try another!"
+      }
+    ],
+  
+    "accessibilityAndUX": {
+      "input": "Dragging uses Pointer Events, so it works the same with touch, mouse and stylus; tap-to-place is offered as an equivalent alternative for learners who find dragging hard. On touch devices hover-lift styles are disabled so taps don't leave elements stuck 'up'.",
+      "feedback": "Wrong drops give a red shake; correct placements pop in with a ✓; completing a step fires confetti and auto-advances.",
+      "oneThingAtATime": "Showing a single step reduces cognitive load for primary learners; the stepper preserves a sense of progress.",
+      "responsive": "Layout caps at 720px and is responsive from 320px up — fluid grids, clamp() font sizes, a compact header (the Reset button collapses to an icon on very small screens) and emoji-only bin tokens on phones — so there is no horizontal scroll on phone, tablet or desktop."
+    },
+  
+    "errorHandling": {
+      "incompletePass": "The Save button only appears when every object in the step is placed (8 for Shape and Material, 7 for Colour), so a pass cannot be saved early.",
+      "wrongDrop": "Rejected with a visual shake; the object remains in the tray.",
+      "alreadyCompletedStep": "Saving an already-saved pass is a no-op."
+    }
+  }

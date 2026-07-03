@@ -1,0 +1,112 @@
+{
+    "toolId": "WISEFISH.2D1",
+    "title": "Wise Fish: Match the Separation Method",
+    "subtype": "matching",
+    "conceptId": "SEPARATION.METHODS",
+    "relatedConceptIds": ["MIXTURES", "SOLUBILITY", "STATES_OF_MATTER"],
+    "module": "Separation of substances",
+  
+    "placement": {
+      "beat": "Practice",
+      "where": "Replaces the match-the-columns worksheet. The student pairs each separation method with the sentence that describes it; the teacher watches the emitted events and points with highlight() when the student is stuck."
+    },
+  
+    "sharedState": { "fields": ["selected", "matched", "attempts", "streak", "remaining", "complete"] },
+  
+    "agentControl": {
+      "postmessage": {
+        "in": "{type:'command', id, method, args}",
+        "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+      },
+      "windowMethods": [
+        "setParam(name,value)",
+        "play()",
+        "pause()",
+        "reset()",
+        "highlight(target)",
+        "getState()",
+        "select(methodId)",
+        "match(methodId,descriptionId)"
+      ]
+    },
+  
+    "studentControls": [
+      { "control": "Tap a fish (a method) in the left tank", "effect": "hooks that method; a fishing hook drops and the mascot reacts" },
+      { "control": "Tap a description slip in the right tank", "effect": "tries to match it to the hooked method — correct pops with confetti, wrong shakes and shows a hint" },
+      { "control": "Tap the speaker button", "effect": "mutes or unmutes the sound cues" },
+      { "control": "Tap the sun/moon button", "effect": "switches between light and dark mode" },
+      { "control": "Tap Reset (or Play again)", "effect": "clears all matches and reshuffles the slips" }
+    ],
+  
+    "answerKey": {
+      "methods": [
+        "handpicking", "threshing", "winnowing", "sieving", "evaporation",
+        "sedimentation", "decantation", "filtration", "churning",
+        "magnetic_separation", "condensation"
+      ],
+      "descriptions": [
+        "handpicking", "threshing", "winnowing", "sieving", "evaporation",
+        "sedimentation", "decantation", "filtration", "churning",
+        "magnetic_separation", "condensation"
+      ],
+      "correctMatches": {
+        "handpicking": "handpicking",
+        "threshing": "threshing",
+        "winnowing": "winnowing",
+        "sieving": "sieving",
+        "evaporation": "evaporation",
+        "sedimentation": "sedimentation",
+        "decantation": "decantation",
+        "filtration": "filtration",
+        "churning": "churning",
+        "magnetic_separation": "magnetic_separation",
+        "condensation": "condensation"
+      },
+      "note": "A method fish and its correct description slip share the same id. match(methodId, descriptionId) is correct only when methodId === descriptionId."
+    },
+  
+    "highlightTargets": {
+      "methods": "any id from answerKey.methods highlights that fish, e.g. highlight('winnowing')",
+      "descriptions": "prefix an answerKey id with 'desc:' to highlight the slip, e.g. highlight('desc:winnowing')",
+      "regions": ["tank_methods", "tank_descriptions", "progress", "mute", "reset"]
+    },
+  
+    "props": {
+      "defaults": { "themeColor": "#4A4DC9", "darkMode": false, "muted": false },
+      "additionalProps": {
+        "seed": 42,
+        "showHints": true,
+        "animationSpeed": 1,
+        "pairs": null
+      }
+    },
+  
+    "events": [
+      "ready",
+      "method_selected",
+      "answer_checked",
+      "answer_correct",
+      "answer_incorrect",
+      "item_placed",
+      "completed",
+      "reset"
+    ],
+  
+    "eventDetail": {
+      "ready": "{ toolId, total }",
+      "method_selected": "{ methodId }",
+      "answer_checked": "{ methodId, descriptionId, correct }",
+      "answer_correct": "{ methodId }",
+      "answer_incorrect": "{ methodId, descriptionId }",
+      "item_placed": "{ itemId, matched, total }",
+      "completed": "{ total, attempts, correct, accuracy }",
+      "reset": "{}"
+    },
+  
+    "scientificFacts": [
+      "A mixture can be separated because its parts differ — in size, weight, magnetism, or whether they dissolve.",
+      "Winnowing works because husk is lighter than grain, so moving air carries the husk further away.",
+      "Filtration separates an insoluble solid from a liquid; evaporation separates a solid that was dissolved in it.",
+      "Sedimentation lets a heavier insoluble solid settle, and decantation then pours off the clear liquid above it."
+    ]
+  }

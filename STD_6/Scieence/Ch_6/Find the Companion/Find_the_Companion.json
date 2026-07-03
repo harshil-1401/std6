@@ -1,0 +1,187 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Property Families — Companion Pair Game",
+    "toolName": "companion_pair_game",
+    "description": "A two-column tap-to-match activity. Students tap a left property chip to select it, then tap its companion on the right. Correct pairs lock green with a reason and a coloured SVG Bézier connector line. Wrong taps shake red and clear. A score pill, progress bar, confetti, and summary card complete the experience.",
+  
+    "parameters": {
+      "width": 800,
+      "height": 600,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "additionalProps": {
+        "title": "Property Families",
+        "subtitle": "Tap a property word on the left → then tap its companion on the right",
+        "rightColumnOrder": ["Soft", "Insoluble", "Opaque", "Light", "Dull", "Fluid"],
+        "pairs": [
+          {
+            "id": "hard",
+            "left": "Hard",
+            "right": "Soft",
+            "reason": "Hard & Soft are opposite texture properties — one resists compression, the other yields easily."
+          },
+          {
+            "id": "lustrous",
+            "left": "Lustrous",
+            "right": "Dull",
+            "reason": "Lustrous & Dull describe surface shine — metals are lustrous; wood and paper are non-lustrous."
+          },
+          {
+            "id": "transparent",
+            "left": "Transparent",
+            "right": "Opaque",
+            "reason": "Transparent lets you see clearly through it; Opaque blocks all light completely."
+          },
+          {
+            "id": "soluble",
+            "left": "Soluble",
+            "right": "Insoluble",
+            "reason": "Soluble materials dissolve in water; Insoluble ones remain separate even after stirring."
+          },
+          {
+            "id": "dense",
+            "left": "Dense",
+            "right": "Fluid",
+            "reason": "Dense describes tightly packed matter; Fluid matter flows freely with no fixed shape."
+          },
+          {
+            "id": "heavy",
+            "left": "Heavy",
+            "right": "Light",
+            "reason": "Heavy & Light describe relative mass — objects with more mass feel heavier."
+          }
+        ]
+      }
+    },
+  
+    "schema": {
+      "description": "All agent-configurable content lives inside additionalProps.",
+      "additionalProps": {
+        "title": {
+          "type": "string",
+          "description": "Heading shown in the purple header bar.",
+          "default": "Property Families"
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Instruction line shown beneath the heading.",
+          "default": "Tap a property word on the left → then tap its companion on the right"
+        },
+        "rightColumnOrder": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered list of right-column words. Must match the 'right' field of every pair. Controls the shuffled display order in Column II.",
+          "example": ["Soft", "Insoluble", "Opaque", "Light", "Dull", "Fluid"]
+        },
+        "pairs": {
+          "type": "array",
+          "description": "Array of left–right companion word pairs.",
+          "minItems": 2,
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "required": ["id", "left", "right", "reason"],
+            "properties": {
+              "id":     { "type": "string", "description": "Unique identifier (kebab-case recommended)." },
+              "left":   { "type": "string", "description": "Word shown in Column I (Properties)." },
+              "right":  { "type": "string", "description": "Correct companion word shown in Column II." },
+              "reason": { "type": "string", "description": "One-line explanation revealed on correct match. Recommended format: 'Left & Right — explanation sentence.'" }
+            }
+          }
+        }
+      }
+    },
+  
+    "ui_behaviour": {
+      "interaction_model": "tap-to-select then tap-to-match (no drag required — works on touch devices)",
+      "correct_feedback":  ["left chip border turns green", "Check icon replaces label badge", "companion tag pops in below", "reason slides in italicised", "SVG Bézier line animates from left endpoint to right endpoint with colour-coded dots", "score pill pulses"],
+      "wrong_feedback":    ["right chip shakes and flashes red (#fef2f2 background)", "selection is cleared after 600 ms"],
+      "right_column_opacity": "0.55 when no left chip is selected, 1.0 when a selection is active — focuses the student",
+      "summary_card":      "Full-screen gradient overlay with confetti, trophy, score/attempt count, 2-col pair grid (left badge ↔ right badge + reason), Play Again button",
+      "hint_bar":          "Context-sensitive — 'Tap a property to begin', 'Now tap the matching companion', or '{n} of {total} matched'"
+    },
+  
+    "agent_readme": {
+      "overview": "CompanionPairGame is a two-column matching widget that follows the same architecture as MetalsNonmetalsUseMatcher. Students click a left chip (property word) to select it (glows, scales up), then click a right chip (companion). Correct pairs lock with an animated SVG connector line. Wrong taps shake and clear. All state resets via the header Reset button or the Play Again button in the summary.",
+  
+      "architecture_notes": [
+        "Single .tsx file, all inline styles, no Tailwind.",
+        "Keyframes injected via useEffect into document.head with a unique id 'cpg-kf-v1' — cleaned up on unmount.",
+        "SVG lines recalculated via useRef DOM measurements in recalcLines(), called after each match with a 100 ms setTimeout to let layout settle.",
+        "rightColumnOrder controls Column II order independently of Column I — allows arbitrary shuffling.",
+        "setStepDetails() is called once on mount, reporting currentMode: 'practice', isPaused: true — compatible with parent orchestrators.",
+        "stopAutoNext / setStopAutoNext props are accepted but not actively used (activity is fully student-paced)."
+      ],
+  
+      "examples": [
+        {
+          "name": "Chapter 6 Science — default 6 pairs",
+          "parameters": {}
+        },
+        {
+          "name": "Electricity — 4 pairs",
+          "parameters": {
+            "additionalProps": {
+              "title": "Electricity Companions",
+              "subtitle": "Match each electrical property to its opposite.",
+              "rightColumnOrder": ["Insulator", "Negative", "Parallel", "Resistance"],
+              "pairs": [
+                { "id": "c1", "left": "Conductor",  "right": "Insulator",   "reason": "Conductors & Insulators — one allows current flow, the other blocks it." },
+                { "id": "c2", "left": "Positive",   "right": "Negative",    "reason": "Positive & Negative are the two electric charge types." },
+                { "id": "c3", "left": "Series",     "right": "Parallel",    "reason": "Series & Parallel — two fundamental circuit configurations." },
+                { "id": "c4", "left": "Voltage",    "right": "Resistance",  "reason": "Voltage drives current; Resistance opposes it — Ohm's Law." }
+              ]
+            }
+          }
+        },
+        {
+          "name": "States of Matter — 3 pairs",
+          "parameters": {
+            "additionalProps": {
+              "title": "States of Matter",
+              "subtitle": "Match each change of state to its reverse.",
+              "rightColumnOrder": ["Gas", "Freezing", "Condensation"],
+              "pairs": [
+                { "id": "s1", "left": "Solid",       "right": "Gas",           "reason": "Solid has fixed shape & volume; Gas has neither." },
+                { "id": "s2", "left": "Melting",     "right": "Freezing",      "reason": "Melting = solid→liquid; Freezing = liquid→solid." },
+                { "id": "s3", "left": "Evaporation", "right": "Condensation",  "reason": "Evaporation = liquid→gas; Condensation = gas→liquid." }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Biology — Cell Organelles — 4 pairs",
+          "parameters": {
+            "additionalProps": {
+              "title": "Cell Organelles",
+              "subtitle": "Match each organelle to its primary function.",
+              "rightColumnOrder": ["Energy production", "Protein synthesis", "Digestion", "Storage"],
+              "pairs": [
+                { "id": "b1", "left": "Mitochondria", "right": "Energy production", "reason": "Mitochondria are the powerhouse of the cell — they produce ATP." },
+                { "id": "b2", "left": "Ribosome",     "right": "Protein synthesis",  "reason": "Ribosomes translate mRNA into proteins." },
+                { "id": "b3", "left": "Lysosome",     "right": "Digestion",          "reason": "Lysosomes contain enzymes that break down waste material." },
+                { "id": "b4", "left": "Vacuole",      "right": "Storage",            "reason": "Vacuoles store water, nutrients, and waste products." }
+              ]
+            }
+          }
+        }
+      ],
+  
+      "decision_tree": {
+        "default_chapter6":  "Pass no additionalProps — the component renders the 6 Chapter-6 science property pairs.",
+        "custom_topic":      "Provide pairs[] with id/left/right/reason, and rightColumnOrder[] in your chosen display order.",
+        "change_heading":    "Set additionalProps.title and additionalProps.subtitle.",
+        "fewer_pairs":       "2–4 pairs for a short warm-up activity.",
+        "more_pairs":        "Up to 10 pairs; the layout scrolls vertically inside the card."
+      },
+  
+      "error_handling": {
+        "missing_pairs":       "Falls back to DEFAULT_PAIRS (6 Chapter-6 science pairs).",
+        "rightColumnOrder_mismatch": "If a word in rightColumnOrder has no matching pair.right, it is silently filtered out.",
+        "duplicate_right_words": "Each 'right' value must be unique; duplicates will cause SVG lines to share an endpoint.",
+        "empty_reason":        "If reason is an empty string the reason line renders blank — always supply a reason."
+      }
+    },
+  
+    "instructions_for_student": "Tap a property word on the left to select it, then tap its companion on the right. A green connector line and a fun fact appear when you get it right — a red shake tells you to try again!"
+  }

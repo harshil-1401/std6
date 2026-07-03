@@ -1,0 +1,95 @@
+{
+    "componentName": "HardOrSoftExplorer",
+    "componentFile": "hard_or_soft_explorer.tsx",
+    "chapter": "Chapter 6 — Materials Around Us",
+    "section": "6.3.2 Which materials are hard? · Activity 6.5: Let us observe",
+    "grade": "Grade 6 — Curiosity Science (NCERT)",
+    "audience": "11-12 year old students, Indian classroom context",
+    "learningObjective": "Understand that objects are made of materials, and that materials can be hard or soft depending on whether they keep their shape or change shape when pressed. Students press each object virtually, record observations in a table, and confirm the concept with a quick check before a quiz.",
+    "studentFriendlinessFeatures": {
+      "language": "Simple, warm, encouraging — Awesome work, Whoa, Great job",
+      "steps": "Numbered 3-step journey: Press (Explore) then Record then Wrap-up check. Nothing unlocks until the prior step is done.",
+      "feedback": "Immediate squish animation and orange squish-meter on every press. Material and Hard/Soft tag reveal after each press.",
+      "cheer": "Encouraging line appears after all objects pressed, after the table is filled, and on quiz results.",
+      "celebration": "Confetti plus trophy plus stars plus animated score count-up with encouraging language on the quiz result card.",
+      "textbookLink": "Concept of hardness as a material property aligned to NCERT page 107."
+    },
+    "props": {
+      "width": 840,
+      "gradeLevel": 6,
+      "initialMode": "learn",
+      "enabledModes": ["learn", "practice"],
+      "showModeSelector": true,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "additionalProps": {
+        "teacherName": "Madam Vidya",
+        "objects": [
+          "mattress",
+          "sweater",
+          "soft_toy",
+          "steel_tumbler",
+          "wooden_table",
+          "brick"
+        ],
+        "comparisonPairs": [
+          { "a": "sponge", "b": "iron_nail", "harder": "iron_nail" },
+          { "a": "sweater", "b": "brick", "harder": "brick" },
+          { "a": "rubber_eraser", "b": "steel_tumbler", "harder": "steel_tumbler" }
+        ]
+      }
+    },
+    "objectLibraryNote": "Objects are referenced by slug and resolved from the component's built-in OBJECT_LIBRARY (mattress, sweater, soft_toy, steel_tumbler, wooden_table, brick, sponge, rubber_eraser, iron_nail). Each entry carries name, material, hardness, squishiness (0=rock hard .. 1=very soft), color and emoji. A full HardnessObject can also be passed inline to override or add objects.",
+    "designSystem": {
+      "fontFamily": "Poppins",
+      "primaryColor": "#4A4DC9",
+      "secondaryColor": "#FF7212",
+      "accentPurple": "#533086",
+      "accentAmber": "#FC9145",
+      "lightPurple": "#C1C1EA",
+      "lightOrange": "#FFF3E4"
+    },
+    "responsive": {
+      "note": "Single breakpoint via useResponsive hook (isMobile = window width < 576px). Object grid uses auto-fit minmax so cards reflow naturally.",
+      "mobile": { "breakpoint": "< 576px", "objectGrid": "auto-fit, min 96px cards", "table": "3-col grid, compact" },
+      "desktop": { "breakpoint": ">= 576px", "objectGrid": "auto-fit, min 116px cards", "table": "3-col inline" }
+    },
+    "modes": {
+      "learn": "3 screens — Explore (press objects), Record (fill the table), Wrap-up (concept check + start quiz).",
+      "practice": "6 auto-generated questions (3 classify + 3 compare), seeded and shuffled per session, with a results card and review of wrong answers."
+    },
+    "activityFlow": [
+      "EXPLORE: Student reads the instruction, then taps each object to press it",
+      "Press animation: emoji squishes (scaleY based on squishiness), orange squish-meter fills to the object's softness",
+      "After each press the object's material and a HARD/SOFT tag are revealed",
+      "Counter shows progress (Tested N of M); Next unlocks only when every object is pressed",
+      "RECORD: Table appears with object + material pre-filled; rows are in a seeded shuffled order so the Hard/Soft answers do NOT follow a predictable alternating pattern",
+      "Student taps Hard or Soft per row; a wrong tap shakes the row, a correct tap locks in with a green glow and check",
+      "Completion banner appears when all rows are recorded; Next unlocks only when the whole table is done",
+      "WRAP-UP: A quick concept check asks the main difference between a hard and a soft object (keeps shape vs changes shape)",
+      "Correct pick reveals a short explanation tying hardness to the material; button starts the quiz",
+      "QUIZ (practice mode): 6 questions, tap to answer, auto-advance",
+      "Submit: confetti, trophy, stars, animated score count-up, encouragement, and review of any wrong answers with concept explanations"
+    ],
+    "correctAnswers": {
+      "tableDecisions": {
+        "mattress": "soft",
+        "sweater": "soft",
+        "soft_toy": "soft",
+        "steel_tumbler": "hard",
+        "wooden_table": "hard",
+        "brick": "hard"
+      },
+      "comparePairs": {
+        "sponge_vs_iron_nail": "iron_nail",
+        "sweater_vs_brick": "brick",
+        "rubber_eraser_vs_steel_tumbler": "steel_tumbler"
+      },
+      "keyInsight": "Objects keep their shape when pressed if they are hard, and change shape if they are soft. Whether an object is hard or soft is decided by the material it is made of (NCERT p.107)."
+    },
+    "changeLog": [
+      "Removed the relative-hardness 'scratch & rank' screen (former step 3). LEARN flow is now a fixed 3 screens: Explore, Record, Wrap-up.",
+      "Record table rows are now seeded-shuffled (mulberry32) with a re-roll guard so no 3+ same-hardness answers sit in a row — eliminates the previous fixed soft/hard alternating pattern.",
+      "Wrap-up concept check rewritten to ask about shape-keeping vs shape-changing using the explore objects (no longer references the removed ladder)."
+    ]
+  }

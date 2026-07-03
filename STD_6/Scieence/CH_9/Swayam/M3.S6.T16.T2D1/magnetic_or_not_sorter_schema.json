@@ -1,0 +1,103 @@
+{
+  "toolName": "magnetic_or_not_sorter",
+  "componentName": "MagneticOrNotSorter",
+  "version": "1.0.0",
+  "title": "Magnetic or Non-Magnetic?",
+  "activity": "Topic M3.S6.T16 — Sorting everyday objects by whether they stick to a magnet (magnetic vs non-magnetic materials)",
+  "description": "A tap-to-sort Class 6 tool that builds the magnetic/non-magnetic distinction. Twelve everyday object cards — iron nail, aluminium foil, copper coin, plastic ruler, pencil eraser, steel safety pin, rubber band, nickel coin, wooden block, iron key, gold ring, cobalt figurine — are presented one at a time, each resting on a table. For each object the student taps one of two bins: 'Sticks to magnet' or 'Does not stick'. A horseshoe magnet then swoops down over the object: magnetic objects (iron, steel, cobalt) lift off the table and stick to the poles with attraction field lines; non-magnetic objects stay put with a 'no pull' label. A green tick confirms a correct sort; a wrong sort shows a one-line hint about the metal involved (e.g. aluminium and copper are metals but non-magnetic; a 'nickel' coin is really cupro-nickel; gold is non-magnetic). It is a SINGLE guided flow (no separate quiz mode): the student walks all twelve objects with Back/Next (advance gated on answering), then a gamified summary scorecard shows the score (count-up, stars, confetti) and a two-column magnetic / non-magnetic recap with the rule. No drag-drop anywhere — the student only taps one of the two bin buttons.",
+  "toolType": "tap-to-sort, predict-then-reveal (single flow, no quiz mode)",
+  "topic_id": "M3.S6.T16",
+  "tool_id": "M3.S6.T16.T2D1",
+  "subtype": "sorter",
+  "prodSafe": "No 'lucide-react' import — all icons are inline SVGs defined in the file (including a custom horseshoe-magnet glyph), so the tool renders on every iframe-renderer version (an external icon name can never be undefined at runtime).",
+
+  "parameters": {
+    "width": 840,
+    "height": 600,
+    "gradeLevel": 6,
+    "themeColor": "#4A4DC9",
+    "darkMode": false,
+    "showNavigation": true,
+    "showStepIndicator": true,
+    "initialStep": 0,
+    "animationSpeed": 1,
+    "autoPlayDuration": 0,
+    "additionalProps": {
+      "showHints": true
+    }
+  },
+
+  "parameterSchema": {
+    "gradeLevel": { "type": "number", "enum": [6, 7, 8], "default": 6, "description": "Tier preset. 6 = heaviest gamification, story framing, biggest text, slowest/most dramatic magnet swoop, 70-particle confetti + 5 stars on the summary. 7 = moderate. 8 = light/formal. Authored for Class 6." },
+    "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Accent hint. The tool uses the Singularity palette: header purple, red horseshoe magnet, CTAs orange #FF7212." },
+    "showNavigation": { "type": "boolean", "default": true, "description": "Show Back/Next between objects (advance is gated on answering each card)." },
+    "autoPlayDuration": { "type": "number", "default": 0, "description": "Host auto-advance hint, in ms. Ignored — the tool calls setStopAutoNext(true) because every card needs interaction." }
+  },
+
+  "additionalPropsSchema": {
+    "objects": {
+      "type": "array",
+      "items": "string | object",
+      "default": ["iron_nail", "aluminium_foil", "copper_coin", "plastic_ruler", "eraser", "steel_pin", "rubber_band", "nickel_coin", "wooden_block", "iron_key", "gold_ring", "cobalt_figure"],
+      "description": "Which object cards appear and in what order. Pass slugs from the built-in library, a subset to shorten/focus the lesson, or full objects to add/override one: { slug, name, emoji, magnetic: true|false, material, hint }. 'magnetic: true' means it sticks to a magnet (iron/steel/cobalt)."
+    },
+    "showHints": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the one-line metal hint on a wrong answer (and inline captions)."
+    },
+    "feedbackMessage": {
+      "type": "string",
+      "default": "",
+      "description": "Optional one-line coaching message (reserved; the tool already supplies per-card prompts)."
+    }
+  },
+
+  "objects": [
+    { "slug": "iron_nail",      "name": "Iron nail",        "material": "Iron",         "magnetic": true,  "hint": "Iron is magnetic — a nail jumps to a magnet, so it belongs in “sticks”." },
+    { "slug": "aluminium_foil", "name": "Aluminium foil",   "material": "Aluminium",    "magnetic": false, "hint": "Aluminium is a metal but it is NOT magnetic — foil never sticks to a magnet." },
+    { "slug": "copper_coin",    "name": "Copper coin",      "material": "Copper",       "magnetic": false, "hint": "Copper is non-magnetic — a magnet has no pull on a copper coin." },
+    { "slug": "plastic_ruler",  "name": "Plastic ruler",    "material": "Plastic",      "magnetic": false, "hint": "Plastic is not a metal at all, so it cannot be magnetic." },
+    { "slug": "eraser",         "name": "Pencil eraser",    "material": "Rubber",       "magnetic": false, "hint": "An eraser is rubber — non-metal, so it never sticks to a magnet." },
+    { "slug": "steel_pin",      "name": "Steel safety pin", "material": "Steel",        "magnetic": true,  "hint": "Steel is mostly iron, so it IS magnetic — the pin sticks." },
+    { "slug": "rubber_band",    "name": "Rubber band",      "material": "Rubber",       "magnetic": false, "hint": "Rubber is a non-metal — a magnet does nothing to a rubber band." },
+    { "slug": "nickel_coin",    "name": "Nickel coin",      "material": "Cupro-nickel", "magnetic": false, "hint": "A real “nickel” coin is a copper-nickel mix, not pure nickel — it does NOT stick to a magnet." },
+    { "slug": "wooden_block",   "name": "Wooden block",     "material": "Wood",         "magnetic": false, "hint": "Wood is a non-metal, so it can never be magnetic." },
+    { "slug": "iron_key",       "name": "Iron key",         "material": "Iron",         "magnetic": true,  "hint": "The key is iron — iron is magnetic, so it sticks." },
+    { "slug": "gold_ring",      "name": "Gold ring",        "material": "Gold",         "magnetic": false, "hint": "Gold is a metal but it is non-magnetic — a gold ring will not stick." },
+    { "slug": "cobalt_figure",  "name": "Cobalt figurine",  "material": "Cobalt",       "magnetic": true,  "hint": "Cobalt is one of the few magnetic metals (like iron) — it sticks to a magnet." }
+  ],
+
+  "answerKey": {
+    "sticks_magnetic": ["iron_nail", "steel_pin", "iron_key", "cobalt_figure"],
+    "does_not_stick_non_magnetic": ["aluminium_foil", "copper_coin", "plastic_ruler", "eraser", "rubber_band", "nickel_coin", "wooden_block", "gold_ring"],
+    "rationale": "Only iron, steel and cobalt are magnetic at this level. Aluminium, copper and gold are metals but non-magnetic. A 'nickel' coin is cupro-nickel (copper+nickel), not pure nickel, so it does not stick. Plastic, rubber and wood are non-metals and never magnetic."
+  },
+
+  "steps": [
+    { "id": "S1", "title": "Test each object", "type": "interactive", "description": "For each of the 12 objects: tap 'Sticks to magnet' or 'Does not stick'. A horseshoe magnet swoops down — magnetic objects lift and stick (field lines), non-magnetic stay put ('no pull'). Correct → green tick + confirmation; wrong → one-line metal hint. Back/Next move between objects (Next gated on answering)." },
+    { "id": "S2", "title": "Summary scorecard", "type": "result", "description": "After the last object, a gamified summary: score count-up out of 12, 5 stars + confetti (≥60%), a two-column magnetic / non-magnetic recap with per-object right/wrong marks, the iron-steel-cobalt rule, tier encouragement, and a 'Start over' button." }
+  ],
+
+  "interactionNotes": [
+    "TAP-TO-SORT only — two bin buttons ('Sticks to magnet' / 'Does not stick') under each object. NO drag-and-drop of cards (house rule; robust on mobile for young students).",
+    "The test is a single responsive SVG side-view scene: the object on a table while a red horseshoe magnet (N/S poles) swoops down. Driven by t (0..1 swoop), the object's magnetic flag, and a revealed flag.",
+    "Predict-then-reveal: the student taps an answer first, which triggers the magnet swoop — magnetic objects lift to the poles with dashed attraction field lines; non-magnetic objects stay resting with a 'no pull' tag.",
+    "Answer key (curriculum-accurate): magnetic = iron nail, steel safety pin, iron key, cobalt figurine. Everything else is non-magnetic — including the nickel coin (really cupro-nickel) and the gold ring.",
+    "Single guided flow — there is NO separate quiz/practice mode and no mode selector. After all 12 objects the student reaches one summary scorecard (score + two-column recap + Start over).",
+    "Calls setStopAutoNext(true) and reports setStepDetails on every card change.",
+    "Responsive from 320px; touch targets 56px at Class 6; the magnet scene caps at 380px wide and scales with the container.",
+    "PROD-SAFE ICONS: no lucide-react dependency — icons are inline SVGs (including the horseshoe magnet), so no 'X is not defined' error regardless of the renderer's injected icon allowlist."
+  ],
+
+  "conceptsReinforced": [
+    "Magnets attract only some materials: iron, steel (mostly iron) and cobalt are magnetic and stick to a magnet.",
+    "Most metals are NOT magnetic — aluminium, copper and gold are metals but a magnet has no pull on them.",
+    "Non-metals (plastic, rubber, wood) are never magnetic.",
+    "Object names can mislead: a 'nickel' coin is usually a copper-nickel alloy, not pure nickel, so it does not stick.",
+    "Sticking to a magnet is a simple test that separates magnetic materials from a mixture (links to separation of iron filings with a magnet)."
+  ],
+
+  "objective_id": "M3.S6.T16.O1",
+  "instructions_for_student": "For each object, decide whether it sticks to the magnet or not, then watch the magnet come down to test it. Get a green tick when you're right — and a hint about the metal when you're not!"
+}

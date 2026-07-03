@@ -1,0 +1,128 @@
+{
+    "gameTitle": "Matter or Not Matter?",
+    "gameSubtitle": "Drop each tile using the two-condition rule: Has mass AND takes up space",
+    "definition": "Matter = has mass + takes up space",
+    "bins": {
+      "matter": {
+        "id": "matter",
+        "label": "Matter",
+        "icon": "⚗️",
+        "description": "Has mass AND takes up space"
+      },
+      "notMatter": {
+        "id": "notMatter",
+        "label": "Not Matter",
+        "icon": "✨",
+        "description": "Missing mass OR takes no space"
+      }
+    },
+    "tiles": [
+      {
+        "id": "water",
+        "label": "Water",
+        "emoji": "💧",
+        "answer": "matter",
+        "correctReason": "Water has mass and takes up space (it fills a container) → Matter ✓",
+        "wrongHint": "Think: can you pour water into a glass? Does it fill that space? Does it have weight?"
+      },
+      {
+        "id": "stone",
+        "label": "Stone",
+        "emoji": "🪨",
+        "answer": "matter",
+        "correctReason": "Stone has measurable mass and clearly occupies space → Matter ✓",
+        "wrongHint": "Can you hold a stone? Does it weigh something? Does it take up room on a table?"
+      },
+      {
+        "id": "air",
+        "label": "Air",
+        "emoji": "💨",
+        "answer": "matter",
+        "correctReason": "Air has mass (a filled balloon weighs more than empty one) and takes up space → Matter ✓",
+        "wrongHint": "Tricky! Inflate a balloon — air fills it (takes space) and adds weight (has mass). Check both conditions!"
+      },
+      {
+        "id": "sunlight",
+        "label": "Sunlight",
+        "emoji": "☀️",
+        "answer": "notMatter",
+        "correctReason": "Sunlight is electromagnetic radiation — it has no rest mass and takes no space → Not Matter ✓",
+        "wrongHint": "Apply the two conditions: does sunlight have mass? Can you put sunlight in a box and close the lid?"
+      },
+      {
+        "id": "dream",
+        "label": "A Dream",
+        "emoji": "🌙",
+        "answer": "notMatter",
+        "correctReason": "Dreams are mental experiences — no mass, no physical space occupied → Not Matter ✓",
+        "wrongHint": "Does a dream weigh anything? Can you put a dream in a container? Check both conditions!"
+      },
+      {
+        "id": "wood",
+        "label": "Wood",
+        "emoji": "🪵",
+        "answer": "matter",
+        "correctReason": "Wood has mass and occupies space — a classic solid example of matter → Matter ✓",
+        "wrongHint": "Can you pick up a piece of wood? Does it weigh something? Does it take up space on a shelf?"
+      },
+      {
+        "id": "milk",
+        "label": "Milk",
+        "emoji": "🥛",
+        "answer": "matter",
+        "correctReason": "Milk is a liquid with mass that fills and takes up space in a container → Matter ✓",
+        "wrongHint": "Pour some milk — does it fill the glass (take space)? Does a full glass weigh more than an empty one (mass)?"
+      },
+      {
+        "id": "sound",
+        "label": "Sound",
+        "emoji": "🔊",
+        "answer": "notMatter",
+        "correctReason": "Sound is a wave of energy (vibrations) — no mass, no space occupied → Not Matter ✓",
+        "wrongHint": "Sound travels through matter but isn't matter itself. Can you weigh sound? Can you put it in a box?"
+      },
+      {
+        "id": "fire",
+        "label": "Fire Flame",
+        "emoji": "🔥",
+        "answer": "notMatter",
+        "correctReason": "A flame is a process — plasma light and heat energy, not a substance with rest mass → Not Matter ✓",
+        "wrongHint": "Edge case! The gases burning are matter, but the flame (light + heat) itself has no mass. What are the two conditions?"
+      },
+      {
+        "id": "shadow",
+        "label": "Shadow",
+        "emoji": "🌑",
+        "answer": "notMatter",
+        "correctReason": "A shadow is the absence of light — it has no mass and takes no physical space → Not Matter ✓",
+        "wrongHint": "Can you weigh a shadow? Can you scoop a shadow into a jar? It has no mass and no physical presence."
+      },
+      {
+        "id": "honey",
+        "label": "Honey",
+        "emoji": "🍯",
+        "answer": "matter",
+        "correctReason": "Honey is a thick liquid with mass that flows and occupies space → Matter ✓",
+        "wrongHint": "Honey is a liquid — does it have weight? Does it fill a jar? Apply the two-condition rule!"
+      },
+      {
+        "id": "oxygen",
+        "label": "Oxygen",
+        "emoji": "🫧",
+        "answer": "matter",
+        "correctReason": "Oxygen gas has mass and takes up space (like all gases) → Matter ✓",
+        "wrongHint": "Like air, oxygen is a gas. Does it have mass? A tank of oxygen weighs more when full. Does it take up space?"
+      }
+    ],
+    "scoring": {
+      "correctPoints": 10,
+      "wrongPenalty": 0,
+      "maxScore": 120,
+      "grades": [
+        { "min": 120, "label": "Scientist! 🏆", "color": "#4A4DC9" },
+        { "min": 90, "label": "Lab Expert! 🥇", "color": "#533086" },
+        { "min": 60, "label": "Good Thinker! 🥈", "color": "#FC9145" },
+        { "min": 0, "label": "Keep Practicing! 💪", "color": "#CACACA" }
+      ]
+    }
+  }

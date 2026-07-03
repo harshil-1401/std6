@@ -1,0 +1,276 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Exploring Magnets — Fill in the Blanks",
+    "instructions_for_student": "Select the correct word from each dropdown to complete the four sentences. Correct answers turn green. If you pick a wrong answer, a hint will appear to guide you. You need to fill all blanks correctly to see your final score!",
+    "data": {
+      "toolName": "magnet_quiz_tool",
+      "parameters": {
+        "themeColor": "#533086",
+        "darkMode": false,
+        "additionalProps": {
+          "showHints": true,
+          "celebrateOnComplete": true,
+          "quizData": {
+            "title": "Exploring Magnets",
+            "subtitle": "Select the correct word from each dropdown to complete the sentences.",
+            "sentences": [
+              {
+                "id": 1,
+                "template": [
+                  "Unlike poles of two magnets ",
+                  " each other, whereas like poles ",
+                  " each other."
+                ],
+                "blanks": [
+                  {
+                    "id": "s1b1",
+                    "options": ["attract", "repel", "ignore"],
+                    "correctAnswer": "attract",
+                    "hint": "Think about Activity 4.5 — when N and S poles face each other, what happens?"
+                  },
+                  {
+                    "id": "s1b2",
+                    "options": ["attract", "repel", "ignore"],
+                    "correctAnswer": "repel",
+                    "hint": "In Activity 4.5, N–N or S–S poles pushed each other away."
+                  }
+                ]
+              },
+              {
+                "id": 2,
+                "template": [
+                  "The materials that are attracted towards a magnet are called ",
+                  "."
+                ],
+                "blanks": [
+                  {
+                    "id": "s2b1",
+                    "options": [
+                      "non-magnetic materials",
+                      "magnetic materials",
+                      "lodestones"
+                    ],
+                    "correctAnswer": "magnetic materials",
+                    "hint": "Recall Activity 4.1 — iron, nickel, and cobalt stuck to the magnet."
+                  }
+                ]
+              },
+              {
+                "id": 3,
+                "template": [
+                  "The needle of a magnetic compass rests along the ",
+                  " direction."
+                ],
+                "blanks": [
+                  {
+                    "id": "s3b1",
+                    "options": ["east-west", "north-south", "up-down"],
+                    "correctAnswer": "north-south",
+                    "hint": "Activity 4.3 showed a freely suspended magnet always aligns with Earth's field."
+                  }
+                ]
+              },
+              {
+                "id": 4,
+                "template": [
+                  "A magnet always has ",
+                  " poles."
+                ],
+                "blanks": [
+                  {
+                    "id": "s4b1",
+                    "options": ["one", "two", "three"],
+                    "correctAnswer": "two",
+                    "hint": "Even if you break a magnet into pieces, both a North AND a South pole always exist together."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "schema": {
+      "description": "Configuration schema for MagnetQuiz — a fill-in-the-blank interactive quiz tool for Grade 6 Science (Exploring Magnets chapter). Themed with the Poppins font and the purple/orange design palette from the Singularity design system.",
+      "parameters": {
+        "themeColor": {
+          "type": "string",
+          "description": "Primary brand color (hex). Default: #533086 (purple from design PDF).",
+          "default": "#533086",
+          "examples": ["#533086", "#4A4DC9", "#FC9145"]
+        },
+        "darkMode": {
+          "type": "boolean",
+          "description": "Toggle dark mode. Default: false.",
+          "default": false
+        },
+        "additionalProps": {
+          "type": "object",
+          "description": "Dynamic content and feature toggles for the quiz.",
+          "properties": {
+            "showHints": {
+              "type": "boolean",
+              "description": "Show a contextual hint referencing the relevant chapter activity when a wrong answer is selected.",
+              "default": true
+            },
+            "celebrateOnComplete": {
+              "type": "boolean",
+              "description": "Trigger a particle-burst celebration animation when each blank is answered correctly.",
+              "default": true
+            },
+            "quizData": {
+              "type": "object",
+              "description": "The full quiz content object. Override this to customise questions for a different chapter or topic.",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Main heading shown at the top of the quiz."
+                },
+                "subtitle": {
+                  "type": "string",
+                  "description": "Short instruction text shown below the heading."
+                },
+                "sentences": {
+                  "type": "array",
+                  "description": "Array of sentence objects, each containing a template and one or more blanks.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "description": "Unique numeric ID for the sentence."
+                      },
+                      "template": {
+                        "type": "array",
+                        "items": { "type": "string" },
+                        "description": "Array of text segments split at blank positions. Length must be blanks.length + 1."
+                      },
+                      "blanks": {
+                        "type": "array",
+                        "description": "One entry per blank in the sentence.",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "description": "Unique string ID for this blank (e.g. 's1b1')."
+                            },
+                            "options": {
+                              "type": "array",
+                              "items": { "type": "string" },
+                              "description": "Exactly 3 answer choices to show in the dropdown."
+                            },
+                            "correctAnswer": {
+                              "type": "string",
+                              "description": "The string that must match exactly one item in options."
+                            },
+                            "hint": {
+                              "type": "string",
+                              "description": "Hint text shown after a wrong attempt. Should reference the specific activity in the chapter."
+                            }
+                          },
+                          "required": ["id", "options", "correctAnswer", "hint"]
+                        }
+                      }
+                    },
+                    "required": ["id", "template", "blanks"]
+                  }
+                }
+              },
+              "required": ["title", "subtitle", "sentences"]
+            }
+          }
+        }
+      }
+    },
+    "agent_readme": {
+      "overview": "MagnetQuiz is a standalone, fully animated fill-in-the-blank quiz React component for interactive science education. Students select answers from dropdowns; correct picks animate green with a particle burst; wrong picks shake and show a chapter-referenced hint. A progress bar and score screen round out the experience.",
+      "design_system": {
+        "font": "Poppins (loaded from Google Fonts)",
+        "colors": {
+          "primary": "#533086",
+          "secondary": "#4A4DC9",
+          "accent": "#FC9145",
+          "light_purple": "#C1C1EA",
+          "light_orange": "#FFF3E4",
+          "dark": "#4E4E4E",
+          "light_grey": "#CACACA"
+        }
+      },
+      "quick_reference": {
+        "minimum_blanks_per_sentence": 1,
+        "maximum_blanks_per_sentence": 4,
+        "options_per_blank": 3,
+        "template_length_rule": "template array length = blanks array length + 1"
+      },
+      "tool_call_examples": [
+        {
+          "description": "Default quiz — all 4 sentences from Chapter 4",
+          "call": {
+            "toolName": "magnet_quiz_tool",
+            "parameters": {}
+          }
+        },
+        {
+          "description": "Quiz with hints disabled (for assessment mode)",
+          "call": {
+            "toolName": "magnet_quiz_tool",
+            "parameters": {
+              "additionalProps": {
+                "showHints": false,
+                "celebrateOnComplete": true
+              }
+            }
+          }
+        },
+        {
+          "description": "Custom 2-sentence quiz for a different topic",
+          "call": {
+            "toolName": "magnet_quiz_tool",
+            "parameters": {
+              "additionalProps": {
+                "showHints": true,
+                "quizData": {
+                  "title": "Light & Shadows",
+                  "subtitle": "Fill in the blanks to test your knowledge.",
+                  "sentences": [
+                    {
+                      "id": 1,
+                      "template": ["Objects that allow light to pass through completely are called ", "."],
+                      "blanks": [
+                        {
+                          "id": "ls1b1",
+                          "options": ["opaque", "transparent", "translucent"],
+                          "correctAnswer": "transparent",
+                          "hint": "Clear glass and clean water let you see right through them."
+                        }
+                      ]
+                    },
+                    {
+                      "id": 2,
+                      "template": ["A shadow forms on the side ", " from the light source."],
+                      "blanks": [
+                        {
+                          "id": "ls2b1",
+                          "options": ["facing away", "facing towards", "beside"],
+                          "correctAnswer": "facing away",
+                          "hint": "Light travels in straight lines and cannot bend around an object."
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
+      "decision_tree": {
+        "student_wants_quiz": "Use default parameters — all 4 sentences load automatically.",
+        "assessment_mode": "Set showHints: false and celebrateOnComplete: false.",
+        "different_chapter": "Override quizData with new title, subtitle, and sentences array.",
+        "more_sentences": "Extend the sentences array; template length must equal blanks.length + 1.",
+        "style_change": "Change themeColor to any hex value; the gradient headers and progress bar adapt automatically."
+      }
+    }
+  }

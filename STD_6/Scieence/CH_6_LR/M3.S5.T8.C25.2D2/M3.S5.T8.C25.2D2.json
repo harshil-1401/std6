@@ -1,0 +1,178 @@
+{
+  "toolName": "weigh_the_cups",
+  "version": "1.0.0",
+  "description": "Interactive predict-then-weigh lab for NCERT Grade 6 Science, Chapter 6 'Materials Around Us', Activity 6.8 (topic M3.S5.T8, concept C25). The student first RANKS three identical half-filled cups (water / sand / pebbles) from lightest to heaviest, then places each on a digital balance and watches the gram reading count up, then compares any two cups on a two-pan beam balance. Mass is defined only after the prediction is committed. Targets the size-vs-mass misconception. Fully responsive — fluid from ~320px phones to laptops, with two-column landscape layouts on wide screens; sizes to its container so it fits any modal, iframe, or column without horizontal scroll.",
+  "curriculum_link": "CBSE/NCERT Grade 6 Science — Chapter 6.3.5 'How heavy or light?' / Activity 6.8",
+  "objectives": [
+    {
+      "id": "O16",
+      "bloom": "Apply",
+      "text": "Infer which material is heavier or lighter from the readings."
+    },
+    {
+      "id": "O17",
+      "bloom": "Understand",
+      "text": "Define mass as the property that tells how heavy or light an object is."
+    }
+  ],
+  "design_tokens": {
+    "primary": "#4A4DC9",
+    "primary_dark": "#533086",
+    "primary_light": "#C1C1EA",
+    "accent": "#FF7212",
+    "accent_dark": "#FC9145",
+    "accent_light": "#FFF3E4",
+    "bg": "#F5F5F5",
+    "font": "Poppins (Google Fonts)"
+  },
+  "responsive": {
+    "required": true,
+    "approach": "Container-query based via ResizeObserver — the tool measures its own container (not the window), so it adapts correctly inside any modal, iframe, or column.",
+    "fluid": true,
+    "min_supported_width_px": 320,
+    "max_width_px": 980,
+    "no_horizontal_scroll": true,
+    "guarantees": "Scoped box-sizing reset and svg/img max-width:100% prevent any horizontal overflow; the card is capped at 980px and centered.",
+    "breakpoints": {
+      "xs": "< 380px — compact phones (smaller header/stepper)",
+      "mobile": "< 480px — phones (single column, tighter spacing)",
+      "default": "480–699px — stacked, comfortable spacing",
+      "wide": ">= 700px — landscape: two-column layouts for Predict, Weigh and Compare"
+    },
+    "tested_targets": [
+      "phone (portrait & landscape)",
+      "tablet",
+      "laptop",
+      "embedded preview modal"
+    ]
+  },
+  "parameters": {
+    "width": 960,
+    "height": 560,
+    "themeColor": "#4A4DC9",
+    "darkMode": false,
+    "animationSpeed": 1,
+    "showModeSelector": false,
+    "showNavigation": false,
+    "showPlayPause": false,
+    "showStepIndicator": false
+  },
+  "phases": [
+    "predict",
+    "weigh",
+    "result"
+  ],
+  "interaction_flow": [
+    "PREDICT: drag each cup into a Lightest / In-between / Heaviest box (tap-to-place fallback). Reveal is locked until all three are ranked.",
+    "WEIGH: pick a cup, press Weigh; the cup drops onto a digital balance and the gram reading counts up; each reading fills a record table.",
+    "RESULT: prediction is checked slot-by-slot; a two-pan balance compares any two chosen cups (heavier side dips); mass is defined; stars/confetti on a perfect ranking."
+  ],
+  "shared_state_fields": [
+    "predicted_order",
+    "selected_cup",
+    "mass_reading_g",
+    "records",
+    "heavier_cup",
+    "phase"
+  ],
+  "additionalProps": {
+    "cups": {
+      "type": "array",
+      "description": "Override the three cups. Each item: { id, label, material, emoji, mass (grams shown on the balance, cup+contents), accent (hex), scene ('water'|'sand'|'pebbles'), reason (one-line chapter explanation) }. The true order is computed from mass, so any masses work as long as they are distinct.",
+      "default": [
+        {
+          "id": "A",
+          "label": "Water",
+          "material": "water",
+          "emoji": "💧",
+          "mass": 180,
+          "accent": "#4A4DC9",
+          "scene": "water"
+        },
+        {
+          "id": "B",
+          "label": "Sand",
+          "material": "sand",
+          "emoji": "🏖️",
+          "mass": 260,
+          "accent": "#533086",
+          "scene": "sand"
+        },
+        {
+          "id": "C",
+          "label": "Pebbles",
+          "material": "pebbles",
+          "emoji": "🪨",
+          "mass": 340,
+          "accent": "#FF7212",
+          "scene": "pebbles"
+        }
+      ]
+    },
+    "unit": {
+      "type": "string",
+      "default": "g",
+      "description": "Mass unit label. Readings ≥ 1000 auto-display in kg on the balance."
+    },
+    "showCompare": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the two-pan compare balance on the result screen."
+    },
+    "finalMessage": {
+      "type": "string",
+      "default": "Mass tells how heavy or light an object is…",
+      "description": "The 'What is mass?' takeaway shown on the result screen."
+    }
+  },
+  "examples": {
+    "default_activity_6_8": {
+      "description": "Use the built-in water / sand / pebbles cups — omit additionalProps entirely.",
+      "additionalProps": {}
+    },
+    "custom_masses": {
+      "description": "Same three materials, teacher-set masses.",
+      "additionalProps": {
+        "cups": [
+          {
+            "id": "A",
+            "label": "Water",
+            "material": "water",
+            "emoji": "💧",
+            "mass": 150,
+            "accent": "#4A4DC9",
+            "scene": "water",
+            "reason": "Water holds less matter in the cup than sand or pebbles."
+          },
+          {
+            "id": "B",
+            "label": "Sand",
+            "material": "sand",
+            "emoji": "🏖️",
+            "mass": 250,
+            "accent": "#533086",
+            "scene": "sand",
+            "reason": "Sand packs more matter than water."
+          },
+          {
+            "id": "C",
+            "label": "Pebbles",
+            "material": "pebbles",
+            "emoji": "🪨",
+            "mass": 330,
+            "accent": "#FF7212",
+            "scene": "pebbles",
+            "reason": "Pebbles pack the most matter, so the most mass."
+          }
+        ]
+      }
+    },
+    "definition_only": {
+      "description": "Override just the closing definition; hide the compare balance.",
+      "additionalProps": {
+        "showCompare": false,
+        "finalMessage": "Mass measures how much matter is in an object — not how big or full it looks."
+      }
+    }
+  }
+}

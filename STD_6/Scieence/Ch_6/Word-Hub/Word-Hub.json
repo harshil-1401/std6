@@ -1,0 +1,233 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Word-Hub Grid Game — Chapter 6: Materials Around Us",
+    "toolName": "word_grid_game",
+    "description": "A timed 3×3 (or 4×4) tap-to-match grid game. A prompt banner at the top alternates between two modes — 'Tap the definition of WORD' or 'Which word means DEFINITION'. Students tap the matching cell. Correct taps turn green; wrong taps shake red for 0.9 s. A 60-second countdown timer and score pill run in the header. A streak badge pops up on 3+ consecutive correct taps. At the end a summary card shows score, accuracy, and missed words for review.",
+  
+    "parameters": {
+      "width": 800,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "additionalProps": {
+        "title": "Word-Hub Grid Game",
+        "subtitle": "Read the prompt. Tap the matching cell as fast as you can!",
+        "gameDuration": 60,
+        "gridSize": 3,
+        "words": [
+          {
+            "id": "w1",
+            "word": "Material",
+            "definition": "Any substance used to create or make an object.",
+            "shortDef": "Substance used to make objects"
+          },
+          {
+            "id": "w2",
+            "word": "Classification",
+            "definition": "The method of arranging objects into groups.",
+            "shortDef": "Arranging objects into groups"
+          },
+          {
+            "id": "w3",
+            "word": "Lustrous",
+            "definition": "Having a shiny surface; characteristic of most metals.",
+            "shortDef": "Shiny surface; like metals"
+          },
+          {
+            "id": "w4",
+            "word": "Transparent",
+            "definition": "A material through which things can be seen clearly.",
+            "shortDef": "See through it clearly"
+          },
+          {
+            "id": "w5",
+            "word": "Translucent",
+            "definition": "A material through which objects can be seen but not clearly.",
+            "shortDef": "Partially see-through"
+          },
+          {
+            "id": "w6",
+            "word": "Opaque",
+            "definition": "A material through which you are not able to see at all.",
+            "shortDef": "Cannot see through it"
+          },
+          {
+            "id": "w7",
+            "word": "Soluble",
+            "definition": "A material that dissolves completely when mixed in water.",
+            "shortDef": "Dissolves in water"
+          },
+          {
+            "id": "w8",
+            "word": "Insoluble",
+            "definition": "A material that does not dissolve in water even after stirring.",
+            "shortDef": "Does not dissolve in water"
+          },
+          {
+            "id": "w9",
+            "word": "Matter",
+            "definition": "Anything that occupies space and has mass.",
+            "shortDef": "Occupies space and has mass"
+          },
+          {
+            "id": "w10",
+            "word": "Mass",
+            "definition": "A property that gives the quantity of matter in an object.",
+            "shortDef": "Quantity of matter"
+          },
+          {
+            "id": "w11",
+            "word": "Volume",
+            "definition": "The space occupied by a substance or object.",
+            "shortDef": "Space occupied by matter"
+          },
+          {
+            "id": "w12",
+            "word": "Hard",
+            "definition": "A material that is difficult to compress or scratch.",
+            "shortDef": "Difficult to compress or scratch"
+          }
+        ]
+      }
+    },
+  
+    "schema": {
+      "description": "All agent-configurable content lives inside additionalProps.",
+      "additionalProps": {
+        "title": {
+          "type": "string",
+          "description": "Heading shown in the purple gradient header.",
+          "default": "Word-Hub Grid Game"
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Short instruction line beneath the heading.",
+          "default": "Read the prompt. Tap the matching cell as fast as you can!"
+        },
+        "gameDuration": {
+          "type": "number",
+          "description": "Countdown timer in seconds.",
+          "default": 60,
+          "min": 20,
+          "max": 180
+        },
+        "gridSize": {
+          "type": "number",
+          "description": "Grid dimension. 3 = 3×3 (9 cells), 4 = 4×4 (16 cells). Word pool must be >= gridSize².",
+          "default": 3,
+          "enum": [3, 4]
+        },
+        "words": {
+          "type": "array",
+          "description": "Pool of vocabulary words. Must contain at least gridSize² entries (≥9 for 3×3, ≥16 for 4×4). Each round picks gridSize² words randomly from this pool.",
+          "minItems": 9,
+          "items": {
+            "type": "object",
+            "required": ["id", "word", "definition", "shortDef"],
+            "properties": {
+              "id":         { "type": "string",  "description": "Unique identifier (kebab-case or wN)." },
+              "word":       { "type": "string",  "description": "The vocabulary word shown as a prompt or in the cell." },
+              "definition": { "type": "string",  "description": "Full definition shown as a prompt. Keep under 20 words for readability." },
+              "shortDef":   { "type": "string",  "description": "≤6 word summary displayed INSIDE the grid cell when mode is word_to_def." }
+            }
+          }
+        }
+      }
+    },
+  
+    "ui_behaviour": {
+      "game_phases": {
+        "idle":    "Start screen with decorative preview grid and a Start Game button. Shows word count and timer duration.",
+        "playing": "Live game — timer bar shrinks, prompt alternates modes, 3×3 grid is tappable.",
+        "summary": "Full-screen gradient overlay with trophy, score, accuracy, question count, and missed-words review grid."
+      },
+      "prompt_modes": {
+        "word_to_def": "Prompt says 'Tap the definition of: WORD'. Cells show shortDef strings.",
+        "def_to_word": "Prompt says 'Which word means: DEFINITION'. Cells show word strings.",
+        "alternation":  "Mode is randomised independently for every new question — roughly 50/50 split."
+      },
+      "correct_feedback":  ["Cell border turns green (#10b981)", "Green background flash", "wgCorrectPop scale animation", "Score pill pulses (wgScorePulse)", "Grid reshuffles after 480 ms with new words and new prompt"],
+      "wrong_feedback":    ["Cell border turns red (#ef4444)", "Red background flash", "wgShake animation for 450 ms", "Cell resets to idle after 900 ms", "Streak counter resets to 0", "Missed word ID added to review list"],
+      "streak_system":     "Every 3+ consecutive correct taps shows a '🔥 Nx Streak!' badge that animates up and fades.",
+      "grid_rotation":     "After each correct answer, a new set of gridSize² words is picked randomly from the full pool. The correct answer for the new prompt is always guaranteed to be in the grid.",
+      "timer_urgency":     "When timeLeft ≤ 10 s: timer bar turns red, timer text pulses red.",
+      "missed_words_set":  "Built from promptWord IDs at the time of each wrong tap. Deduplicated. Shown in summary card for review."
+    },
+  
+    "agent_readme": {
+      "overview": "WordGridGame is a timed vocabulary recall game. The student sees a 3×3 grid of word or definition chips and must tap the one matching the prompt banner at the top. It is fully self-contained — a single .tsx file with inline styles, Poppins font, and keyframes injected via useEffect following the MetalsNonmetalsUseMatcher pattern.",
+  
+      "architecture_notes": [
+        "Keyframes injected via useEffect → document.createElement('style') with id 'wg-kf-v1', cleaned up on unmount.",
+        "Three phases: idle (start screen) → playing (timer + grid) → summary (score + missed review).",
+        "pickNewPrompt() uses a history ring-buffer to prevent immediate repeat questions.",
+        "reshuffleGrid() always guarantees the correct answer is somewhere in the grid.",
+        "missedRef is a useRef<Set<string>> (not useState) to avoid stale closure in the timer interval.",
+        "Timer runs via setInterval in a useEffect dependent on phase === 'playing'.",
+        "setStepDetails() called once on mount — compatible with parent orchestrators."
+      ],
+  
+      "examples": [
+        {
+          "name": "Chapter 6 — default 12 words, 60 s, 3×3",
+          "parameters": {}
+        },
+        {
+          "name": "Quick 30-second drill",
+          "parameters": {
+            "additionalProps": {
+              "gameDuration": 30,
+              "title": "Quick Fire Round"
+            }
+          }
+        },
+        {
+          "name": "Electricity vocabulary — 9 words",
+          "parameters": {
+            "additionalProps": {
+              "title": "Electricity Word Grid",
+              "subtitle": "Tap the matching cell for each prompt!",
+              "gameDuration": 60,
+              "gridSize": 3,
+              "words": [
+                { "id": "e1", "word": "Conductor",   "definition": "A material that allows electric current to flow through it easily.",    "shortDef": "Allows current to flow" },
+                { "id": "e2", "word": "Insulator",   "definition": "A material that does not allow electric current to flow through it.",   "shortDef": "Blocks electric current" },
+                { "id": "e3", "word": "Voltage",     "definition": "The force that pushes electric charges through a circuit.",             "shortDef": "Force pushing charges" },
+                { "id": "e4", "word": "Current",     "definition": "The flow of electric charges through a conductor.",                    "shortDef": "Flow of electric charges" },
+                { "id": "e5", "word": "Resistance",  "definition": "Opposition to the flow of electric current in a circuit.",             "shortDef": "Opposes current flow" },
+                { "id": "e6", "word": "Circuit",     "definition": "A closed path through which electricity can flow.",                    "shortDef": "Closed path for electricity" },
+                { "id": "e7", "word": "Series",      "definition": "A circuit where components are connected in a single loop.",           "shortDef": "Single loop connection" },
+                { "id": "e8", "word": "Parallel",    "definition": "A circuit where components are connected across multiple branches.",   "shortDef": "Multiple branch connection" },
+                { "id": "e9", "word": "Fuse",        "definition": "A safety device that melts to break the circuit if current is too high.", "shortDef": "Safety current breaker" }
+              ]
+            }
+          }
+        },
+        {
+          "name": "4×4 extended grid — 16 words",
+          "parameters": {
+            "additionalProps": {
+              "gridSize": 4,
+              "gameDuration": 90,
+              "title": "Extended Materials Grid"
+            }
+          }
+        }
+      ],
+  
+      "decision_tree": {
+        "default_chapter6":    "Leave additionalProps empty — defaults to 12 Chapter-6 science words, 60 s, 3×3 grid.",
+        "custom_topic":        "Supply words[] with id/word/definition/shortDef. Minimum 9 entries for 3×3.",
+        "shorter_session":     "Set gameDuration to 30 or 45.",
+        "harder_challenge":    "Set gridSize to 4 and supply ≥16 words.",
+        "change_title":        "Set additionalProps.title and additionalProps.subtitle."
+      },
+  
+      "error_handling": {
+        "insufficient_words":  "If words.length < gridSize², falls back to DEFAULT_WORDS (12 Chapter-6 entries).",
+        "missing_shortDef":    "shortDef is required — keep it ≤ 6 words so it fits inside the grid cell.",
+        "duplicate_ids":       "Each id must be unique; duplicates cause incorrect match evaluation."
+      }
+    },
+  
+    "instructions_for_student": "Read the prompt at the top. Tap the matching cell as fast as you can. Green = correct, Red = wrong. Score as many as possible in 60 seconds!"
+  }

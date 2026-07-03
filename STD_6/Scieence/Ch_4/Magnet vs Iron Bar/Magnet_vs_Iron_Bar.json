@@ -1,0 +1,133 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Suspension Prediction Lab",
+    "data": {
+      "toolName": "magnet_prediction_tool",
+      "parameters": {
+        "width": 920,
+        "height": 700,
+        "themeColor": "#4A4DC9",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showStepIndicator": false,
+        "animationSpeed": 1,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "title": "Suspension Prediction Lab",
+          "subtitle": "Chapter 4 — Exploring Magnets",
+          "instructions": "Predict the resting direction for each object, then click Release & Watch to see what happens!",
+          "design": {
+            "colorPrimary": "#4A4DC9",
+            "colorSecondary": "#FF7212",
+            "colorGradientFrom": "#533086",
+            "colorGradientTo": "#FC9145",
+            "colorBlueLightFill": "#C1C1EA",
+            "colorOrangeLightFill": "#FFF3E4",
+            "colorNeutral900": "#4E4E4E",
+            "colorNeutral400": "#CACACA",
+            "colorNeutral200": "#EBEBEB",
+            "colorBackground": "#F5F5F5",
+            "colorSurface": "#FFFFFF",
+            "font": "Poppins",
+            "buttonHeight": 48,
+            "buttonPaddingX": 44,
+            "buttonBorderRadius": 24,
+            "cardBorderRadius": 20,
+            "optionBorderRadius": 10
+          },
+          "panels": [
+            {
+              "id": "magnet",
+              "type": "bar_magnet",
+              "title": "Bar Magnet",
+              "subtitle": "Has N & S poles",
+              "icon": "🧲",
+              "accentColorFrom": "#533086",
+              "accentColorTo": "#4A4DC9",
+              "correctAnswer": "north-south",
+              "correctAnswerLabel": "North–South",
+              "animationName": "swingMagnet",
+              "animationDuration": "4.0s",
+              "finalAngleDeg": 0,
+              "settledBadgeText": "↕ North–South",
+              "northPoleColor": "#EF4444",
+              "southPoleColor": "#3B82F6",
+              "explanation": {
+                "title": "Bar Magnet — Answer: North–South",
+                "body": "A freely suspended bar magnet always rests along the north–south direction because our Earth behaves like a giant magnet. Its North-seeking pole is attracted toward Earth's geographic south. This is exactly how a magnetic compass works!",
+                "keyTerms": ["freely suspended bar magnet", "north–south direction", "Earth behaves like a giant magnet", "North-seeking pole", "magnetic compass"]
+              }
+            },
+            {
+              "id": "iron",
+              "type": "iron_bar",
+              "title": "Iron Bar",
+              "subtitle": "Non-magnetic material",
+              "icon": "⬜",
+              "accentColorFrom": "#CACACA",
+              "accentColorTo": "#EBEBEB",
+              "correctAnswer": "random",
+              "correctAnswerLabel": "Any random direction",
+              "animationName": "swingIron",
+              "animationDuration": "4.4s",
+              "finalAngleDeg": "random_between_25_and_335_avoiding_multiples_of_90",
+              "settledBadgeText": "↻ Random angle",
+              "barColor": "#6B7280",
+              "explanation": {
+                "title": "Iron Bar — Answer: Any Random Direction",
+                "body": "An iron bar is a non-magnetic material. It has no North or South poles, so Earth's magnetic field cannot align it. When freely suspended, it rests in any random direction. This property helps us distinguish magnetic from non-magnetic materials!",
+                "keyTerms": ["iron bar", "non-magnetic material", "no North or South poles", "random direction", "magnetic materials", "non-magnetic materials"]
+              }
+            }
+          ],
+          "options": [
+            { "value": "north-south", "label": "North–South",         "icon": "↕" },
+            { "value": "east-west",   "label": "East–West",           "icon": "↔" },
+            { "value": "random",      "label": "Any random direction","icon": "⟳" },
+            { "value": "always-east", "label": "Always points East",  "icon": "→" }
+          ],
+          "scoring": {
+            "2": { "emoji": "🌟", "label": "Perfect Score!", "color": "#22C55E" },
+            "1": { "emoji": "👍", "label": "Good Try!",      "color": "#FF7212" },
+            "0": { "emoji": "🤔", "label": "Let's Learn!",   "color": "#EF4444" }
+          },
+          "keyConceptText": "Only objects with magnetic poles (North-seeking & South-seeking) align with Earth's field. A freely suspended magnet always settles N–S. A non-magnetic iron bar settles randomly.",
+          "animation": {
+            "magnet_swing_duration_ms": 4000,
+            "iron_swing_duration_ms": 4400,
+            "result_delay_ms": 4600,
+            "feedback_delay_after_result_ms": 500,
+            "particle_count": 12,
+            "easing": "cubic-bezier(0.23,1,0.32,1)"
+          }
+        }
+      }
+    },
+    "instructions_for_student": "Predict the resting direction for both the bar magnet and the iron bar. Then click 'Release & Watch!' to see what happens! Remember what you learned in Chapter 4 about freely suspended magnets.",
+    "metadata": {
+      "chapter": "Chapter 4 — Exploring Magnets",
+      "textbook": "NCERT Curiosity — Textbook of Science, Grade 6",
+      "topic": "4.3 Finding Directions",
+      "tool_version": "2.0.0",
+      "design_system": "Singularity Design PDF v1",
+      "learning_objectives": [
+        "Understand that a freely suspended bar magnet always aligns north–south",
+        "Distinguish between magnetic and non-magnetic materials",
+        "Understand that iron bars do not have magnetic poles",
+        "Connect the concept to how a magnetic compass works"
+      ],
+      "key_terms": [
+        "freely suspended magnet",
+        "north–south direction",
+        "magnetic materials",
+        "non-magnetic materials",
+        "North pole",
+        "South pole",
+        "North-seeking pole",
+        "South-seeking pole",
+        "magnetic compass",
+        "lodestone"
+      ]
+    }
+  }

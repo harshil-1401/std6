@@ -1,0 +1,166 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Safe or Harmful for Magnets? — Sorting Tool",
+    "instructions_for_student": "Drag each action card from the top deck into the correct bin. 'Safe for Magnets' takes actions that preserve magnetic strength; 'Harmful for Magnets' takes actions that weaken or destroy it. A correct drop locks the card green and shows the reason. A wrong drop bounces the card back with a hint.",
+  
+    "data": {
+      "toolName": "magnet_sorting_tool",
+      "parameters": {
+        "width": 820,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showModeSelector": false,
+  
+        "additionalProps": {
+          "showHints": true,
+          "showReasons": true,
+  
+          "cards": [
+            {
+              "id": "c1",
+              "text": "Heat the magnet",
+              "icon": "🔥",
+              "correctBin": "harmful",
+              "reason": "Heat destroys the alignment of magnetic domains.",
+              "hint": "High temperature disrupts the internal structure that makes a magnet work."
+            },
+            {
+              "id": "c2",
+              "text": "Store magnets in pairs",
+              "icon": "🧲",
+              "correctBin": "safe",
+              "reason": "Unlike poles facing keeps magnetism intact.",
+              "hint": "Storing in pairs with unlike poles on the same side preserves magnetic strength."
+            },
+            {
+              "id": "c3",
+              "text": "Drop the magnet on the floor",
+              "icon": "💥",
+              "correctBin": "harmful",
+              "reason": "Physical shock misaligns magnetic domains.",
+              "hint": "A sudden impact can scramble the tiny magnets inside, weakening it."
+            },
+            {
+              "id": "c4",
+              "text": "Place wood between stored magnets",
+              "icon": "🪵",
+              "correctBin": "safe",
+              "reason": "Wood spacer prevents poles from cancelling each other.",
+              "hint": "A non-magnetic spacer keeps the stored pair from demagnetising each other."
+            },
+            {
+              "id": "c5",
+              "text": "Hammer the magnet",
+              "icon": "🔨",
+              "correctBin": "harmful",
+              "reason": "Hammering destroys the ordered magnetic domains.",
+              "hint": "Like dropping, a hard blow breaks the internal magnetic order."
+            },
+            {
+              "id": "c6",
+              "text": "Keep magnets away from mobile phones",
+              "icon": "📵",
+              "correctBin": "safe",
+              "reason": "Strong fields near electronics cause mutual damage.",
+              "hint": "Keeping magnets away protects both the magnet and sensitive devices."
+            },
+            {
+              "id": "c7",
+              "text": "Put iron pieces across the ends",
+              "icon": "⚙️",
+              "correctBin": "safe",
+              "reason": "Soft iron keepers complete the magnetic circuit.",
+              "hint": "Iron pieces placed across the poles act as keepers and preserve strength."
+            },
+            {
+              "id": "c8",
+              "text": "Leave magnets near remote controls",
+              "icon": "📺",
+              "correctBin": "harmful",
+              "reason": "Magnetic fields can damage electronic components.",
+              "hint": "Remote controls have sensitive electronics that magnets can disrupt or destroy."
+            }
+          ]
+        }
+      }
+    },
+  
+    "agent_readme": {
+      "tool_id": "magnet_sorting_tool",
+      "version": "1.0.0",
+      "description": "Drag-and-drop sorting tool for Grade 6 Science — Chapter 4.5 Fun with Magnets / magnet care. Eight action cards are shuffled and displayed in a deck. Students drag each card into one of two bins: 'Safe for Magnets' or 'Harmful for Magnets'. Correct drops lock the card green with a reason; wrong drops animate the card with a shake and show a contextual hint. A confetti summary screen appears when all cards are sorted.",
+  
+      "design_system": {
+        "palette": {
+          "primary":      "#533086  (deep purple — header gradient start)",
+          "secondary":    "#4A4DC9  (indigo — header gradient end)",
+          "accent1":      "#FF7212  (orange — progress bar end, wrong border)",
+          "accent2":      "#FC9145  (light orange — secondary accent)",
+          "amber":        "#f59e0b  (theme color — progress bar, drag highlight)",
+          "safe_green":   "#10b981  (correct placements, safe bin)",
+          "harm_red":     "#ef4444  (wrong placements, harmful bin)",
+          "lavender":     "#C1C1EA  (bin dashed borders, subtitle text)",
+          "cream":        "#FFF3E4  (header text)",
+          "background":   "#F5F5F5  (component background)",
+          "surface":      "#ffffff  (card backgrounds)"
+        },
+        "font": "Poppins (400/500/600/700/800) via Google Fonts",
+        "radius": "20px (component), 14px (bins), 10px (cards), 9px (placed cards)"
+      },
+  
+      "interaction_model": {
+        "drag_mouse": "HTML5 draggable API — onDragStart, onDragOver, onDrop on bins",
+        "drag_touch": "Custom touch handlers (onTouchStart/Move/End) for mobile; reads elementFromPoint to detect active bin under finger",
+        "correct_drop": "Card locked into bin with green border + reason text. mstGreenPop glow animation. Score increments.",
+        "wrong_drop": "Card shakes (mstShake). Hint panel appears above the card. Card stays in deck for retry.",
+        "completion": "When all cards are placed, summary view slides in with confetti, two-column breakdown (Safe / Harmful), and Play Again."
+      },
+  
+      "additionalProps_schema": {
+        "cards": {
+          "type": "array",
+          "description": "Action cards shown in the drag deck",
+          "item_fields": {
+            "id":         "string — unique, e.g. 'c1'",
+            "text":       "string — short action label shown on card",
+            "icon":       "string — emoji displayed on card",
+            "correctBin": "'safe' | 'harmful'",
+            "reason":     "string — shown inside bin after correct placement",
+            "hint":       "string — shown above card after wrong placement"
+          }
+        },
+        "showHints":   "boolean (default true)  — show hint tooltip on wrong drop",
+        "showReasons": "boolean (default true)  — show reason text inside bin after correct drop"
+      },
+  
+      "responsive_notes": {
+        "deck": "flex-wrap row — cards wrap naturally on narrow viewports",
+        "bins": "flex-wrap row, each bin flex: 1 1 240px — stacks to single column below ~520px",
+        "font_sizes": "clamp() for card text and header; readable down to 320px",
+        "touch": "Full touch drag support via custom handlers; no external library needed"
+      },
+  
+      "customisation_examples": [
+        {
+          "use_case": "Assessment mode (no hints/reasons)",
+          "config": "{ showHints: false, showReasons: false }"
+        },
+        {
+          "use_case": "Different topic (e.g. electrical safety)",
+          "note": "Replace cards array with new id/text/icon/correctBin/reason/hint objects. Any even count works; odd counts are fine too."
+        },
+        {
+          "use_case": "More cards",
+          "note": "Add more objects to the cards array. Deck wraps automatically."
+        }
+      ],
+  
+      "chapter_mapping": {
+        "safe_actions":    ["Store magnets in pairs", "Place wood between stored magnets", "Keep magnets away from mobile phones", "Put iron pieces across the ends"],
+        "harmful_actions": ["Heat the magnet", "Drop the magnet on the floor", "Hammer the magnet", "Leave magnets near remote controls"],
+        "source":          "NCERT Curiosity Grade 6 Science, Chapter 4 — Exploring Magnets, Section 4.5 Fun with Magnets / Magnet Safety callout (pp. 73)"
+      }
+    }
+  }

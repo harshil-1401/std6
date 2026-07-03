@@ -1,0 +1,67 @@
+{
+  "toolName": "magnetic_or_not_sorter",
+  "exportName": "MagneticOrNotSorter",
+  "version": "1.0.0",
+  "displayName": "Magnetic or Non-Magnetic? — Sort Twelve Everyday Objects",
+  "description": "An interactive sorting activity for NCERT Curiosity Grade 6 Science, Chapter 9 (Methods of Separation in Everyday Life). Twelve everyday object cards appear in a shuffled grid: five magnetic objects (iron nail, steel safety pin, iron key, steel paper clip, steel spoon) and seven non-magnetic objects, three of which are metals (aluminium foil, copper coin, brass bell) and four non-metals (plastic ruler, rubber eraser, wooden block, glass marble). The student taps an object to select it, then taps one of two bins — 'Sticks to Magnet' or 'Does NOT Stick'. Correct placements lock in with a pop animation and show the material label; wrong placements shake and display a contextual hint about the material. A 'Metal Trap' callout counter highlights when the student correctly identifies a non-magnetic metal, targeting the common misconception that all metals are magnetic. On completion, a summary table lists all twelve objects by bin with their materials, followed by the key insight ('Not all metals are magnetic — only those containing iron, nickel, or cobalt'), the textbook definition of magnetic separation, and a textbook connection to the carpenter-and-sawdust story.",
+  "subject": "Science",
+  "grade": 6,
+  "chapter": "Chapter 9 — Methods of Separation in Everyday Life",
+  "textbook": "Curiosity | Textbook of Science | Grade 6 (NCERT)",
+  "topic": "Magnetic separation — separating magnetic from non-magnetic substances",
+  "concept_id": "M3.S9.T15.C59",
+  "tool_id": "M3.S9.T15.C59.2D1",
+  "componentFile": "magnetic_or_not_sorter.tsx",
+  "curriculum": {
+    "board": "CBSE / NCERT",
+    "grade": 6,
+    "subject": "Science",
+    "book": "Curiosity — Textbook of Science, Grade 6",
+    "chapter": "9. Methods of Separation in Everyday Life",
+    "section": "Magnetic Separation (pp. 174–175)",
+    "activity": "Activity 9.6 — Let us play (sorting scenarios into separation methods)",
+    "learningObjectives": [
+      "O23: Define magnetic substances as substances, such as iron, that are attracted towards a magnet",
+      "O24: Define magnetic separation as separating magnetic from non-magnetic substances by using a magnet"
+    ]
+  },
+  "parameters": {
+    "width": { "type": "number", "default": 860 },
+    "themeColor": { "type": "string", "default": "#4A4DC9" }
+  },
+  "additionalProps": {
+    "schema": {
+      "showHints": { "type": "boolean", "default": true, "description": "Show material-specific hints on wrong placements." },
+      "shuffleSeed": { "type": "number", "default": null, "description": "Seed for card shuffle order. Null uses Date.now() for random each session." }
+    }
+  },
+  "objects": [
+    { "id": "nail", "name": "Iron Nail", "material": "Iron", "magnetic": true, "isMetal": true },
+    { "id": "safepin", "name": "Steel Safety Pin", "material": "Steel (iron)", "magnetic": true, "isMetal": true },
+    { "id": "key", "name": "Iron Key", "material": "Iron", "magnetic": true, "isMetal": true },
+    { "id": "clip", "name": "Steel Paper Clip", "material": "Steel (iron)", "magnetic": true, "isMetal": true },
+    { "id": "spoon", "name": "Steel Spoon", "material": "Steel (iron)", "magnetic": true, "isMetal": true },
+    { "id": "foil", "name": "Aluminium Foil", "material": "Aluminium", "magnetic": false, "isMetal": true, "misconception_target": true },
+    { "id": "coin", "name": "Copper Coin", "material": "Copper", "magnetic": false, "isMetal": true, "misconception_target": true },
+    { "id": "bell", "name": "Brass Bell", "material": "Brass (copper + zinc)", "magnetic": false, "isMetal": true, "misconception_target": true },
+    { "id": "ruler", "name": "Plastic Ruler", "material": "Plastic", "magnetic": false, "isMetal": false },
+    { "id": "eraser", "name": "Rubber Eraser", "material": "Rubber", "magnetic": false, "isMetal": false },
+    { "id": "wood", "name": "Wooden Block", "material": "Wood", "magnetic": false, "isMetal": false },
+    { "id": "marble", "name": "Glass Marble", "material": "Glass", "magnetic": false, "isMetal": false }
+  ],
+  "misconception": {
+    "belief": "All metals are magnetic",
+    "correction": "Only metals containing iron, nickel, or cobalt are magnetic. Aluminium, copper, brass, gold, silver, and zinc are metals but are NOT attracted by a magnet.",
+    "toolFeature": "Three of the twelve objects are non-magnetic metals (aluminium foil, copper coin, brass bell). A 'Metal Trap' counter appears when students correctly place these, reinforcing that being a metal does not guarantee being magnetic."
+  },
+  "ncertAlignment": {
+    "textbookStory": "A carpenter drops iron nails in sawdust; a magnet is moved through the sawdust and all the nails get attracted. Substances attracted towards a magnet are called magnetic substances. Iron is a common example. Separation of magnetic and non-magnetic substances by using a magnet is called magnetic separation.",
+    "enrichment": "Recyclers use magnets fitted to cranes to separate scrap iron from waste heaps. The scrap iron can be recycled and reused.",
+    "keywords": ["Magnetic substances", "Non-magnetic substances", "Iron", "Magnet", "Magnetic separation"]
+  },
+  "designSystem": {
+    "font": "Poppins",
+    "palette": { "primary": "#4A4DC9", "accent": "#FF7212", "magnetic": "#E53E3E", "nonMagnetic": "#3B82F6" },
+    "animations": ["ms_up", "ms_pop", "ms_shake", "ms_pulse", "ms_glow", "ms_confetti", "ms_magnet_swoop"]
+  }
+}

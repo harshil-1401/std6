@@ -1,0 +1,168 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Magnet Properties Matching Tool",
+    "instructions_for_student": "Tap an activity on the left, then tap the magnetic property on the right that explains it. Correct matches draw a coloured line between them and turn green. A wrong tap shakes the property card and shows a helpful hint on the activity. Match all four to see the summary!",
+  
+    "data": {
+      "toolName": "magnet_matching_tool",
+      "parameters": {
+        "width": 820,
+        "themeColor": "#533086",
+        "darkMode": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showModeSelector": false,
+  
+        "additionalProps": {
+          "showHints": true,
+          "showChapterRef": true,
+          "showDescription": true,
+  
+          "activities": [
+            {
+              "id": "a1",
+              "text": "Ring magnets floating on a stand",
+              "color": "#533086",
+              "propertyId": "p1",
+              "icon": "🔴"
+            },
+            {
+              "id": "a2",
+              "text": "Steel balls guided through a maze",
+              "color": "#4A4DC9",
+              "propertyId": "p2",
+              "icon": "⚪"
+            },
+            {
+              "id": "a3",
+              "text": "Paper clip rising in water without magnet touching it",
+              "color": "#FF7212",
+              "propertyId": "p3",
+              "icon": "📎"
+            },
+            {
+              "id": "a4",
+              "text": "Toy cars pushing apart on a track",
+              "color": "#FC9145",
+              "propertyId": "p4",
+              "icon": "🚗"
+            }
+          ],
+  
+          "properties": [
+            {
+              "id": "p1",
+              "label": "Like poles repel",
+              "description": "Two poles of the same type push each other away",
+              "hint": "The ring magnets sit on a rod with the same poles facing — they push apart and the upper one floats!",
+              "chapterRef": "Sec 4.4"
+            },
+            {
+              "id": "p2",
+              "label": "Magnetic effect through cardboard",
+              "description": "Magnetic force passes through non-magnetic materials",
+              "hint": "The magnet moves BELOW the cardboard tray. Its force passes right through to guide the steel balls above.",
+              "chapterRef": "Sec 4.7"
+            },
+            {
+              "id": "p3",
+              "label": "Magnetic effect through glass & water",
+              "description": "Magnetic force passes through glass and water",
+              "hint": "Glass and water are non-magnetic — the magnet's force passes straight through to attract the steel clip inside.",
+              "chapterRef": "Sec 4.7"
+            },
+            {
+              "id": "p4",
+              "label": "Like poles repel",
+              "description": "Matching poles on adjacent objects cause repulsion",
+              "hint": "Each car has the same pole at the front — they repel each other and roll apart without touching!",
+              "chapterRef": "Sec 4.4"
+            }
+          ]
+        }
+      }
+    },
+  
+    "agent_readme": {
+      "tool_id": "magnet_matching_tool",
+      "version": "2.0.0",
+      "architecture": "click-to-select + click-to-match + animated SVG bezier connector lines (mirrors MetalsNonmetalsUseMatcher reference pattern)",
+  
+      "interaction_flow": {
+        "step1": "Student taps an activity card (left column) — card highlights with a coloured glow border and scales up slightly",
+        "step2": "Status bar at the bottom changes to 'Now tap the matching property on the right →'",
+        "step3_correct": "A curved SVG bezier line animates from the activity to the property. Both cards turn green. Score increments. Matched-property mini tag appears on the activity card.",
+        "step3_wrong": "Property card shakes. A contextual hint panel slides in beneath the activity card. No connection is drawn. Student can try again.",
+        "completion": "After all 4 correct matches, a gradient summary overlay slides up with confetti, a per-match breakdown, and a Play Again button."
+      },
+  
+      "design_system": {
+        "palette": {
+          "primary":      "#533086  (deep purple — header gradient start, activity labels)",
+          "secondary":    "#4A4DC9  (indigo — header gradient end, second activity)",
+          "accent1":      "#FF7212  (orange — third activity, progress bar end, status bar arrow)",
+          "accent2":      "#FC9145  (light orange — fourth activity, summary arrows)",
+          "lavender":     "#C1C1EA  (property label badges, header subtext)",
+          "cream":        "#FFF3E4  (header title text, summary text)",
+          "success":      "#10b981  (correct state: borders, badges, check icons)",
+          "error":        "#ef4444  (wrong state: borders, shake animation)",
+          "background":   "#F5F5F5  (component background)",
+          "surface":      "#ffffff  (card backgrounds)"
+        },
+        "font":     "Poppins (loaded via Google Fonts)",
+        "radius":   "20px (component), 12px (cards), 6px (badges)",
+        "svg_lines": "Cubic bezier M 0 y1 C 34 y1, 34 y2, 68 y2 — 68px wide centre column, recalculated via getBoundingClientRect on every match + window resize"
+      },
+  
+      "additionalProps_schema": {
+        "activities": {
+          "type": "array",
+          "description": "Left-column items the student taps first",
+          "item_fields": {
+            "id":         "string — unique, e.g. 'a1'",
+            "text":       "string — activity description",
+            "color":      "string — hex; used for border, label badge, SVG line, and glow shadow",
+            "propertyId": "string — must match one property id",
+            "icon":       "string — emoji shown on the card"
+          }
+        },
+        "properties": {
+          "type": "array",
+          "description": "Right-column drop targets — shuffled on each load",
+          "item_fields": {
+            "id":          "string — unique, e.g. 'p1'",
+            "label":       "string — short property name shown on the card",
+            "description": "string — one-line explanation shown beneath label (hide with showDescription: false)",
+            "hint":        "string — shown on the activity card after a wrong attempt (hide with showHints: false)",
+            "chapterRef":  "string — section badge shown on property card (hide with showChapterRef: false)"
+          }
+        },
+        "flags": {
+          "showHints":       "boolean (default true)  — show hint panel on wrong attempt",
+          "showChapterRef":  "boolean (default true)  — show chapter section badge on property cards",
+          "showDescription": "boolean (default true)  — show description line beneath property label"
+        }
+      },
+  
+      "responsive_notes": {
+        "font_sizes": "clamp(11px, 1.8vw, 12px) for card text; clamp(13px, 2.5vw, 16px) for header",
+        "svg_canvas": "height 100% — stretches with content; overflow: visible so lines are never clipped",
+        "layout":     "Three-column flex row: flex:1 | 68px fixed | flex:1; wraps gracefully on narrow viewports"
+      },
+  
+      "customisation_examples": [
+        {
+          "use_case": "Different chapter / topic",
+          "note": "Replace activities and properties arrays entirely. Any number of pairs is supported."
+        },
+        {
+          "use_case": "Hide hints for assessment mode",
+          "config": "{ showHints: false, showChapterRef: false, showDescription: false }"
+        },
+        {
+          "use_case": "Add more pairs",
+          "note": "Extend both arrays. LINE_COLORS array inside the component cycles through 5 colours — add more if needed."
+        }
+      ]
+    }
+  }

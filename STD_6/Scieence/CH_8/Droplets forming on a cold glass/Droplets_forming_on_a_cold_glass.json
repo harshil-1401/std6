@@ -1,0 +1,159 @@
+{
+    "id": "M2.S3.T4.2D1",
+    "toolName": "condensation_glass_tool",
+    "version": "1.0.0",
+    "type": "2d_tool",
+    "subtype": "image_reveal",
+    "title": "Droplets forming on a cold glass",
+    "concept_id": "M2.S3.T4.C12",
+    "related_concept_ids": ["M2.S3.T4.C13"],
+    "reused_in_topics": [],
+    "description": "An interactive before-and-after time-lapse where students start a cold ice-water glass and watch tiny droplets appear on its outer surface and merge into bigger drops as time advances. Replaces the hands-on observation so students can scrub time and feel the surface change.",
+    "context": "Class 6 physics, observing a cold tumbler: a glass of cold ice water is left undisturbed and tiny droplets appear on its outer surface and join into bigger drops, replacing the hands-on activity so students can scrub time and feel the surface change.",
+    "2d_tool_url": "./condensation_glass_tool.tsx",
+    "2d_tool_json": "./condensation_glass_tool_schema.json",
+  
+    "theme": {
+      "design_system": "Singularity",
+      "font": "Poppins",
+      "primary": "#4A4DC9",
+      "accent": "#FF7212",
+      "deep_purple": "#533086",
+      "soft_orange": "#FC9145",
+      "light_purple": "#C1C1EA",
+      "light_cream": "#FFF3E4",
+      "gradient": "linear-gradient(135deg, #533086 0%, #FC9145 100%)",
+      "button_shape": "pill (border-radius 999px, 12px x 24px padding)",
+      "states": ["enabled", "disabled", "hover", "pressed"],
+      "responsive": "Fluid layout: card max-width capped by `width`, SVG scales via viewBox, panels wrap, fonts use clamp()."
+    },
+  
+    "parameters": {
+      "width": { "type": "number", "default": 780, "description": "Maximum card width in px; layout stays fluid below this." },
+      "height": { "type": "number", "default": 620, "description": "Advisory height; the stage is driven by the SVG viewBox." },
+      "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Primary (indigo) colour." },
+      "accentColor": { "type": "string", "default": "#FF7212", "description": "Accent (orange) colour for the touch action and wet-surface state." },
+      "darkMode": { "type": "boolean", "default": false, "description": "Dark theme toggle." },
+      "animationSpeed": { "type": "number", "default": 1, "description": "Playback speed multiplier for the time-lapse." },
+      "showControls": { "type": "boolean", "default": true, "description": "Show Play / Pause / Reset buttons." },
+      "showTimeSlider": { "type": "boolean", "default": true, "description": "Show the 0-to-max scrub slider." },
+      "showTouchButton": { "type": "boolean", "default": true, "description": "Show the 'Touch the outer surface' button." },
+      "showBeatBadge": { "type": "boolean", "default": true, "description": "Show the Predict / Observe teaching-beat badge." }
+    },
+  
+    "additionalProps": {
+      "maxMinutes": { "type": "number", "default": 5, "description": "Length of the time-lapse in minutes (slider range 0..maxMinutes)." },
+      "dropletCount": { "type": "number", "default": 26, "range": "6-80", "description": "Total droplets that can appear on the outer surface." },
+      "iceCubeCount": { "type": "number", "default": 4, "range": "0-8", "description": "Floating ice cubes in the water." },
+      "waterColor": { "type": "string", "default": "#BFE3F5", "description": "Pale-blue water colour." },
+      "glassTint": { "type": "string", "default": "#EAF6FC", "description": "Glass body tint." },
+      "startWet": { "type": "boolean", "default": false, "description": "Begin at maxMinutes with the surface already covered in droplets." },
+      "autoStart": { "type": "boolean", "default": false, "description": "Begin playing immediately on mount." },
+      "fullRunSeconds": { "type": "number", "default": 9, "description": "Real seconds taken for a full 0->maxMinutes play (before animationSpeed)." },
+      "highlightTarget": { "type": "string", "enum": ["glass", "droplets", "ice", "surface", null], "default": null, "description": "Visually emphasise part of the scene (used by agent highlight())." },
+      "instruction": { "type": "string", "default": "Predict what happens on the dry outside of the cold glass, then play the timer and watch droplets appear and grow.", "description": "Override the student instruction line." }
+    },
+  
+    "placement": {
+      "beat": "Observe",
+      "where": "replaces the hands-on activity of observing droplets on a cold ice-water tumbler"
+    },
+  
+    "shared_state": {
+      "fields": ["elapsedMinutes", "dropletCount", "dropletSize", "surfaceWet", "running"],
+      "schema": {
+        "elapsedMinutes": "number — current time on the time-lapse (0..maxMinutes)",
+        "dropletCount": "number — how many droplets are currently visible on the surface",
+        "dropletSize": "number — average current droplet radius (grows as drops merge)",
+        "surfaceWet": "boolean — true once droplets have started forming",
+        "running": "boolean — whether the time-lapse is playing"
+      }
+    },
+  
+    "agent_control": {
+      "postmessage": {
+        "in": "{ type:'command', method, args }",
+        "out": ["{ type:'state', state }", "{ type:'event', name, detail }"]
+      },
+      "window_namespace": "window.__condensationTool",
+      "window_tool_methods": [
+        "setParam(name,value)  — name in: elapsedMinutes | running | surfaceWet",
+        "play()",
+        "pause()",
+        "reset()",
+        "highlight(target)  — target in: glass | droplets | ice | surface | null",
+        "getState()  — returns the shared_state object"
+      ],
+      "events": [
+        "touch_surface  — emitted when the student touches the outer surface",
+        "state — current shared_state (emitted continuously and on getState)"
+      ]
+    },
+  
+    "student_controls": [
+      { "control": "Play / Pause / Reset buttons", "effect": "Runs, halts, or restarts the time-lapse of droplets forming on the glass." },
+      { "control": "Time slider (0 to maxMinutes)", "effect": "Scrubs forward so droplets appear and grow, or back so the surface returns to dry." },
+      { "control": "Touch-surface button", "effect": "Reveals a cue that the outer surface feels cold and wet at that moment." }
+    ],
+  
+    "visual_spec": {
+      "layout": "Single tumbler centred on a soft purple-to-cream stage with a live time readout and stat cards; droplets appear on the outside and grow as time advances.",
+      "objects": [
+        { "name": "glass tumbler", "count": 1, "shape": "tall tapered cylinder", "color": "clear glass, pale-blue water", "state": "cold, droplets forming over time", "position": "centre on a table", "relative_size": "main object" },
+        { "name": "ice cubes", "count": 4, "shape": "rounded cubes", "color": "white-blue", "state": "floating, gently bobbing", "position": "top of the water", "relative_size": "small, floating" },
+        { "name": "outer droplets", "count": 24, "shape": "round, growing to elongated drops", "color": "clear/blue-white", "state": "appearing, growing and merging; big drops slide down with a trail", "position": "outer glass surface", "relative_size": "small, increasing" }
+      ],
+      "palette": "clear glass, pale blue water, white-blue ice, indigo/orange UI accents",
+      "scientific_facts": [
+        "The outer surface starts dry and gains droplets over time.",
+        "Tiny droplets merge into bigger drops as time passes.",
+        "The outer surface feels cold and wet once droplets form."
+      ]
+    },
+  
+    "teaching_notes": "At Predict, ask what will appear on the dry outside; play at Observe to reveal growing droplets; explain condensation in the next topic.",
+    "instructions_for_student": "Predict what happens on the dry outside of the cold glass, then play the timer and watch droplets appear and grow.",
+  
+    "tool_call_examples": [
+      {
+        "name": "Default observe (Predict -> Observe)",
+        "frontend_action": "show_interactive_tool",
+        "data": {
+          "toolName": "condensation_glass_tool",
+          "parameters": {}
+        },
+        "instructions_for_student": "Predict, then play and watch the droplets form."
+      },
+      {
+        "name": "Show the finished, fully-wet glass",
+        "data": {
+          "toolName": "condensation_glass_tool",
+          "parameters": { "additionalProps": { "startWet": true } }
+        },
+        "instructions_for_student": "This is how the glass looks after a few minutes — covered in droplets."
+      },
+      {
+        "name": "Faster time-lapse with more droplets",
+        "data": {
+          "toolName": "condensation_glass_tool",
+          "parameters": {
+            "animationSpeed": 1.5,
+            "additionalProps": { "dropletCount": 40, "fullRunSeconds": 6 }
+          }
+        },
+        "instructions_for_student": "Watch a busier surface fill up quickly."
+      },
+      {
+        "name": "Minimal display for a focused observation",
+        "data": {
+          "toolName": "condensation_glass_tool",
+          "parameters": {
+            "showControls": false,
+            "showTimeSlider": false,
+            "additionalProps": { "autoStart": true, "highlightTarget": "droplets" }
+          }
+        },
+        "instructions_for_student": "Just watch — the droplets are highlighted as they grow."
+      }
+    ]
+  }

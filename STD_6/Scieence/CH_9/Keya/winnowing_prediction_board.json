@@ -1,0 +1,391 @@
+{
+  "toolName": "winnowing_prediction_board",
+  "exportName": "WinnowingPredictionBoard",
+  "version": "1.0.0",
+  "displayName": "Winnowing Prediction Board",
+  "description": "Interactive multi-mode tool for NCERT Class 6 Science (Curiosity, Methods of Separation of Substances). Students learn the winnowing rule, predict whether wind will separate five real mixtures (with immediate weight-difference feedback and scoring), explore real-world uses, and toss mixtures into the wind in a hands-on canvas physics simulator. Core idea: wind separates a mixture only when its two parts differ enough in WEIGHT.",
+  "subject": "Science",
+  "grade": 6,
+  "chapter": "Chapter 9 — Methods of Separation of Substances",
+  "textbook": "Curiosity | Textbook of Science | Grade 6 (NCERT)",
+  "activity": "Winnowing — separating a mixture by weight using moving air",
+  "concepts": [
+    "Winnowing",
+    "Separation of substances",
+    "Weight / heaviness of components",
+    "Why some mixtures need sieving instead of wind",
+    "Scientific inquiry — predict, check, conclude"
+  ],
+  "parameters": {
+    "width": {
+      "type": "number",
+      "default": 900,
+      "description": "Maximum component width in pixels"
+    },
+    "themeColor": {
+      "type": "string",
+      "default": "#b07a2a",
+      "description": "Accent colour seed (hex). Per-mode tab gradients are defined internally."
+    },
+    "initialMode": {
+      "type": "string",
+      "enum": [
+        "learn",
+        "predict",
+        "real_world",
+        "hands_on"
+      ],
+      "default": "learn",
+      "description": "Which mode the tool opens on. Falls back to the first enabled mode if this mode is not enabled."
+    },
+    "showModeSelector": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show or hide the top mode-tab bar. Hide it to lock the tool to a single mode."
+    },
+    "enabledModes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "learn",
+          "predict",
+          "real_world",
+          "hands_on"
+        ]
+      },
+      "default": [
+        "learn",
+        "predict",
+        "real_world",
+        "hands_on"
+      ],
+      "description": "Ordered list of modes to expose as tabs. Order also drives the step counter (currentStep / totalSteps)."
+    },
+    "showScore": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the live score chip on the Predict board."
+    },
+    "shuffle": {
+      "type": "boolean",
+      "default": false,
+      "description": "Randomise the order of the prediction mixtures on load."
+    }
+  },
+  "additionalProps": {
+    "description": "Tool-specific dynamic content passed by the agent to customise the simulation. Values here override the top-level parameters of the same name.",
+    "schema": {
+      "mixtures": {
+        "type": "array",
+        "default": "(5 built-in mixtures)",
+        "description": "Override the prediction set. Each item is a MixtureDef.",
+        "itemShape": {
+          "id": "string — unique key",
+          "name": "string — display name, e.g. 'Wheat grains + husk'",
+          "heavy": {
+            "label": "string",
+            "kind": "BitKind",
+            "color": "hex string"
+          },
+          "light": {
+            "label": "string",
+            "kind": "BitKind",
+            "color": "hex string"
+          },
+          "correct": "one of 'well' | 'partly' | 'none'",
+          "reason": "string — explanation shown as feedback"
+        },
+        "bitKinds": [
+          "peanut",
+          "skin",
+          "dal",
+          "puff",
+          "wheat",
+          "husk",
+          "pebble",
+          "sand",
+          "rice",
+          "stone"
+        ]
+      },
+      "showScore": {
+        "type": "boolean",
+        "default": true,
+        "description": "Same as the top-level showScore; provided here for convenience."
+      },
+      "shuffle": {
+        "type": "boolean",
+        "default": false,
+        "description": "Same as the top-level shuffle."
+      },
+      "initialMode": {
+        "type": "string",
+        "enum": [
+          "learn",
+          "predict",
+          "real_world",
+          "hands_on"
+        ],
+        "description": "Override the opening mode."
+      },
+      "enabledModes": {
+        "type": "array",
+        "items": {
+          "type": "string",
+          "enum": [
+            "learn",
+            "predict",
+            "real_world",
+            "hands_on"
+          ]
+        },
+        "description": "Override which mode tabs are shown."
+      }
+    },
+    "examples": {
+      "default_full_flow": {
+        "initialMode": "learn",
+        "enabledModes": [
+          "learn",
+          "predict",
+          "real_world",
+          "hands_on"
+        ],
+        "showScore": true
+      },
+      "predict_only_assessment": {
+        "showModeSelector": false,
+        "additionalProps": {
+          "initialMode": "predict",
+          "enabledModes": [
+            "predict"
+          ],
+          "showScore": true,
+          "shuffle": true
+        }
+      },
+      "concept_intro": {
+        "additionalProps": {
+          "initialMode": "learn",
+          "enabledModes": [
+            "learn",
+            "real_world"
+          ]
+        }
+      },
+      "simulator_only": {
+        "showModeSelector": false,
+        "additionalProps": {
+          "initialMode": "hands_on",
+          "enabledModes": [
+            "hands_on"
+          ]
+        }
+      },
+      "custom_mixtures": {
+        "additionalProps": {
+          "enabledModes": [
+            "predict"
+          ],
+          "mixtures": [
+            {
+              "id": "wheat",
+              "name": "Wheat grains + husk",
+              "heavy": {
+                "label": "Wheat grains",
+                "kind": "wheat",
+                "color": "#d99a3a"
+              },
+              "light": {
+                "label": "Husk",
+                "kind": "husk",
+                "color": "#cdb86a"
+              },
+              "correct": "well",
+              "reason": "Husk is thin and light — wind lifts it easily and the heavy grain falls straight down."
+            }
+          ]
+        }
+      }
+    }
+  },
+  "modes": {
+    "learn": {
+      "order": 1,
+      "title": "Learn the rule",
+      "component": "CardWalk",
+      "description": "Three concept cards introduce winnowing, the weight-gap rule, and when winnowing fails (two heavy parts → use a sieve).",
+      "cards": [
+        "What is winnowing?",
+        "Weight is what matters",
+        "Two heavy parts stay mixed"
+      ]
+    },
+    "predict": {
+      "order": 2,
+      "title": "Predict the winnowing result",
+      "component": "PredictBoard",
+      "description": "For each of five mixtures the student chooses Separates well / partly / does not separate. On answer the tray animates to show the actual separation and a weight-based explanation appears. Live score and a summary banner after all five.",
+      "outcomes": [
+        "well",
+        "partly",
+        "none"
+      ],
+      "defaultMixtures": [
+        "Peanuts + peanut skins — well",
+        "Chana dal + puffed rice — well",
+        "Wheat grains + husk — well",
+        "Sand + pebbles — none",
+        "Rice + small stones — partly"
+      ]
+    },
+    "real_world": {
+      "order": 3,
+      "title": "Real-world uses",
+      "component": "CardWalk",
+      "description": "Four cards: grain from chaff on farms, cleaning puffed rice/poha, grading tea and spices by weight, and why sand + pebbles need a sieve instead.",
+      "cards": [
+        "Separating grain from chaff",
+        "Cleaning puffed rice & poha",
+        "Grading by weight",
+        "Sand and pebbles (why size fails here)"
+      ]
+    },
+    "hands_on": {
+      "order": 4,
+      "title": "Winnow it yourself",
+      "component": "WinnowSim",
+      "description": "Canvas physics sandbox. Pick a mixture and press Toss; gravity drops every bit while a steady breeze pushes each toward a terminal horizontal speed set by its mass. Light bits blow aside, heavy bits drop nearly straight down, and near-equal weights fall together.",
+      "features": [
+        "requestAnimationFrame physics loop (gravity + mass-based wind drag)",
+        "Fixed gentle breeze (4 / 10) with animated wind arrows",
+        "Zone labels: 'heavy falls here' vs 'light blows here'",
+        "Mixture selector reuses the five default pairs"
+      ]
+    }
+  },
+  "designSystem": {
+    "font": "Poppins (Google Fonts)",
+    "colors": {
+      "primary": "#4A4DC9",
+      "accent": "#FF7212",
+      "purple": "#533086",
+      "orange": "#FC9145",
+      "lavender": "#C1C1EA",
+      "cream": "#FFF3E4",
+      "ink": "#332F4A",
+      "subText": "#8A86A0",
+      "grey200": "#ECECF3",
+      "grey100": "#F5F5F7",
+      "surface": "#FFFFFF",
+      "ok": "#2f9e6a",
+      "warn": "#e7920c",
+      "bad": "#e0524a",
+      "gradientMain": "linear-gradient(135deg, #533086 0%, #FC9145 100%)"
+    },
+    "modeTabColors": {
+      "learn": "#c79a2e → #e0b94f",
+      "predict": "#4A4DC9 → #6E5BD0",
+      "real_world": "#533086 → #9460C4",
+      "hands_on": "#3E7FC0 → #4AA3D4"
+    },
+    "animations": [
+      "wb-rise — card and panel entry",
+      "wb-fade — wind chip fade-in",
+      "wb-pop — correct/wrong badge pop",
+      "wb-float — idle floating effect",
+      "tray particle transitions — bits ease into separated piles on reveal"
+    ],
+    "notes": "All particle art (peanut, husk, dal, rice, etc.) is hand-built inline SVG, and icons are inline SVG — no external icon library, so the tool renders standalone."
+  },
+  "agentQuickReference": {
+    "teachConcept": {
+      "description": "Full guided flow: learn → predict → real world → winnow it",
+      "call": {
+        "toolName": "winnowing_prediction_board",
+        "parameters": {
+          "additionalProps": {
+            "initialMode": "learn",
+            "enabledModes": [
+              "learn",
+              "predict",
+              "real_world",
+              "hands_on"
+            ]
+          }
+        }
+      }
+    },
+    "assessOnly": {
+      "description": "Locked prediction quiz with shuffled mixtures for revision",
+      "call": {
+        "toolName": "winnowing_prediction_board",
+        "parameters": {
+          "showModeSelector": false,
+          "additionalProps": {
+            "initialMode": "predict",
+            "enabledModes": [
+              "predict"
+            ],
+            "shuffle": true,
+            "showScore": true
+          }
+        }
+      }
+    },
+    "handsOnSim": {
+      "description": "Jump straight into the wind-toss simulator",
+      "call": {
+        "toolName": "winnowing_prediction_board",
+        "parameters": {
+          "showModeSelector": false,
+          "additionalProps": {
+            "initialMode": "hands_on",
+            "enabledModes": [
+              "hands_on"
+            ]
+          }
+        }
+      }
+    },
+    "introCards": {
+      "description": "Concept + real-world cards only, no interaction",
+      "call": {
+        "toolName": "winnowing_prediction_board",
+        "parameters": {
+          "additionalProps": {
+            "initialMode": "learn",
+            "enabledModes": [
+              "learn",
+              "real_world"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "ncertAlignment": {
+    "chapterTitle": "Methods of Separation of Substances",
+    "textbook": "Curiosity — Textbook of Science, Grade 6 (NCERT)",
+    "keyConceptTaught": "Winnowing uses moving air to separate a mixture, but only when the two parts differ enough in weight. A big weight gap separates cleanly, a small gap separates partly, and two heavy parts do not separate by wind — they need sieving by size.",
+    "learningObjectives": [
+      "Define winnowing as separation using wind / moving air",
+      "Explain that winnowing depends on a difference in weight between components",
+      "Predict whether a given mixture will separate well, partly, or not at all",
+      "Recognise when sieving (by size) is needed instead of winnowing",
+      "Relate winnowing to real-life uses (grain and chaff, puffed rice, tea grading)",
+      "Practise the inquiry cycle: predict, observe the result, conclude"
+    ],
+    "keywords": [
+      "Winnowing",
+      "Separation",
+      "Mixture",
+      "Chaff",
+      "Husk",
+      "Grain",
+      "Sieving",
+      "Weight"
+    ]
+  }
+}

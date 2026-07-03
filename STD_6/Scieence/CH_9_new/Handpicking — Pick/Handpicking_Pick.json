@@ -1,0 +1,68 @@
+{
+    "toolId": "handpicking_separation_tool",
+    "componentName": "HandpickingSeparationTool",
+    "file": "handpicking_separation_tool.tsx",
+    "title": "Handpicking — Separation of Substances",
+    "subject": "Science",
+    "grade": 6,
+    "chapter": "Curiosity Ch 9: Methods of Separation of Substances",
+    "concept": "Handpicking: removing few, large, odd-coloured impurities (pebbles) from grains (wheat), and why it stops being convenient for large quantities.",
+    "props": {
+      "width": 820,
+      "height": 620,
+      "initialMode": "practice",
+      "showModeSelector": true,
+      "enabledModes": ["practice", "hands_on"],
+      "animationSpeed": 1,
+      "themeColor": "#b8860b",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false,
+      "additionalProps": {
+        "round1Pebbles": 7,
+        "round1Grains": 500,
+        "round2Pebbles": 30,
+        "round2Grains": 650,
+        "maxPileGrains": 700,
+        "maxPilePebbles": 60,
+        "thaliColor": "#8a5a33",
+        "grainColor": "#d9a64a",
+        "pebbleColor": "#868b91",
+        "bowlColor": "#cfd6dc",
+        "hintText": "That is a wheat grain — small, golden and oval with a groove down the middle. Pebbles are larger, dull grey and round.",
+        "showTimer": true,
+        "promptAfterRound1": "Quick and easy with just a few pebbles. But what if the heap were much bigger?"
+      }
+    },
+    "modes": [
+      { "id": "practice", "label": "Pick It", "description": "Two-round guided flow: pick pebbles from a small pile, then a big pile, then a reflection on why handpicking suits only small quantities." },
+      { "id": "hands_on", "label": "Free Pile", "description": "Free play: set grain and pebble counts with sliders, then time yourself clearing the thali." }
+    ],
+    "agentApi": {
+      "commandChannel": "postMessage",
+      "readySignal": { "type": "ready", "toolId": "handpicking_separation_tool" },
+      "methods": [
+        { "name": "setParam", "args": ["name", "value"] },
+        { "name": "play", "args": [] },
+        { "name": "pause", "args": [] },
+        { "name": "reset", "args": [] },
+        { "name": "highlight", "args": ["target?"] },
+        { "name": "getState", "args": [] },
+        { "name": "setOperatorMode", "args": ["mode"] },
+        { "name": "setMode", "args": ["mode"] },
+        { "name": "tap", "args": ["pebbleId"] },
+        { "name": "listPebbleIds", "args": [] }
+      ],
+      "events": [
+        "ready", "mode_changed", "param_changed", "play", "pause", "reset",
+        "operator_mode_changed", "item_placed", "answer_incorrect", "highlighted",
+        "completed", "state", "response"
+      ]
+    },
+    "learningObjectives": [
+      "Identify handpicking as a separation method for small, visibly different impurities.",
+      "Distinguish wheat grains from pebbles by size, colour and shape.",
+      "Reason about why handpicking becomes inconvenient as quantity grows.",
+      "Connect the limitation to faster methods like winnowing and sieving."
+    ]
+  }

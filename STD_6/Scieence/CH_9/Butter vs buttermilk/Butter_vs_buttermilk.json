@@ -1,0 +1,182 @@
+{
+    "tool_name": "churning_butter_labeller",
+    "component": "ChurningButterLabeller",
+    "version": 1,
+    "title": "Churned Curd: Which Layer Is Which?",
+    "subject": "Science",
+    "topic": "Methods of Separation in Everyday Life",
+    "concept": "Churning — separation of butter and buttermilk by density",
+    "tool_types": ["misconception_probe", "cross_section_label", "poe_prediction"],
+    "instructions": "Tap each region and pick the right tag. Remember: floating things are usually lighter.",
+    "learning_objective": "Identify the butter layer as the lighter component (floats to the top) and the buttermilk layer as the heavier component (settles at the bottom), and explain the separation in terms of density.",
+    "misconception": {
+      "belief": "Butter is solid and looks heavy, so it must sink / be the heavier part.",
+      "resolution": "Butter is less dense than buttermilk, so it floats — the top layer is the lighter component."
+    },
+    "theme": {
+      "fontFamily": "Poppins",
+      "serifAccent": "DM Serif Display",
+      "palette": {
+        "primary": "#4A4DC9",
+        "primaryDark": "#533086",
+        "primaryLight": "#C1C1EA",
+        "primaryGhost": "#EDEDF8",
+        "accent": "#FF7212",
+        "accentDark": "#FC9145",
+        "accentLight": "#FFF3E4",
+        "gray900": "#1A1A2E",
+        "gray700": "#4E4E4E",
+        "gray400": "#CACACA",
+        "gray200": "#EBEBEB",
+        "gray100": "#F5F5F5",
+        "white": "#FFFFFF",
+        "success": "#2ECC71",
+        "danger": "#E53E3E",
+        "amber": "#F59E0B"
+      },
+      "sceneColors": {
+        "clay": "#C0703B",
+        "clayDark": "#9B4F23",
+        "clayInner": "#7A3C1B",
+        "butter": "#F4D35E",
+        "buttermilk": "#FBF8EE",
+        "wood": "#8B5E34",
+        "rope": "#D9C7A3"
+      },
+      "headerGradient": "linear-gradient(135deg, #533086 0%, #6C3F9E 45%, #FC9145 130%)",
+      "resultGradient": "linear-gradient(135deg, #533086 0%, #FF7212 120%)",
+      "radii": { "sm": 8, "md": 12, "lg": 16, "xl": 24, "pill": 9999 },
+      "buttonStyle": "pill",
+      "ctaColor": "#FF7212"
+    },
+    "runtime_config": {
+      "themeColor": "#4A4DC9",
+      "showPlayPause": true,
+      "initialStep": 0,
+      "initialMode": "learn",
+      "showModeSelector": true,
+      "enabledModes": ["learn", "example"]
+    },
+    "modes": {
+      "learn": "Cutaway churning animation, predict, tag the top/bottom layers, result and review.",
+      "example": "Real-life worked example — an animated lassi being made, showing the light froth float to the top."
+    },
+    "responsive": {
+      "mobileBreakpoint": 576,
+      "tabletBreakpoint": 992,
+      "minWidth": 320,
+      "layout": "vertical-stack",
+      "figureAspectRatio": "360 / 340"
+    },
+    "scene": {
+      "viewBox": { "width": 360, "height": 340 },
+      "liquidTop": 122,
+      "innerBottom": 290,
+      "butterFractionFinal": 0.27,
+      "animationDurationMs": 5200,
+      "regions": {
+        "top": {
+          "name": "Butter (makhan)",
+          "correctTag": "lighter",
+          "rectPercent": { "left": 27, "top": 35.9, "width": 46, "height": 13.3 }
+        },
+        "bottom": {
+          "name": "Buttermilk (chhach)",
+          "correctTag": "heavier",
+          "rectPercent": { "left": 24, "top": 49.2, "width": 52, "height": 36.0 }
+        }
+      },
+      "tags": {
+        "lighter": "Lighter component",
+        "heavier": "Heavier component"
+      }
+    },
+    "flow": {
+      "phases": ["play", "result", "review"],
+      "steps": [
+        {
+          "step": 1,
+          "id": "cutaway",
+          "title": "Watch the churning",
+          "description": "A cutaway clay pot is shown. The wooden churner (mathni) spins, the curd swirls, fat globules rise and merge, and the animation freezes the moment butter has separated to the top.",
+          "type": "animation",
+          "durationMs": 5200,
+          "freezeAt": "butter-separated"
+        },
+        {
+          "step": 2,
+          "id": "predict",
+          "title": "Predict the top-region tag",
+          "description": "Before tagging, the student predicts whether the pale layer that gathered at the top is the lighter or heavier component.",
+          "type": "checkpoint"
+        },
+        {
+          "step": 3,
+          "id": "tag-top",
+          "title": "Tag the TOP layer",
+          "description": "The top (butter) region blinks. The student taps it and picks a tag. Correct locks in; a wrong pick shows the floating-things-are-lighter hint and lets them retry.",
+          "type": "checkpoint"
+        },
+        {
+          "step": 4,
+          "id": "tag-bottom",
+          "title": "Tag the BOTTOM layer",
+          "description": "The bottom (buttermilk) region blinks. The student taps it and picks a tag. Correct locks in with a one-line reason.",
+          "type": "checkpoint"
+        }
+      ]
+    },
+    "checkpoints": [
+      {
+        "id": "predict",
+        "kind": "predict",
+        "prompt": "After churning, a pale layer has gathered at the TOP of the pot. For a layer to rise and float up like this, it must be…",
+        "options": ["Lighter than the rest", "Heavier than the rest"],
+        "correctIdx": 0,
+        "lockReason": "To float to the top, a layer must be lighter (less dense) than the liquid around it.",
+        "conceptExplanation": "Anything that rises and floats is less dense — lighter — than the liquid around it. As curd is churned, tiny fat droplets clump together into butter, which is lighter than the watery part, so it floats to the surface. It can feel surprising because butter looks solid and 'heavy', but it is density (weight for the same volume), not how solid it looks, that decides who floats."
+      },
+      {
+        "id": "top",
+        "kind": "tag",
+        "region": "top",
+        "prompt": "Tap the TOP layer (the butter that floated up) and pick its tag.",
+        "correctTag": "lighter",
+        "lockReason": "Butter floats, so the top layer is the lighter component.",
+        "conceptExplanation": "The top layer is butter (makhan). It gathered at the surface because it is lighter — less dense — than buttermilk, so it floats. Churning makes the fat clump together until enough has joined to rise to the top, which is why you can simply skim the butter off after churning."
+      },
+      {
+        "id": "bottom",
+        "kind": "tag",
+        "region": "bottom",
+        "prompt": "Now tap the BOTTOM layer (the buttermilk left behind) and pick its tag.",
+        "correctTag": "heavier",
+        "lockReason": "Buttermilk sinks and stays below, so the bottom layer is the heavier component.",
+        "conceptExplanation": "The bottom layer is buttermilk (chhach) — the watery liquid left after the fat has floated away. Being heavier (denser) than butter, it stays at the bottom of the pot. Separating the two by churning works exactly because they have different densities: the lighter part rises, the heavier part settles."
+      }
+    ],
+    "feedback": {
+      "wrongHint": "Floating things are usually lighter — watch which layer rose to the top.",
+      "scoring": { "total": 3, "metric": "first_attempt_correct", "starsFormula": "round(score / total * 5)" }
+    },
+    "gamification": {
+      "result": { "scoreCountUp": true, "stars": true, "confetti": true },
+      "review": { "showWrongOnly": true, "miniDiagram": "tool_native_pot_cross_section" },
+      "playAgain": true
+    },
+    "exampleMode": {
+      "id": "lassi_making",
+      "title": "How lassi is made",
+      "mode": "example",
+      "animationDurationMs": 8000,
+      "vessel": "tall glass tumbler",
+      "tieIn": "Just like butter on churned curd, the lassi froth is lighter — so it floats to the top.",
+      "steps": [
+        "Start with thick, fresh curd (dahi) at the bottom of the glass.",
+        "Pour in chilled water to loosen the curd.",
+        "Add a spoon of sugar to taste.",
+        "Churn briskly — air whips in and froth begins to rise.",
+        "The light, airy froth floats to the TOP; smooth lassi settles below. Ready to serve!"
+      ]
+    }
+  }

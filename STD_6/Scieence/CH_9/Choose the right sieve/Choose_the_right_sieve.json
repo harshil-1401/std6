@@ -1,0 +1,183 @@
+{
+  "toolName": "sieve_matching_board",
+  "version": "1.1.0",
+  "title": "Match the Sieve",
+  "subject": "Science",
+  "topic": "Methods of Separation - Sieving",
+  "grade": "Class 6 (CBSE/NCERT)",
+  "description": "A step-by-step interactive that teaches sieving as a size-based separation method. The student predicts which mixture no sieve can separate (Tea Leaves + Tea, a solid in a liquid), then walks through the three sieve-able mixtures one at a time, picking the correct sieve for each and watching a realistic canvas animation: fine powders rest on the mesh and sift through slowly as a falling curtain while larger pieces stay on top. The non-sieveable tea is presented in the prediction and recap (where filtration is named as the right method) rather than as a hands-on example.",
+  "componentExport": "SieveMatchingBoard",
+  "rendererNotes": "Single-file React/TSX. No import statements (React hooks are read from the global React). Styling is 100% inline CSS-in-JS; no Tailwind, no external CSS. The file ends with `export default SieveMatchingBoard;`.",
+
+  "phases": [
+    { "id": "intro", "index": 0, "title": "Sieving challenge", "description": "Explains that a sieve separates a solid mixture by size and plays a looping live demo (Sand + Pebbles through a coarse sieve). Shows the four sieve options." },
+    { "id": "predict", "index": 1, "title": "Make a prediction", "description": "Student predicts which mixture no sieve can separate (all four mixtures are shown), then sees that Tea Leaves + Tea is the odd one out (a solid in a liquid)." },
+    { "id": "explore", "index": 2, "title": "Sieve each mixture", "description": "Walks through the sieve-able mixtures only (the three solid-solid mixtures), one at a time: choose the option that separates it. A wrong choice gives a targeted hint; the correct choice plays the sifting animation with a short explanation. The solid-liquid mixture (tea) is not an example here - it is handled in the prediction and recap." },
+    { "id": "recap", "index": 3, "title": "What you learned", "description": "Summarises why tea was the trap and maps each mixture (including tea) to its method, ending on the big idea that different methods use different properties (size, weight, magnetism, filtration)." }
+  ],
+
+  "parameters": {
+    "width": {
+      "type": "number",
+      "required": false,
+      "default": 800,
+      "description": "Optional width hint. The component is responsive and fills its container regardless."
+    },
+    "height": {
+      "type": "number",
+      "required": false,
+      "default": 600,
+      "description": "Optional height hint. Layout is fluid; the simulation canvas sizes itself."
+    },
+    "gradeLevel": {
+      "type": "number",
+      "required": false,
+      "default": 6,
+      "enum": [6, 7, 8],
+      "description": "Target grade tier. Reserved for tone/complexity calibration."
+    },
+    "data": {
+      "type": "object",
+      "required": false,
+      "description": "Container for tool-specific configuration.",
+      "properties": {
+        "config": {
+          "type": "object",
+          "properties": {
+            "mixtures": {
+              "type": "array",
+              "required": false,
+              "description": "Overrides the default set of mixtures. Order is shuffled at runtime. Include exactly one mixture with kind 'solid-liquid' (correct: 'none') to preserve the 'odd one out' teaching moment - it appears in the prediction and recap but is skipped in the Step 3 walkthrough, which only steps through the sieve-able (solid-solid) mixtures. Omit it for a pure size-matching exercise.",
+              "items": { "$ref": "#/definitions/Mixture" }
+            },
+            "options": {
+              "type": "array",
+              "required": false,
+              "description": "Overrides the default selectable sieve cards. Must include every 'correct' id referenced by the mixtures. Order is shuffled at runtime.",
+              "items": { "$ref": "#/definitions/SieveOption" }
+            }
+          }
+        }
+      }
+    }
+  },
+
+  "externalControls": {
+    "setStepDetails": {
+      "type": "function",
+      "signature": "(s: { currentStep: number, totalSteps: number, isPaused: boolean, currentMode: string }) => void",
+      "description": "Optional callback invoked on phase change so a parent shell can mirror progress."
+    }
+  },
+
+  "definitions": {
+    "Mixture": {
+      "type": "object",
+      "required": ["id", "name", "partA", "partB", "passLabel", "stayLabel", "kind", "correct", "reason"],
+      "properties": {
+        "id": { "type": "string", "description": "Stable id. Drives the simulation palette. Built-in palettes exist for 'atta', 'rice', 'sand', 'tea'; a custom id falls back to the 'atta' (flour) palette." },
+        "name": { "type": "string", "description": "Display name, e.g. 'Atta + Bran'." },
+        "partA": { "type": "string", "description": "Short label for the first component, e.g. 'fine flour'." },
+        "partB": { "type": "string", "description": "Short label for the second component, e.g. 'bran flakes'." },
+        "passLabel": { "type": "string", "description": "Caption for what falls through, e.g. 'fine flour falls through'." },
+        "stayLabel": { "type": "string", "description": "Caption for what stays on top, e.g. 'bran stays'." },
+        "kind": { "type": "string", "enum": ["solid-solid", "solid-liquid"], "description": "'solid-solid' can be sieved and appears as a Step 3 example; 'solid-liquid' cannot (the liquid runs straight through) and is shown only in the prediction and recap." },
+        "correct": { "type": "string", "description": "The option id that separates this mixture. Use 'none' for a solid-liquid mixture that no sieve can separate." },
+        "reason": { "type": "string", "description": "One-sentence explanation shown after a correct choice and in the recap." }
+      }
+    },
+    "SieveOption": {
+      "type": "object",
+      "required": ["id", "name", "holes"],
+      "properties": {
+        "id": { "type": "string", "description": "Stable id referenced by Mixture.correct, e.g. 'veryFine', 'medium', 'coarse', 'none'." },
+        "name": { "type": "string", "description": "Display name, e.g. 'Very Fine Sieve'." },
+        "holes": { "type": "string", "description": "Short descriptor, e.g. 'tiny holes'." },
+        "special": { "type": "boolean", "required": false, "description": "Set true for the 'sieving won't work' card so it renders with the danger styling and ban icon." }
+      }
+    }
+  },
+
+  "simulation": {
+    "description": "Canvas particle animation keyed off the mixture id. It plays in the intro demo (sand) and for each correct answer in the Step 3 walkthrough (the solid-solid mixtures). The solid-liquid 'tea' palette exists but is not animated in the default flow, since tea is no longer a walkthrough example.",
+    "powderMixtures": ["atta", "sand"],
+    "powderBehaviour": "Fine grains collect into a powder bed resting on the mesh, then sift through gradually (release rate scales with mesh fineness) and drift down slowly as a curtain of thin streaks, with a low terminal velocity.",
+    "discreteBehaviour": "Non-powder small pieces (e.g. rice's stones) rest on the mesh as solid pieces and fall through as discrete grains at normal speed. For rice, the mix is weighted toward plenty of rice grains with only a few stray stones.",
+    "palettes": {
+      "atta": { "small": "fine flour (cream)", "big": "bran flakes (golden), stays on top" },
+      "rice": { "small": "a few stones (black), fall through", "big": "rice grains (white), stay on top - the majority of the mix" },
+      "sand": { "small": "sand (tan), falls through", "big": "pebbles (grey), stay on top" },
+      "tea": { "small": "tea leaves (brown)", "liquid": "tea (brown), runs straight through", "note": "Palette retained in code but not used in the default flow." }
+    }
+  },
+
+  "defaults": {
+    "mixtures": [
+      { "id": "atta", "name": "Atta + Bran", "partA": "fine flour", "partB": "bran flakes", "passLabel": "fine flour falls through", "stayLabel": "bran stays", "kind": "solid-solid", "correct": "veryFine", "reason": "Fine flour slips through the tiny holes, while the bigger bran flakes stay on top." },
+      { "id": "rice", "name": "Rice + Small Stones", "partA": "rice grains", "partB": "small stones", "passLabel": "small stones fall through", "stayLabel": "rice stays", "kind": "solid-solid", "correct": "medium", "reason": "The grains and stones are different sizes — medium holes let the smaller stones fall through and hold the larger rice back." },
+      { "id": "sand", "name": "Sand + Pebbles", "partA": "sand", "partB": "pebbles", "passLabel": "sand falls through", "stayLabel": "pebbles stay", "kind": "solid-solid", "correct": "coarse", "reason": "Sand pours through the big holes; the pebbles are far too large to pass." },
+      { "id": "tea", "name": "Tea Leaves + Tea", "partA": "tea leaves", "partB": "liquid tea", "passLabel": "the liquid runs through", "stayLabel": "tea leaves caught", "kind": "solid-liquid", "correct": "none", "reason": "Tea is a solid mixed in a liquid, so the size-matching of sieving doesn't apply. You separate it by filtration instead - straining catches the tea leaves while the liquid runs through." }
+    ],
+    "options": [
+      { "id": "veryFine", "name": "Very Fine Sieve", "holes": "tiny holes" },
+      { "id": "medium", "name": "Medium Sieve", "holes": "medium holes" },
+      { "id": "coarse", "name": "Coarse Sieve", "holes": "big holes" },
+      { "id": "none", "name": "Sieving Won't Work", "holes": "no sieve fits", "special": true }
+    ]
+  },
+
+  "examples": [
+    {
+      "name": "Default activity",
+      "description": "Run the tool with the built-in four mixtures. The prediction and recap cover all four; the Step 3 walkthrough steps through the three sieve-able ones.",
+      "call": {
+        "frontend_action": "show_interactive_tool",
+        "title": "Match the Sieve",
+        "data": { "toolName": "sieve_matching_board", "parameters": {} }
+      }
+    },
+    {
+      "name": "Grade tier override",
+      "description": "Same content, flagged for Class 7.",
+      "call": {
+        "frontend_action": "show_interactive_tool",
+        "title": "Match the Sieve",
+        "data": { "toolName": "sieve_matching_board", "parameters": { "gradeLevel": 7 } }
+      }
+    },
+    {
+      "name": "Pure size-matching (no trick mixture)",
+      "description": "Three solid-solid mixtures only; every mixture is separable, so there is no 'sieving won't work' answer.",
+      "call": {
+        "frontend_action": "show_interactive_tool",
+        "title": "Match the Sieve by Size",
+        "data": {
+          "toolName": "sieve_matching_board",
+          "parameters": {
+            "data": {
+              "config": {
+                "mixtures": [
+                  { "id": "atta", "name": "Atta + Bran", "partA": "fine flour", "partB": "bran flakes", "passLabel": "fine flour falls through", "stayLabel": "bran stays", "kind": "solid-solid", "correct": "veryFine", "reason": "Fine flour slips through the tiny holes; bran stays on top." },
+                  { "id": "rice", "name": "Rice + Stones", "partA": "rice grains", "partB": "small stones", "passLabel": "stones fall through", "stayLabel": "rice stays", "kind": "solid-solid", "correct": "medium", "reason": "Medium holes let the smaller stones drop and hold the rice back." },
+                  { "id": "sand", "name": "Sand + Pebbles", "partA": "sand", "partB": "pebbles", "passLabel": "sand falls through", "stayLabel": "pebbles stay", "kind": "solid-solid", "correct": "coarse", "reason": "Sand pours through the big holes; pebbles are too large." }
+                ],
+                "options": [
+                  { "id": "veryFine", "name": "Very Fine Sieve", "holes": "tiny holes" },
+                  { "id": "medium", "name": "Medium Sieve", "holes": "medium holes" },
+                  { "id": "coarse", "name": "Coarse Sieve", "holes": "big holes" }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+
+  "validation": [
+    "Every Mixture.correct value (other than 'none') must match an existing SieveOption.id.",
+    "Use kind 'solid-liquid' with correct 'none' for any mixture that cannot be sieved; it is shown in the prediction and recap but not as a Step 3 example.",
+    "If you supply a 'none' answer, include a SieveOption with id 'none' and special: true.",
+    "Custom mixture ids without a built-in palette ('atta', 'rice', 'sand', 'tea') fall back to the flour palette in the animation."
+  ]
+}

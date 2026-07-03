@@ -1,0 +1,167 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Solubility Sorter — Dissolves in Water?",
+    "instructions_for_student": "Drag each liquid or gas into one of the two bins. Read the reason on every correct drop. Tip: You can also tap an item to select it, then tap a bin to place it!",
+    "data": {
+      "toolName": "solubility_sorter",
+      "parameters": {
+        "width": 800,
+        "height": 700,
+        "themeColor": "#4A4DC9",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "finalCardMessage": "The same solubility rule covers solids, liquids, and gases! Oxygen dissolves in water so fish can breathe; oils do not — that is why they float. CO₂ dissolves under pressure to make soda fizzy. Solubility is a universal property of matter!",
+          "tiles": [
+            {
+              "id": "lemon_juice",
+              "label": "Lemon Juice",
+              "emoji": "🍋",
+              "type": "liquid",
+              "soluble": true,
+              "reason": "Lemon juice mixes completely with water — it's mostly water itself!",
+              "hint": "Think about what lemonade looks like in a glass…"
+            },
+            {
+              "id": "vinegar",
+              "label": "Vinegar",
+              "emoji": "🍶",
+              "type": "liquid",
+              "soluble": true,
+              "reason": "Vinegar dissolves in water — it's a dilute acid that mixes fully.",
+              "hint": "Vinegar is used in salad dressings with water-based ingredients…"
+            },
+            {
+              "id": "mustard_oil",
+              "label": "Mustard Oil",
+              "emoji": "🛢️",
+              "type": "liquid",
+              "soluble": false,
+              "reason": "Mustard oil does NOT dissolve — oil and water don't mix, forming separate layers.",
+              "hint": "Have you seen oil floating on water in a cooking pan?"
+            },
+            {
+              "id": "coconut_oil",
+              "label": "Coconut Oil",
+              "emoji": "🥥",
+              "type": "liquid",
+              "soluble": false,
+              "reason": "Coconut oil is insoluble — all oils are hydrophobic (water-fearing).",
+              "hint": "All cooking oils behave the same way with water…"
+            },
+            {
+              "id": "honey",
+              "label": "Honey",
+              "emoji": "🍯",
+              "type": "liquid",
+              "soluble": true,
+              "reason": "Honey dissolves in water — it's mostly sugar and water, so it mixes fully.",
+              "hint": "Think about warm honey tea — the honey disappears into the water!"
+            },
+            {
+              "id": "air_bubble",
+              "label": "Air Bubble",
+              "emoji": "💨",
+              "type": "gas",
+              "soluble": false,
+              "reason": "Air (mostly nitrogen) does NOT dissolve well — bubbles rise and escape water.",
+              "hint": "Watch what happens when you blow air through a straw into water…"
+            },
+            {
+              "id": "oxygen_gas",
+              "label": "Oxygen Gas",
+              "emoji": "🐟",
+              "type": "gas",
+              "soluble": true,
+              "reason": "Oxygen dissolves in water! Fish breathe this dissolved oxygen to survive.",
+              "hint": "How do fish breathe underwater if there's no air?"
+            },
+            {
+              "id": "carbon_dioxide",
+              "label": "CO₂ in Soda",
+              "emoji": "🥤",
+              "type": "gas",
+              "soluble": true,
+              "reason": "CO₂ dissolves in water under pressure — that's what makes soda fizzy!",
+              "hint": "What happens when you open a soda bottle?"
+            }
+          ]
+        }
+      }
+    },
+    "agent_readme": {
+      "tool_name": "solubility_sorter",
+      "description": "A two-bin drag-and-drop classifier for teaching solubility of liquids and gases in water. Eight tiles appear; students sort them into 'Dissolves in Water' or 'Does NOT Dissolve'. Correct drops lock in green with a reason; wrong drops shake and return with a hint. Completion shows a summary card reinforcing that the rule applies across states of matter.",
+      "curriculum_link": "NCERT Grade 6 Science — Chapter 6.3.4: What is soluble in water; what is not?",
+      "additionalProps_schema": {
+        "tiles": {
+          "type": "array",
+          "description": "Array of tile objects. Defaults to the 8 canonical items if omitted.",
+          "item_schema": {
+            "id":      { "type": "string", "description": "Unique identifier" },
+            "label":   { "type": "string", "description": "Display name on the tile" },
+            "emoji":   { "type": "string", "description": "Visual icon for the tile" },
+            "type":    { "type": "string", "enum": ["solid","liquid","gas"], "description": "State of matter badge" },
+            "soluble": { "type": "boolean", "description": "true → dissolves in water" },
+            "reason":  { "type": "string", "description": "Explanation shown on correct drop" },
+            "hint":    { "type": "string", "description": "Nudge shown after wrong drop" }
+          }
+        },
+        "finalCardMessage": {
+          "type": "string",
+          "description": "Text shown on the completion card. Defaults to a cross-state-of-matter summary."
+        }
+      },
+      "interaction_modes": {
+        "drag_and_drop": "Desktop — drag a tile onto a bin header area",
+        "tap_to_select_then_tap_bin": "Mobile / touch — tap a tile (highlighted in orange), then tap the target bin"
+      },
+      "scoring": {
+        "score_strip": "Live score fraction + attempt counter + progress bar",
+        "correct_drop": "Tile locks with green background in the bin",
+        "wrong_drop": "Tile shakes, returns, hint revealed, counter incremented",
+        "completion": "Full-screen overlay with score, rule summary, and Try Again button"
+      },
+      "examples": {
+        "default_8_tiles": {
+          "description": "Omit additionalProps.tiles to use the built-in set",
+          "additionalProps": {}
+        },
+        "solids_only_quiz": {
+          "description": "Override tiles to test solids instead",
+          "additionalProps": {
+            "tiles": [
+              { "id": "sugar",  "label": "Sugar",        "emoji": "🍬", "type": "solid", "soluble": true,  "reason": "Sugar dissolves completely in water.",       "hint": "Think about making sweet tea…" },
+              { "id": "salt",   "label": "Salt",          "emoji": "🧂", "type": "solid", "soluble": true,  "reason": "Salt dissolves fully — that's why seawater is salty.", "hint": "Stir salt into water and watch it disappear…" },
+              { "id": "sand",   "label": "Sand",          "emoji": "🏖️", "type": "solid", "soluble": false, "reason": "Sand is insoluble — it sinks to the bottom.",  "hint": "Have you tried drinking sand-water?" },
+              { "id": "chalk",  "label": "Chalk Powder",  "emoji": "🖍️", "type": "solid", "soluble": false, "reason": "Chalk does not dissolve — it stays suspended or sinks.", "hint": "Mix chalk in water and wait a few minutes…" },
+              { "id": "sawdust","label": "Sawdust",       "emoji": "🪵", "type": "solid", "soluble": false, "reason": "Sawdust is insoluble and floats on water.",    "hint": "Wood doesn't disappear when it gets wet…" }
+            ]
+          }
+        },
+        "minimal_3_tiles": {
+          "description": "Smallest meaningful quiz (3 tiles)",
+          "additionalProps": {
+            "finalCardMessage": "Great start! Now try the full 8-tile challenge.",
+            "tiles": [
+              { "id": "honey",       "label": "Honey",     "emoji": "🍯", "type": "liquid", "soluble": true,  "reason": "Honey dissolves in water.",         "hint": "Think about honey in hot tea…" },
+              { "id": "coconut_oil", "label": "Coconut Oil","emoji": "🥥", "type": "liquid", "soluble": false, "reason": "Oils never dissolve in water.",       "hint": "Oil and water always separate…" },
+              { "id": "oxygen_gas",  "label": "Oxygen Gas", "emoji": "🐟", "type": "gas",    "soluble": true,  "reason": "Oxygen dissolves — fish breathe it.", "hint": "How do fish breathe underwater?" }
+            ]
+          }
+        }
+      },
+      "decision_tree": {
+        "student_asks_what_dissolves_in_water":   "Use default tiles (no additionalProps needed)",
+        "student_asks_about_oils_vs_juices":      "Use default tiles; emphasise the mustard/coconut oil tiles",
+        "student_asks_about_solids":              "Override tiles with solid examples (see solids_only_quiz example)",
+        "student_asks_about_gases_in_water":      "Highlight oxygen and CO₂ tiles in the default set",
+        "quick_3_question_warm_up":              "Use minimal_3_tiles example",
+        "full_chapter_6_review":                 "Use default 8 tiles with default finalCardMessage"
+      }
+    }
+  }

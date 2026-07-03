@@ -1,0 +1,164 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Find the Hidden Poles — Pole Identification Tool",
+    "description": "An interactive 4-phase reasoning tool for Grade 6 Science – Chapter 4: Exploring Magnets. Students use a marked magnet (N and S labelled) to identify the poles of an unmarked mystery magnet, first testing with the N-pole then confirming with the S-pole.",
+    "data": {
+      "toolName": "pole_identifier_tool",
+      "parameters": {
+        "width": 620,
+        "height": 700,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "unmarkedLeftPole": "N",
+          "completionMessage": "You identified the poles using the attraction-repulsion rule — just like a real scientist! 🔬"
+        }
+      }
+    },
+    "instructions_for_student": "Drag the North pole of the marked magnet near each end of the unmarked magnet. Use attraction and repulsion to figure out which end is N and which is S. Then confirm with the South pole!",
+    "subject": "Science",
+    "grade": 6,
+    "chapter": "Chapter 4 – Exploring Magnets",
+    "curriculum": "NCERT Curiosity",
+    "activity_reference": "Question 6 – Identifying poles of an unmarked magnet using a known magnet (Textbook p.75)",
+  
+    "_schema": {
+      "additionalProps": {
+        "unmarkedLeftPole": {
+          "type": "string",
+          "enum": ["N", "S"],
+          "description": "The actual pole on the LEFT end of the mystery/unmarked magnet. The right end is automatically the opposite pole.",
+          "default": "N",
+          "example_variants": ["N", "S"]
+        },
+        "completionMessage": {
+          "type": "string",
+          "description": "Message shown on the completion screen after the student finishes all phases successfully.",
+          "default": "You identified the poles using the attraction-repulsion rule — just like a real scientist!"
+        }
+      },
+      "parameters": {
+        "themeColor": {
+          "type": "string",
+          "description": "Primary accent color (hex). Used for active step highlights and glow pulses.",
+          "default": "#f59e0b"
+        },
+        "darkMode": {
+          "type": "boolean",
+          "description": "Enable dark theme",
+          "default": false
+        }
+      }
+    },
+  
+    "_phase_flow": {
+      "description": "The tool has 4 sequential phases that the student progresses through",
+      "phases": [
+        {
+          "id": "learn",
+          "title": "Meet Your Magnets",
+          "description": "Student sees the mystery magnet (both ends ?) and the marked magnet (N=red, S=blue). Reads the golden rule of magnets. Clicks 'Start Experiment'."
+        },
+        {
+          "id": "test-N",
+          "title": "Test with N-Pole",
+          "description": "Student clicks to bring the N-pole near each end. Sees repulsion (red arrows) or attraction (green arrows). Infers the pole of each end. Labels each end with N or S via toggle buttons. Moves on only when labels are correct."
+        },
+        {
+          "id": "confirm-S",
+          "title": "Confirm with S-Pole",
+          "description": "Student now brings the S-pole near each labelled end to verify. S repels S → confirms S. S attracts N → confirms N. Each confirmation shows an explanation sentence."
+        },
+        {
+          "id": "complete",
+          "title": "Done!",
+          "description": "Completion screen shows the fully labelled magnet, 3 gold stars, science summary, and Try Again button. Confetti rains down."
+        }
+      ]
+    },
+  
+    "_interaction_rules": {
+      "N_pole_approaching": {
+        "unmarked_N_end": "repulsion → student infers that end is N",
+        "unmarked_S_end": "attraction → student infers that end is S"
+      },
+      "S_pole_approaching": {
+        "unmarked_N_end": "attraction → confirms N (different poles attract)",
+        "unmarked_S_end": "repulsion → confirms S (same poles repel)"
+      }
+    },
+  
+    "_agent_examples": [
+      {
+        "description": "Default — mystery magnet's left end is N, right end is S",
+        "call": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Find the Hidden Poles!",
+          "data": {
+            "toolName": "pole_identifier_tool",
+            "parameters": {
+              "themeColor": "#f59e0b",
+              "additionalProps": {
+                "unmarkedLeftPole": "N",
+                "completionMessage": "You identified the poles using the attraction-repulsion rule — just like a real scientist! 🔬"
+              }
+            }
+          }
+        }
+      },
+      {
+        "description": "Variant — mystery magnet's left end is S, right end is N",
+        "call": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Find the Hidden Poles! (Variant B)",
+          "data": {
+            "toolName": "pole_identifier_tool",
+            "parameters": {
+              "themeColor": "#4A4DC9",
+              "additionalProps": {
+                "unmarkedLeftPole": "S",
+                "completionMessage": "Brilliant! The left end was S and the right was N. You used repulsion and attraction like a pro!"
+              }
+            }
+          }
+        }
+      },
+      {
+        "description": "Orange theme classroom variant",
+        "call": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Identify the Magnet Poles!",
+          "data": {
+            "toolName": "pole_identifier_tool",
+            "parameters": {
+              "themeColor": "#fc9145",
+              "additionalProps": {
+                "unmarkedLeftPole": "N",
+                "completionMessage": "Well done! You used repulsion and attraction to identify both poles correctly!"
+              }
+            }
+          }
+        }
+      }
+    ],
+  
+    "_decision_tree": {
+      "use_this_tool_when": [
+        "Student asks about NCERT Ch4 Q6 — finding poles of an unmarked magnet using a known magnet",
+        "Question involves using attraction/repulsion to identify N and S poles",
+        "Student needs to understand why repulsion confirms same-pole and attraction confirms different-pole",
+        "Interactive experiment showing pole identification step by step"
+      ],
+      "do_not_use_when": [
+        "Question is about U-clip distribution on bar magnet (use magnet_selection_tool)",
+        "Question is about identifying magnets vs iron bars (use magnet_reasoning_tool)",
+        "Question is about compass direction or north-south alignment",
+        "Open-ended short answer (respond with text)"
+      ]
+    }
+  }

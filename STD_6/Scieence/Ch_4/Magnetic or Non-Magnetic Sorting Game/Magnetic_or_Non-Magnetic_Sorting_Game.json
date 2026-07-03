@@ -1,0 +1,188 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Magnetic & Non-Magnetic Materials Sorter",
+    "instructions_for_student": "Drag each object card into the Magnetic or Non-Magnetic bin. Remember: only iron, nickel, and cobalt are magnetic materials.",
+    "data": {
+      "toolName": "magnetic_sorting_tool",
+      "parameters": {
+        "width": 800,
+        "height": 700,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "additionalProps": {
+          "title": "Magnetic & Non-Magnetic Materials",
+          "subtitle": "Chapter 4 – Exploring Magnets",
+          "instructionText": "Drag each object card into the Magnetic or Non-Magnetic bin. Remember: only iron, nickel, and cobalt are magnetic materials.",
+          "cards": [
+            {
+              "id": "spoon",
+              "label": "Steel Spoon",
+              "emoji": "🥄",
+              "correctBin": "magnetic",
+              "explanation": "Steel contains iron, so it is magnetic.",
+              "hint": "Steel is an alloy made mostly of iron — iron is magnetic!"
+            },
+            {
+              "id": "wire",
+              "label": "Copper Wire",
+              "emoji": "🔌",
+              "correctBin": "nonmagnetic",
+              "explanation": "Copper is not attracted to magnets.",
+              "hint": "Only iron, nickel, and cobalt are magnetic metals."
+            },
+            {
+              "id": "can",
+              "label": "Aluminium Can",
+              "emoji": "🥤",
+              "correctBin": "nonmagnetic",
+              "explanation": "Aluminium is a non-magnetic metal.",
+              "hint": "Aluminium does not contain iron, nickel, or cobalt."
+            },
+            {
+              "id": "nail",
+              "label": "Iron Nail",
+              "emoji": "📌",
+              "correctBin": "magnetic",
+              "explanation": "Iron is one of the three magnetic metals.",
+              "hint": "Think: which metals are attracted to magnets? Iron is one!"
+            },
+            {
+              "id": "wood",
+              "label": "Wooden Block",
+              "emoji": "🪵",
+              "correctBin": "nonmagnetic",
+              "explanation": "Wood is a non-magnetic material.",
+              "hint": "Only certain metals are magnetic — wood is not a metal."
+            },
+            {
+              "id": "bottle",
+              "label": "Glass Bottle",
+              "emoji": "🍶",
+              "correctBin": "nonmagnetic",
+              "explanation": "Glass is a non-magnetic material.",
+              "hint": "Glass contains no iron, nickel, or cobalt."
+            },
+            {
+              "id": "nickel",
+              "label": "Nickel Ring",
+              "emoji": "💍",
+              "correctBin": "magnetic",
+              "explanation": "Nickel is one of the three magnetic metals.",
+              "hint": "Nickel, iron, and cobalt are the magnetic metals!"
+            },
+            {
+              "id": "cup",
+              "label": "Plastic Cup",
+              "emoji": "🥛",
+              "correctBin": "nonmagnetic",
+              "explanation": "Plastic is a non-magnetic material.",
+              "hint": "Plastic has no metallic content — it is non-magnetic."
+            }
+          ]
+        }
+      }
+    },
+    "schema": {
+      "description": "JSON schema for the Magnetic Sorting Tool",
+      "additionalProps": {
+        "title": {
+          "type": "string",
+          "description": "Main heading in the header",
+          "default": "Magnetic & Non-Magnetic Materials"
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Chapter/subject tag above the title",
+          "default": "Chapter 4 – Exploring Magnets"
+        },
+        "instructionText": {
+          "type": "string",
+          "description": "Student-facing instructions in the header"
+        },
+        "cards": {
+          "type": "array",
+          "description": "Array of object cards to sort. Each item must have: id, label, emoji, correctBin, explanation, hint.",
+          "items": {
+            "id": {
+              "type": "string",
+              "description": "Unique ID — also controls which SVG illustration is shown. Supported: spoon, wire, can, nail, wood, bottle, nickel, cup"
+            },
+            "label": {
+              "type": "string",
+              "description": "Display name on the card"
+            },
+            "emoji": {
+              "type": "string",
+              "description": "Emoji shown alongside the label"
+            },
+            "correctBin": {
+              "type": "string",
+              "enum": ["magnetic", "nonmagnetic"],
+              "description": "Which bin this card belongs to"
+            },
+            "explanation": {
+              "type": "string",
+              "description": "One-line fact shown when correctly placed"
+            },
+            "hint": {
+              "type": "string",
+              "description": "Short hint shown when incorrectly placed before bouncing back"
+            }
+          }
+        }
+      }
+    },
+    "agent_readme": {
+      "quick_reference": {
+        "tool_name": "magnetic_sorting_tool",
+        "file": "MagneticSortingTool.tsx",
+        "purpose": "Interactive drag-and-drop / tap-to-sort activity for magnetic vs non-magnetic materials",
+        "key_features": [
+          "8 draggable object cards with inline SVG illustrations (no external assets)",
+          "Two bins: Magnetic and Non-Magnetic",
+          "Correct placements lock in green with a one-line science explanation",
+          "Wrong placements shake the bin and bounce the card back with a hint",
+          "Mobile: tap-to-select + tap-to-place flow (no dragging needed)",
+          "Desktop: standard HTML5 drag-and-drop",
+          "Bins shown ABOVE the card pool so they're always visible",
+          "Score screen on completion: per-card breakdown with correct/wrong indicators",
+          "Confetti on perfect score",
+          "Progress bar tracks correct placements in real time",
+          "Fully responsive — auto-fill grid adapts from 1 to 4+ columns"
+        ]
+      },
+      "correct_answers": {
+        "magnetic":    ["spoon (steel contains iron)", "nail (pure iron)", "nickel (magnetic metal)"],
+        "nonmagnetic": ["wire (copper)", "can (aluminium)", "wood", "bottle (glass)", "cup (plastic)"]
+      },
+      "design_tokens": {
+        "primary_purple":  "#533086",
+        "accent_blue":     "#4A4DC9",
+        "amber_theme":     "#f59e0b",
+        "orange_gradient": "#FC9145",
+        "font":            "Poppins",
+        "correct_green":   "#10b981",
+        "error_red":       "#ef4444"
+      },
+      "customisation_examples": [
+        {
+          "name": "Default — 8 objects from NCERT Chapter 4",
+          "additionalProps": {
+            "title": "Magnetic & Non-Magnetic Materials",
+            "subtitle": "Chapter 4 – Exploring Magnets"
+          }
+        },
+        {
+          "name": "Reduced set — only 4 objects for younger learners",
+          "additionalProps": {
+            "cards": [
+              { "id": "nail",   "label": "Iron Nail",    "emoji": "📌", "correctBin": "magnetic",    "explanation": "Iron is magnetic.", "hint": "Iron is one of the magnetic metals." },
+              { "id": "wood",   "label": "Wooden Block", "emoji": "🪵", "correctBin": "nonmagnetic", "explanation": "Wood is non-magnetic.", "hint": "Only iron, nickel, and cobalt are magnetic." },
+              { "id": "nickel", "label": "Nickel Ring",  "emoji": "💍", "correctBin": "magnetic",    "explanation": "Nickel is magnetic.", "hint": "Nickel, iron, and cobalt are magnetic." },
+              { "id": "cup",    "label": "Plastic Cup",  "emoji": "🥛", "correctBin": "nonmagnetic", "explanation": "Plastic is non-magnetic.", "hint": "Plastic contains no magnetic metals." }
+            ]
+          }
+        }
+      ]
+    }
+  }

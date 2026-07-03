@@ -1,0 +1,466 @@
+{
+  "toolName": "handpicking_separation_tool",
+  "exportName": "HandpickingSeparationTool",
+  "version": "1.0.0",
+  "displayName": "Handpicking — Separation of Substances",
+  "description": "Interactive tool that teaches handpicking as a method of separation: pulling out a few odd, easy-to-spot impurities (grey pebbles) from a heap of golden wheat grains, and discovering hands-on why handpicking stops being convenient once the pile gets large. Built for Class 6 Science (NCERT Curiosity, Chapter 9: Methods of Separation of Substances).",
+  "componentFile": "handpicking_separation_tool.tsx",
+  "curriculum": {
+    "board": "CBSE / NCERT",
+    "grade": 6,
+    "subject": "Science",
+    "book": "Curiosity — Textbook of Science, Grade 6",
+    "chapter": "9. Methods of Separation in Everyday Life",
+    "concept": "Handpicking",
+    "learningObjectives": [
+      "Define handpicking as separating unwanted bits from a mixture by hand.",
+      "Recognise that handpicking works when impurities differ in size or colour and are few in number.",
+      "Experience why handpicking becomes slow and inconvenient for large quantities.",
+      "Connect to faster methods (winnowing, sieving) used for bigger piles.",
+      "Spot handpicking in everyday life (cleaning dal/rice, sorting produce, etc.)."
+    ]
+  },
+  "render": {
+    "framework": "react",
+    "language": "tsx",
+    "styling": "css-in-js (inline styles + injected @keyframes, no Tailwind, no external CSS)",
+    "externalLibraries": [
+      "lucide-react"
+    ],
+    "propSignature": "{ props?, setStepDetails?, stopAutoNext?, setStopAutoNext? }",
+    "notes": "Single-file component. Injects an #hp-keyframes <style> block on mount and removes it on unmount. setStepDetails is called once per mode change with { currentStep: 1, totalSteps: 1, isPaused: true, currentMode }. This tool is interaction-driven, not an auto-advancing step sequence."
+  },
+  "parameters": {
+    "width": {
+      "type": "number",
+      "default": 820,
+      "description": "Maximum width of the tool shell in pixels. The component is responsive and flows to content height."
+    },
+    "height": {
+      "type": "number",
+      "default": 600,
+      "description": "Accepted by the props interface but not used for layout — the shell auto-sizes to its content. Reserved for forward compatibility."
+    },
+    "initialMode": {
+      "type": "string",
+      "enum": [
+        "learn",
+        "practice",
+        "real_world",
+        "hands_on"
+      ],
+      "default": "learn",
+      "description": "Which mode is active when the tool first renders."
+    },
+    "showModeSelector": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show or hide the row of mode tabs (Learn / Pick It / Real World / Free Pile). Hide it to lock the student into a single mode."
+    },
+    "enabledModes": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "learn",
+          "practice",
+          "real_world",
+          "hands_on"
+        ]
+      },
+      "default": [
+        "learn",
+        "practice",
+        "real_world",
+        "hands_on"
+      ],
+      "description": "Which modes appear as tabs. Order is preserved. Combine with initialMode to focus the experience."
+    },
+    "showNavigation": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the Back / Next buttons on the Learn and Real World card walks."
+    },
+    "showStepIndicator": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the clickable progress dots beneath the Learn and Real World cards."
+    },
+    "animationSpeed": {
+      "type": "number",
+      "default": 1,
+      "description": "Animation speed multiplier. >1 speeds up transitions and the pebble-to-bowl flight; <1 slows them down."
+    },
+    "themeColor": {
+      "type": "string",
+      "default": "#b8860b",
+      "description": "Primary accent (hex). Used for eyebrows, the Learn card accent, and the glow/keyframe tint. The wheat/earthy palette is intentional for this concept."
+    },
+    "darkMode": {
+      "type": "boolean",
+      "default": false,
+      "description": "Switch the shell to a dark, warm-toned surface."
+    }
+  },
+  "unsupportedParameters": {
+    "description": "These appear in the reference template but are intentionally NOT implemented here. Passing them has no effect.",
+    "fields": [
+      "showPlayPause",
+      "initialStep",
+      "filterSteps",
+      "autoPlayDuration"
+    ]
+  },
+  "additionalProps": {
+    "description": "Tool-specific dynamic content the agent can pass to tune the piles, colours, and copy.",
+    "schema": {
+      "round1Pebbles": {
+        "type": "number",
+        "default": 7,
+        "description": "Number of pebbles in the small Round 1 pile (Practice mode)."
+      },
+      "round1Grains": {
+        "type": "number",
+        "default": 500,
+        "description": "Number of wheat grains in the Round 1 pile."
+      },
+      "round2Pebbles": {
+        "type": "number",
+        "default": 30,
+        "description": "Number of pebbles in the large Round 2 pile (the 'big pile' that drives the lesson)."
+      },
+      "round2Grains": {
+        "type": "number",
+        "default": 650,
+        "description": "Number of wheat grains in the Round 2 pile."
+      },
+      "maxPileGrains": {
+        "type": "number",
+        "default": 700,
+        "description": "Upper limit of the wheat-grains slider in Free Pile (Hands On) mode."
+      },
+      "maxPilePebbles": {
+        "type": "number",
+        "default": 60,
+        "description": "Upper limit of the pebbles slider in Free Pile (Hands On) mode."
+      },
+      "thaliColor": {
+        "type": "string",
+        "default": "#8a5a33",
+        "description": "Base colour of the round wooden tray (thali). Lightened/darkened automatically for shading."
+      },
+      "grainColor": {
+        "type": "string",
+        "default": "#d9a64a",
+        "description": "Fallback wheat-grain colour. Grains also cycle through three golden tints for variety."
+      },
+      "pebbleColor": {
+        "type": "string",
+        "default": "#868b91",
+        "description": "Fallback pebble colour. Pebbles also cycle through three grey tints."
+      },
+      "bowlColor": {
+        "type": "string",
+        "default": "#cfd6dc",
+        "description": "Colour of the collection bowl that picked pebbles fly into."
+      },
+      "hintText": {
+        "type": "string",
+        "default": "That is a wheat grain — small, golden and oval with a groove down the middle. Pebbles are larger, dull grey and round.",
+        "description": "Hint shown when the student taps a wheat grain by mistake. Reinforces the size/colour difference that makes handpicking possible."
+      },
+      "showTimer": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show the live timer stat while picking. Turn off to remove time pressure."
+      },
+      "promptAfterRound1": {
+        "type": "string",
+        "default": "Quick and easy with just a few pebbles. But what if the heap were much bigger?",
+        "description": "Bridging prompt shown on the Round 1 result card, before the student loads the bigger pile."
+      }
+    },
+    "examples": {
+      "default": {},
+      "quick_classroom_demo": {
+        "round1Pebbles": 5,
+        "round1Grains": 300,
+        "round2Pebbles": 24,
+        "round2Grains": 600
+      },
+      "exaggerate_the_big_pile": {
+        "round1Pebbles": 6,
+        "round1Grains": 350,
+        "round2Pebbles": 45,
+        "round2Grains": 700,
+        "promptAfterRound1": "Easy, right? Now imagine a whole sack at the mill..."
+      },
+      "no_time_pressure": {
+        "showTimer": false,
+        "round1Pebbles": 6,
+        "round1Grains": 400
+      },
+      "custom_palette": {
+        "thaliColor": "#7a4a28",
+        "grainColor": "#e0b65e",
+        "pebbleColor": "#7c8186",
+        "bowlColor": "#c3cbd2"
+      },
+      "wider_free_play": {
+        "maxPileGrains": 700,
+        "maxPilePebbles": 60
+      }
+    }
+  },
+  "modes": {
+    "learn": {
+      "label": "Learn",
+      "gradient": {
+        "from": "#c79a2e",
+        "to": "#e0b94f"
+      },
+      "ui": "card_walk",
+      "description": "Four concept cards: what handpicking is, when it works, why it gets slow, and what comes next.",
+      "cardIds": [
+        1,
+        2,
+        3,
+        4
+      ]
+    },
+    "practice": {
+      "label": "Pick It",
+      "gradient": {
+        "from": "#b54a32",
+        "to": "#d96a3f"
+      },
+      "ui": "thali_game",
+      "description": "Round 1 (small pile) → result with time/pebble/mis-tap stats → load the bigger pile → Round 2 → reflection comparing the two and pointing to winnowing/sieving.",
+      "flow": [
+        "round1_play",
+        "round1_result",
+        "round2_play",
+        "round2_reflection"
+      ]
+    },
+    "real_world": {
+      "label": "Real World",
+      "gradient": {
+        "from": "#7a5cc0",
+        "to": "#a06fd0"
+      },
+      "ui": "card_walk",
+      "description": "Four everyday examples of handpicking: cleaning dal & rice, sorting good from spoiled grain, grading produce, and pulling a wilted leaf from salad.",
+      "cardIds": [
+        20,
+        21,
+        22,
+        23
+      ]
+    },
+    "hands_on": {
+      "label": "Free Pile",
+      "gradient": {
+        "from": "#2f8f6a",
+        "to": "#46b083"
+      },
+      "ui": "free_pile",
+      "description": "Free play: two sliders set the number of grains and pebbles, then the student times themselves clearing the pile and watches the time climb as pebbles increase.",
+      "controls": {
+        "grainsSlider": {
+          "min": 10,
+          "max": "maxPileGrains (default 700)",
+          "initial": 250
+        },
+        "pebblesSlider": {
+          "min": 1,
+          "max": "maxPilePebbles (default 60)",
+          "initial": 8
+        }
+      }
+    }
+  },
+  "contentSummary": {
+    "1": {
+      "mode": "learn",
+      "tag": "What it is",
+      "title": "Handpicking"
+    },
+    "2": {
+      "mode": "learn",
+      "tag": "When it works",
+      "title": "Few, and easy to spot"
+    },
+    "3": {
+      "mode": "learn",
+      "tag": "The catch",
+      "title": "It gets slow"
+    },
+    "4": {
+      "mode": "learn",
+      "tag": "What comes next",
+      "title": "Bigger piles need other methods"
+    },
+    "20": {
+      "mode": "real_world",
+      "tag": "Kitchen",
+      "title": "Cleaning dal & rice"
+    },
+    "21": {
+      "mode": "real_world",
+      "tag": "Farm",
+      "title": "Sorting good from spoiled"
+    },
+    "22": {
+      "mode": "real_world",
+      "tag": "Market",
+      "title": "Grading fruits & vegetables"
+    },
+    "23": {
+      "mode": "real_world",
+      "tag": "Everyday",
+      "title": "A leaf in your salad"
+    }
+  },
+  "agentGuide": {
+    "overview": "Use this tool to teach handpicking. Learn and Real World are read-and-tap card walks; Pick It (Practice) is the core interactive — students pick grey pebbles out of golden wheat, first from a small pile then a large one, and feel why it gets slow; Free Pile lets them vary the pile themselves. Pebbles are larger and dull grey; wheat grains are smaller, golden, oval with a groove — tapping a grain by mistake triggers a hint.",
+    "quickReference": [
+      {
+        "studentRequest": "What is handpicking?",
+        "use": "initialMode: \"learn\""
+      },
+      {
+        "studentRequest": "Let me try it / play",
+        "use": "initialMode: \"practice\""
+      },
+      {
+        "studentRequest": "Why can't we just handpick everything?",
+        "use": "initialMode: \"practice\" (let them feel Round 2), optionally exaggerate via additionalProps.round2Pebbles"
+      },
+      {
+        "studentRequest": "Where is it used in real life?",
+        "use": "initialMode: \"real_world\""
+      },
+      {
+        "studentRequest": "Let me build my own pile",
+        "use": "initialMode: \"hands_on\""
+      },
+      {
+        "studentRequest": "Make it quick / simpler",
+        "use": "additionalProps: smaller round1/round2 counts"
+      },
+      {
+        "studentRequest": "Focus, no distractions",
+        "use": "showModeSelector: false, enabledModes: [single mode]"
+      }
+    ],
+    "visibilityControl": {
+      "showModeSelector": "Hide the tabs to lock a single mode.",
+      "showNavigation": "Hide Back/Next on card walks (dots can still navigate if showStepIndicator is true).",
+      "showStepIndicator": "Hide the progress dots on card walks."
+    },
+    "toolCallExamples": [
+      {
+        "name": "Intro the concept",
+        "frontend_action": "show_interactive_tool",
+        "title": "What is Handpicking?",
+        "data": {
+          "toolName": "handpicking_separation_tool",
+          "parameters": {
+            "initialMode": "learn"
+          }
+        },
+        "instructions_for_student": "Read through the cards to learn what handpicking is and when it works."
+      },
+      {
+        "name": "Hands-on pick (small then big pile)",
+        "frontend_action": "show_interactive_tool",
+        "title": "Pick the Pebbles",
+        "data": {
+          "toolName": "handpicking_separation_tool",
+          "parameters": {
+            "initialMode": "practice",
+            "additionalProps": {
+              "round1Pebbles": 6,
+              "round1Grains": 400,
+              "round2Pebbles": 30,
+              "round2Grains": 650
+            }
+          }
+        },
+        "instructions_for_student": "Tap out every grey pebble. Then try the bigger pile and notice how much longer it takes!"
+      },
+      {
+        "name": "Drive home 'why it gets slow'",
+        "frontend_action": "show_interactive_tool",
+        "title": "When Handpicking Gets Hard",
+        "data": {
+          "toolName": "handpicking_separation_tool",
+          "parameters": {
+            "initialMode": "practice",
+            "showModeSelector": false,
+            "enabledModes": [
+              "practice"
+            ],
+            "additionalProps": {
+              "round2Pebbles": 45,
+              "round2Grains": 700,
+              "promptAfterRound1": "Easy with a few. Now imagine a whole sack at the mill..."
+            }
+          }
+        },
+        "instructions_for_student": "Clear the small pile, then the big one. Why do farmers use winnowing and sieving for huge heaps?"
+      },
+      {
+        "name": "Real-world only",
+        "frontend_action": "show_interactive_tool",
+        "title": "Handpicking Around You",
+        "data": {
+          "toolName": "handpicking_separation_tool",
+          "parameters": {
+            "initialMode": "real_world",
+            "showModeSelector": false,
+            "enabledModes": [
+              "real_world"
+            ]
+          }
+        },
+        "instructions_for_student": "Swipe through everyday places where we separate things just by hand."
+      },
+      {
+        "name": "Free exploration",
+        "frontend_action": "show_interactive_tool",
+        "title": "Build Your Own Pile",
+        "data": {
+          "toolName": "handpicking_separation_tool",
+          "parameters": {
+            "initialMode": "hands_on",
+            "additionalProps": {
+              "maxPilePebbles": 60
+            }
+          }
+        },
+        "instructions_for_student": "Set the grains and pebbles, then time yourself. Push the pebbles up and watch the clock!"
+      }
+    ],
+    "decisionTree": [
+      "Student asks for a definition/explanation -> initialMode: learn",
+      "Student wants to do/play -> initialMode: practice",
+      "Goal is the 'large quantity is inconvenient' insight -> initialMode: practice, raise round2Pebbles/round2Grains",
+      "Student asks for examples/uses -> initialMode: real_world",
+      "Student wants open exploration -> initialMode: hands_on",
+      "Need a single focused activity -> set enabledModes to one mode and showModeSelector: false"
+    ],
+    "tips": [
+      "The pedagogical payoff is the contrast between Round 1 and Round 2 in Practice — keep Round 1 small and Round 2 clearly larger.",
+      "Don't pass showPlayPause / filterSteps / initialStep / autoPlayDuration; they're not implemented here.",
+      "Keep round counts reasonable (hundreds of grains) — extremely large piles add many DOM nodes and can feel sluggish on low-end devices.",
+      "Use hintText to localise or re-word the size/colour cue if needed."
+    ],
+    "errorHandling": [
+      "If pebble counts are set to 0, the round can never complete; always keep round1Pebbles and round2Pebbles >= 1.",
+      "Slider values are clamped to [min, maxPile*]; values above the max are not selectable in Free Pile.",
+      "Invalid initialMode falls back to rendering the learn card walk."
+    ]
+  }
+}

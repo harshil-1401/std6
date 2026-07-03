@@ -1,0 +1,231 @@
+{
+    "toolName": "sugar_prediction_tool",
+    "version": "1.0.0",
+    "description": "A two-step prediction interactive tool for NCERT Grade 6 Science, Chapter 6 (Materials Around Us), Section 6.3.4 — Solubility. Framed around the shikanji (lemonade) story from the textbook. Screen 1 shows sugar crystals about to be stirred into water; Screen 2 shows the clear stirred glass. Students predict the outcome at each step. Correct predictions lock with a one-line dispersion reason; wrong predictions return with a gentle hint. The finish card carries the core concept: 'Sugar is dispersed, not destroyed.' Fully responsive — single-column on mobile, two-column scene+options on tablet and above.",
+    "chapter": {
+      "subject": "Science",
+      "grade": 6,
+      "chapter_number": 6,
+      "chapter_name": "Materials Around Us",
+      "section": "6.3.4 What is soluble in water; what is not?",
+      "activity": "Activity 6.7 — Let us explore (Sugar in Water)",
+      "story_hook": "Ghulan's shikanji (lemonade) — sugar and salt stirred into water"
+    },
+    "parameters": {
+      "width": {
+        "type": "number",
+        "default": 820,
+        "description": "Maximum container width in pixels. Fully responsive below this."
+      },
+      "themeColor": {
+        "type": "string",
+        "default": "#4A4DC9",
+        "description": "Primary accent colour. Drives header gradient and primary buttons."
+      },
+      "darkMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Reserved for future dark theme."
+      },
+      "additionalProps": {
+        "type": "object",
+        "description": "Tool-specific configuration. All fields optional — Activity 6.7 shikanji defaults are used.",
+        "properties": {
+          "steps": {
+            "type": "array",
+            "description": "Override the two default prediction screens. Each step is a full question config.",
+            "items": {
+              "type": "object",
+              "required": ["stepId", "sceneEmoji", "sceneTitle", "sceneDesc", "questionText", "options", "animationClass"],
+              "properties": {
+                "stepId": { "type": "number", "enum": [1, 2], "description": "Sequential step index (1-based)." },
+                "sceneEmoji": { "type": "string", "description": "Large emoji for the card header, e.g. '🥄'" },
+                "sceneTitle": { "type": "string", "description": "Short scene title shown in card header." },
+                "sceneDesc": { "type": "string", "description": "One or two sentence scene description." },
+                "questionText": { "type": "string", "description": "The prediction question the student must answer." },
+                "animationClass": {
+                  "type": "string",
+                  "enum": ["spt-slideInLeft", "spt-slideInRight"],
+                  "description": "CSS animation for card entrance. Alternate Left/Right for visual rhythm."
+                },
+                "options": {
+                  "type": "array",
+                  "minItems": 2,
+                  "maxItems": 3,
+                  "description": "Prediction choices. Exactly one must have isCorrect: true.",
+                  "items": {
+                    "type": "object",
+                    "required": ["id", "label", "isCorrect", "lockReason", "hintText"],
+                    "properties": {
+                      "id": { "type": "string", "description": "Unique option id within this step." },
+                      "label": { "type": "string", "description": "Button label shown to student. May include emoji prefix." },
+                      "isCorrect": { "type": "boolean", "description": "Whether this is the correct prediction." },
+                      "lockReason": { "type": "string", "description": "One-line scientific reason shown when locked. Anchor in dispersion/solubility. Empty string for wrong options." },
+                      "hintText": { "type": "string", "description": "Gentle contextual hint for wrong taps. References 'sugar-is-not-gone' idea. Empty string for correct option." }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "finishTitle": {
+            "type": "string",
+            "default": "🍬 Sugar is dispersed, not destroyed!",
+            "description": "Headline shown in the completion card header."
+          },
+          "finishBody": {
+            "type": "string",
+            "default": "When sugar dissolves in water, it breaks into particles too small to see — but they are still there. That's why the shikanji tastes sweet even though the crystals have 'disappeared'. Dissolving is a physical change — nothing is created or lost.",
+            "description": "Explanation paragraph shown in the completion card body."
+          },
+          "showTimer": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show elapsed time chip in header and in the completion stats row."
+          },
+          "shuffleOptions": {
+            "type": "boolean",
+            "default": false,
+            "description": "Reserved. When true, option order would be randomised per attempt."
+          }
+        },
+        "examples": [
+          {
+            "description": "Default — exact Activity 6.7 shikanji scenario",
+            "value": {}
+          },
+          {
+            "description": "No timer (for timed classroom use)",
+            "value": {
+              "showTimer": false,
+              "finishTitle": "🍬 Sugar is dispersed, not destroyed!",
+              "finishBody": "Sugar dissolves — its particles spread invisibly through water. It never truly disappears."
+            }
+          },
+          {
+            "description": "Extended — add a third step for salt in water",
+            "value": {
+              "steps": [
+                {
+                  "stepId": 1,
+                  "sceneEmoji": "🥄",
+                  "sceneTitle": "Spoonful of sugar, glass of water",
+                  "sceneDesc": "Ghulan's mother stirs a heaped spoon of sugar into a glass of water.",
+                  "questionText": "What will happen to the sugar crystals after stirring?",
+                  "animationClass": "spt-slideInLeft",
+                  "options": [
+                    { "id": "disappear", "label": "🫧 Sugar will disappear", "isCorrect": true, "lockReason": "Sugar dissolves — breaks into invisible particles that spread through water.", "hintText": "Think about sugar in tea — do you see the crystals once they dissolve?" },
+                    { "id": "stay", "label": "🔮 Sugar will stay as crystals", "isCorrect": false, "lockReason": "", "hintText": "Water is a great solvent. Sugar crystals break apart when stirred." }
+                  ]
+                },
+                {
+                  "stepId": 2,
+                  "sceneEmoji": "🍋",
+                  "sceneTitle": "After stirring — the glass looks clear",
+                  "sceneDesc": "The water looks completely clear. Ghulan picks up the glass to drink.",
+                  "questionText": "Without looking, how will the water taste?",
+                  "animationClass": "spt-slideInRight",
+                  "options": [
+                    { "id": "sweet", "label": "🍬 Tastes sweet", "isCorrect": true, "lockReason": "Sugar is dispersed, not destroyed. The particles are invisible but still present — sweetness remains!", "hintText": "Dissolved sugar is still IN the water — just too small to see." },
+                    { "id": "plain", "label": "💧 Tastes plain like water", "isCorrect": false, "lockReason": "", "hintText": "Dissolving hides sugar from your eyes but NOT from your tongue!" }
+                  ]
+                }
+              ],
+              "finishTitle": "🍬 Sugar is dispersed, not destroyed!",
+              "finishBody": "Dissolving is a physical change. Sugar particles spread invisibly through water but remain present — that's why the drink tastes sweet."
+            }
+          }
+        ]
+      }
+    },
+    "defaultSteps": [
+      {
+        "stepId": 1,
+        "sceneEmoji": "🥄",
+        "sceneTitle": "Spoonful of sugar, glass of water",
+        "sceneDesc": "Ghulan's mother stirs a heaped spoon of sugar into a glass of water for shikanji.",
+        "questionText": "What will happen to the sugar crystals after stirring?",
+        "animationClass": "spt-slideInLeft",
+        "options": [
+          {
+            "id": "disappear",
+            "label": "🫧 Sugar will disappear",
+            "isCorrect": true,
+            "lockReason": "Sugar dissolves — it breaks into tiny invisible particles that spread through the water. It's gone from sight, but still there!",
+            "hintText": "Think about what happens when you stir salt into soup — does it vanish, or does it hide?"
+          },
+          {
+            "id": "stay",
+            "label": "🔮 Sugar will stay as crystals",
+            "isCorrect": false,
+            "lockReason": "",
+            "hintText": "Water is a great solvent. Try imagining what happens to sugar in tea — do you ever see the crystals at the bottom?"
+          }
+        ]
+      },
+      {
+        "stepId": 2,
+        "sceneEmoji": "🍋",
+        "sceneTitle": "After stirring — the glass looks clear",
+        "sceneDesc": "The water looks completely clear now. Ghulan picks up the glass to drink his shikanji.",
+        "questionText": "Without looking, how will the water taste?",
+        "animationClass": "spt-slideInRight",
+        "options": [
+          {
+            "id": "sweet",
+            "label": "🍬 Tastes sweet",
+            "isCorrect": true,
+            "lockReason": "Sugar is dispersed, not destroyed. The particles are invisible but they're still in the water — so the sweetness remains!",
+            "hintText": "If sugar vanished completely, there would be nothing sweet left. But dissolving is not the same as disappearing forever."
+          },
+          {
+            "id": "plain",
+            "label": "💧 Tastes plain like water",
+            "isCorrect": false,
+            "lockReason": "",
+            "hintText": "Dissolving hides sugar from our eyes — but not from our tongue! The particles are still floating in the water."
+          }
+        ]
+      }
+    ],
+    "interactions": {
+      "desktop": "Click option buttons. Correct locks with green reason. Wrong shakes + amber hint returns after 2.8s. 'Next' / 'Finish' button advances.",
+      "mobile": "Tap option buttons. Same lock/shake logic. Responsive single-column layout below 600px.",
+      "correctLock": "Option turns green with check icon + one-line reason anchored in dispersion. 'Next' / 'Finish' button appears.",
+      "wrongBounce": "Option shakes red, amber hint banner appears below options, resets to predict phase after 2.8s.",
+      "completion": "Confetti, trophy banner, 3-stat card row, finish concept card with key concept pills and Remember box, reset button.",
+      "reset": "Returns to step 1 in predict phase, clears all scores, restarts timer."
+    },
+    "designSystem": {
+      "fontFamily": "Poppins",
+      "palette": {
+        "primaryPurple": "#4A4DC9",
+        "primaryOrange": "#FF7212",
+        "deepPurple": "#533086",
+        "warmOrange": "#FC9145",
+        "lightPurple": "#C1C1EA",
+        "creamOrange": "#FFF3E4",
+        "textDark": "#4E4E4E",
+        "neutralGreyMid": "#CACACA",
+        "neutralGreyLight": "#EBEBEB",
+        "neutralGreyPale": "#F5F5F5",
+        "success": "#22C55E",
+        "error": "#EF4444"
+      },
+      "responsive": {
+        "mobileBreakpoint": "600px",
+        "mobile": "Single-column layout, smaller fonts, scene stacks above options",
+        "tabletPlus": "Two-column layout: 220px scene panel left, options right"
+      }
+    },
+    "agentNotes": {
+      "whenToUse": "Use when a Grade 6 student is studying section 6.3.4 (solubility) or Activity 6.7. Also use as a quick conceptual hook when a student asks 'where does sugar go when it dissolves?' or 'why does the water taste sweet after sugar disappears?'",
+      "coreConceptsReinforced": [
+        "Solubility — sugar is soluble, sand is insoluble",
+        "Dissolving is a physical change — no substance is created or destroyed",
+        "Dispersion — particles spread too small to see but are still present",
+        "Observable evidence — taste persists even when crystals vanish"
+      ],
+      "instructionLine": "Pick your prediction for each screen. See if stirring matches what you thought."
+    }
+  }

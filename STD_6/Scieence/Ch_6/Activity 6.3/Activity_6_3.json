@@ -1,0 +1,299 @@
+{
+    "toolName": "tumbler_material_lab",
+    "version": "1.0.0",
+    "description": "An interactive drag-and-drop mini-lab where students test six different tumbler materials (glass, steel, plastic, clay, cloth bag, paper cone) to discover which ones can hold water. Built around the Class 6 NCERT chapter 'Materials Around Us', it teaches material properties — hardness, absorbency, transparency, and waterproofness — through hands-on experimentation with animated water-pouring feedback.",
+    "subject": "Science",
+    "topic": "Properties of Materials",
+    "gradeLevel": "Class 6",
+    "ncertReference": "Curiosity — Textbook of Science, Class 6, Chapter 6: Materials Around Us",
+    "learningObjectives": [
+        "Identify materials that can hold water (waterproof, non-absorbent)",
+        "Identify materials that cannot hold water (absorbent, soft)",
+        "Connect a material's properties to its suitability for a specific use",
+        "Practice the scientific method: predict, test, observe, conclude"
+    ],
+
+    "parameters": {
+        "width": {
+            "type": "number",
+            "default": 1200,
+            "description": "Maximum width of the tool container in pixels (component is fully responsive)"
+        },
+        "height": {
+            "type": "number",
+            "default": "auto",
+            "description": "Container height. 'auto' lets content flow naturally"
+        },
+        "initialMode": {
+            "type": "string",
+            "enum": ["learn", "practice", "real_world", "hands_on"],
+            "default": "hands_on",
+            "description": "Starting mode of the tool"
+        },
+        "showModeSelector": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show or hide the mode-tab pills in the header"
+        },
+        "enabledModes": {
+            "type": "array",
+            "items": { "type": "string" },
+            "default": ["learn", "practice", "real_world", "hands_on"],
+            "description": "Which mode tabs to render. Use a subset to focus the activity"
+        },
+        "showNavigation": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show/hide step-navigation buttons"
+        },
+        "showPlayPause": {
+            "type": "boolean",
+            "default": false,
+            "description": "Show/hide play/pause auto-advance button"
+        },
+        "showStepIndicator": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show progress bar and counter"
+        },
+        "animationSpeed": {
+            "type": "number",
+            "default": 1,
+            "description": "Animation speed multiplier. 1 = normal, 2 = 2x faster, 0.5 = half speed"
+        },
+        "autoPlayDuration": {
+            "type": "number",
+            "default": 0,
+            "description": "Auto-advance delay in ms. 0 disables auto-play"
+        },
+        "themeColor": {
+            "type": "string",
+            "default": "#4A4DC9",
+            "description": "Primary brand color (indigo from design system)"
+        },
+        "darkMode": {
+            "type": "boolean",
+            "default": false,
+            "description": "Switch to dark theme palette"
+        }
+    },
+
+    "additionalProps": {
+        "description": "Tool-specific dynamic content. Pass any of these to customise the lab without code changes.",
+        "schema": {
+            "materials": {
+                "type": "array",
+                "description": "Override the default six tumblers with a custom list. Each entry defines one tumbler tile.",
+                "items": {
+                    "type": "object",
+                    "required": ["id", "name", "emoji", "color", "accentColor", "holdsWater", "reason", "property"],
+                    "properties": {
+                        "id": {
+                            "type": "string",
+                            "description": "Unique slug, e.g. 'glass', 'steel'. Used as React key."
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Display name shown on the tile, e.g. 'Glass'"
+                        },
+                        "emoji": {
+                            "type": "string",
+                            "description": "Single emoji icon representing the material visually"
+                        },
+                        "color": {
+                            "type": "string",
+                            "description": "Background color of the tile (hex). Use a soft tint."
+                        },
+                        "accentColor": {
+                            "type": "string",
+                            "description": "Border and label color (hex). Should contrast with `color`."
+                        },
+                        "holdsWater": {
+                            "type": "boolean",
+                            "description": "true → tumbler glows green and water fills it. false → tumbler shakes red and water leaks."
+                        },
+                        "reason": {
+                            "type": "string",
+                            "description": "One-line explanation shown when locked. Keep < 80 chars."
+                        },
+                        "property": {
+                            "type": "string",
+                            "description": "Short property label, e.g. 'Hard & non-absorbent'"
+                        }
+                    }
+                }
+            },
+            "instructionText": {
+                "type": "string",
+                "default": "Drag each tumbler under the water jug. Note which materials hold water and which do not.",
+                "description": "Instruction banner text shown to the student at the top"
+            },
+            "successMessage": {
+                "type": "string",
+                "default": "Brilliant! You tested every material!",
+                "description": "Message shown after every material has been tested"
+            },
+            "showProperties": {
+                "type": "boolean",
+                "default": true,
+                "description": "Toggle the 'Latest finding' card with the property label"
+            },
+            "autoReset": {
+                "type": "boolean",
+                "default": false,
+                "description": "Auto-reset the lab after celebration completes"
+            },
+            "primaryColor": {
+                "type": "string",
+                "default": "#4A4DC9",
+                "description": "Indigo accent — gradients, focus rings, banners"
+            },
+            "secondaryColor": {
+                "type": "string",
+                "default": "#FF7212",
+                "description": "Orange accent — labels, badges, secondary highlights"
+            }
+        },
+
+        "examples": {
+            "default_lab": {
+                "description": "Default — six tumblers from the NCERT chapter",
+                "value": {}
+            },
+
+            "kitchen_only": {
+                "description": "Narrow the activity to four kitchen tumblers",
+                "value": {
+                    "materials": [
+                        { "id": "glass", "name": "Glass", "emoji": "🥃", "color": "#C1C1EA", "accentColor": "#533086", "holdsWater": true, "reason": "Hard, smooth, non-absorbent — water stays in.", "property": "Transparent" },
+                        { "id": "steel", "name": "Steel", "emoji": "🥤", "color": "#EBEBEB", "accentColor": "#4E4E4E", "holdsWater": true, "reason": "Hard metal with no gaps — water cannot escape.", "property": "Lustrous metal" },
+                        { "id": "cloth", "name": "Cloth", "emoji": "👜", "color": "#FFE4E4", "accentColor": "#D14545", "holdsWater": false, "reason": "Cloth absorbs water — it leaks through fibres.", "property": "Absorbent" },
+                        { "id": "paper", "name": "Paper", "emoji": "📄", "color": "#FFF8E1", "accentColor": "#B8860B", "holdsWater": false, "reason": "Paper softens when wet and tears apart.", "property": "Weakens when wet" }
+                    ],
+                    "instructionText": "Drag each kitchen item under the jug. Which would you pick to carry water home?"
+                }
+            },
+
+            "absorbency_focus": {
+                "description": "Focus on absorbent vs non-absorbent — emphasises one property",
+                "value": {
+                    "materials": [
+                        { "id": "sponge", "name": "Sponge", "emoji": "🧽", "color": "#FFF3E4", "accentColor": "#FC9145", "holdsWater": false, "reason": "Sponge soaks up water like a thirsty material.", "property": "Highly absorbent" },
+                        { "id": "towel", "name": "Towel", "emoji": "🧻", "color": "#FFE4E4", "accentColor": "#D14545", "holdsWater": false, "reason": "Cotton fibres trap water inside themselves.", "property": "Absorbent" },
+                        { "id": "plastic_cup", "name": "Plastic Cup", "emoji": "🥤", "color": "#FFF3E4", "accentColor": "#FF7212", "holdsWater": true, "reason": "Plastic is waterproof — water has nowhere to go.", "property": "Waterproof" },
+                        { "id": "metal_can", "name": "Metal Can", "emoji": "🥫", "color": "#EBEBEB", "accentColor": "#4E4E4E", "holdsWater": true, "reason": "Sealed metal walls block water completely.", "property": "Impermeable" }
+                    ],
+                    "instructionText": "Test which materials soak up water and which keep it out!",
+                    "primaryColor": "#4A4DC9",
+                    "secondaryColor": "#FF7212"
+                }
+            },
+
+            "ancient_pottery": {
+                "description": "Tied to the NCERT 'Do you know?' box on Sindhu-Sarasvatī pottery",
+                "value": {
+                    "materials": [
+                        { "id": "terracotta", "name": "Terracotta Pot", "emoji": "🏺", "color": "#FFF3E4", "accentColor": "#FC9145", "holdsWater": true, "reason": "Baked clay forms a hard, sealed pot — water stays inside.", "property": "Baked clay (terracotta)" },
+                        { "id": "raw_clay", "name": "Wet Clay Lump", "emoji": "🟫", "color": "#FFE4E4", "accentColor": "#B8860B", "holdsWater": false, "reason": "Unbaked clay dissolves and crumbles in water.", "property": "Unbaked, soft" },
+                        { "id": "leaf_cup", "name": "Leaf Cup", "emoji": "🍃", "color": "#E4F5E4", "accentColor": "#16a34a", "holdsWater": true, "reason": "A folded fresh leaf can briefly hold water.", "property": "Natural waterproof film" },
+                        { "id": "bark_bowl", "name": "Bark Bowl", "emoji": "🪵", "color": "#FFF8E1", "accentColor": "#8B4513", "holdsWater": false, "reason": "Bark is porous — water seeps through quickly.", "property": "Porous" }
+                    ],
+                    "instructionText": "Imagine you live 4,000 years ago. Which container would you trust to fetch water?",
+                    "successMessage": "You discovered why our ancestors invented terracotta!"
+                }
+            },
+
+            "dark_theme": {
+                "description": "Dark mode for low-light or evening lessons",
+                "value": {
+                    "primaryColor": "#C1C1EA",
+                    "secondaryColor": "#FC9145"
+                },
+                "topLevelOverrides": { "darkMode": true }
+            },
+
+            "quick_quiz": {
+                "description": "Hide modes and show only the lab — for in-class quick quiz",
+                "topLevelOverrides": {
+                    "showModeSelector": false,
+                    "showStepIndicator": true
+                },
+                "value": {
+                    "instructionText": "Quick quiz! Test all six and beat the timer."
+                }
+            }
+        }
+    },
+
+    "modes": {
+        "learn": {
+            "label": "Learn",
+            "description": "Read about waterproof vs absorbent materials with worked examples"
+        },
+        "practice": {
+            "label": "Practice",
+            "description": "Predict-then-test challenge — student guesses before dragging"
+        },
+        "real_world": {
+            "label": "Real World",
+            "description": "Connects findings to everyday objects (kitchen, market, transport)"
+        },
+        "hands_on": {
+            "label": "Hands-On",
+            "description": "Pure drag-and-drop sandbox — the default experience"
+        }
+    },
+
+    "steps": {
+        "totalSteps": 6,
+        "description": "One step per material tested. Step counter advances as the student drops each tumbler into the test zone."
+    },
+
+    "responsive": {
+        "breakpoints": {
+            "mobile": "< 768px",
+            "tablet": "768px - 1023px",
+            "desktop": ">= 1024px"
+        },
+        "behaviors": {
+            "mobile": "Single-column layout, smaller font sizes, touch-drag enabled, 3-column tumbler tray",
+            "tablet": "Single-column layout, medium fonts, both touch and mouse input",
+            "desktop": "Two-column split (lab left, results right), full animations"
+        },
+        "touch": "Custom touch handlers replicate native HTML5 drag-and-drop on mobile"
+    },
+
+    "accessibility": {
+        "keyboard": "All tumblers are clickable as a fallback to dragging",
+        "ariaLabels": "Water jug, drop zones, and result chips have aria-label attributes",
+        "colorContrast": "Text/background pairs meet WCAG AA",
+        "reducedMotion": "Animations respect short durations (< 2s); future enhancement: prefers-reduced-motion media query"
+    },
+
+    "designSystem": {
+        "source": "Singularity_tool_Design_1.pdf",
+        "colors": {
+            "primaryIndigo": "#4A4DC9",
+            "primaryOrange": "#FF7212",
+            "darkPurple": "#533086",
+            "lightOrange": "#FC9145",
+            "lilacAccent": "#C1C1EA",
+            "creamAccent": "#FFF3E4",
+            "neutralDark": "#4E4E4E",
+            "neutralMid": "#CACACA",
+            "neutralLight": "#EBEBEB",
+            "neutralBg": "#F5F5F5"
+        },
+        "typography": {
+            "family": "Poppins, system-ui, sans-serif",
+            "weights": [400, 500, 600, 700]
+        },
+        "buttons": {
+            "shape": "Pill (border-radius: 999px)",
+            "states": ["enabled", "disabled", "hover", "pressed"],
+            "variants": ["contained", "outlined", "texted"]
+        },
+        "spacing": "24px standard padding, 4px gap inside button groups",
+        "elevation": "0 10px 40px rgba(83, 48, 134, 0.08) for cards"
+    }
+}

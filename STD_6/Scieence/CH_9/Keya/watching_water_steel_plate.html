@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Watching Water Leave a Steel Plate — Class 6 Ch.8</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      min-height: 100vh;
+      background: #EDECF8;
+      background-image:
+        radial-gradient(circle at 18% 18%, rgba(83,48,134,.09) 0%, transparent 52%),
+        radial-gradient(circle at 82% 82%, rgba(252,145,69,.08) 0%, transparent 52%);
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 32px 16px 56px;
+      font-family: 'Poppins', sans-serif;
+    }
+    #root { width: 100%; max-width: 840px; }
+
+    @keyframes fadeUp  { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+    @keyframes popIn   { 0%{opacity:0;transform:scale(.82)} 68%{transform:scale(1.04)} 100%{opacity:1;transform:scale(1)} }
+    @keyframes shimmer { 0%,100%{opacity:.82} 50%{opacity:1} }
+    @keyframes pulse   { 0%,100%{box-shadow:0 0 0 0 rgba(83,48,134,.42)} 58%{box-shadow:0 0 0 13px rgba(83,48,134,0)} }
+    @keyframes scoreIn { 0%{opacity:0;transform:scale(.58) rotate(-9deg)} 65%{transform:scale(1.08) rotate(2deg)} 100%{opacity:1;transform:scale(1) rotate(0)} }
+    @keyframes shake   { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-7px)} 40%{transform:translateX(7px)} 60%{transform:translateX(-4px)} 80%{transform:translateX(4px)} }
+    @keyframes breathe { 0%,100%{box-shadow:0 6px 24px rgba(83,48,134,.32)} 50%{box-shadow:0 10px 38px rgba(252,145,69,.48)} }
+    @keyframes steamUp {
+      0%   { transform:translateY(0px)   scaleX(1)    rotate(0deg);  opacity:.72; }
+      35%  { transform:translateY(-44px) scaleX(1.12) rotate(4deg);  opacity:.50; }
+      70%  { transform:translateY(-90px) scaleX(.90)  rotate(-3deg); opacity:.22; }
+      100% { transform:translateY(-136px)scaleX(.58)  rotate(6deg);  opacity:0;   }
+    }
+    @keyframes float   { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
+    @keyframes blink   { 0%,100%{opacity:.28} 50%{opacity:1} }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel" data-presets="react,typescript">
+    const { useState, useEffect, useRef, Fragment } = React;
+
+    /* ── palette ── */
+    const P = {
+      g1:'#533086', g2:'#FC9145',
+      primary:'#4A4DC9',
+      lPurple:'#C1C1EA', lOrange:'#FFF3E4',
+      bg:'#F6F6FC', surface:'#FFFFFF',
+      text:'#1C1B2E', sub:'#6B6B82', border:'#E6E4F5',
+      ok:'#10B981', err:'#EF4444',
+    };
+    const grad   = `linear-gradient(135deg,${P.g1},${P.g2})`;
+    const gradPr = `linear-gradient(135deg,${P.primary},#6366F1)`;
+
+    /* ── quiz data ── */
+    const QS = [
+      { q:'What happened to the water on the steel plate?',
+        opts:['It seeped through to the underside','It evaporated into the air as water vapour','It completely vanished with no trace','It turned into ice'],
+        ans:1, exp:'Water converted into invisible water vapour and mixed with the air — this is called evaporation. The water still exists; it just changed state.' },
+      { q:'Why was the underside of the steel plate completely dry?',
+        opts:['The metal absorbed all the water','The water disappeared before reaching it','Water cannot pass through solid metal','The plate was too hot'],
+        ans:2, exp:'Water cannot pass through solid metal. The dry underside is proof water did NOT seep through — it went upward into the air as vapour instead.' },
+      { q:'What is the process of water converting into water vapour called?',
+        opts:['Melting','Freezing','Evaporation','Condensation'],
+        ans:2, exp:'Evaporation is when liquid water changes to its gaseous state (water vapour). It happens continuously, even at room temperature!' },
+      { q:'What do the rising vapour particles in the simulation represent?',
+        opts:['Smoke from a hot plate','Heat energy escaping','Water vapour molecules entering the air','Air currents across the plate'],
+        ans:2, exp:'The rising particles represent water vapour — invisible water molecules that escaped the liquid and are now mixing with the air around us.' },
+      { q:'Did the water truly "disappear" from the steel plate?',
+        opts:['Yes — it vanished and no longer exists','No — it changed state into invisible water vapour in the air'],
+        ans:1, exp:'Water never truly disappears! It changed STATE from liquid to invisible gaseous water vapour. The same molecules are now in the air around us.' },
+    ];
+
+    /* ════════════════════════════════════
+       STEEL PLATE SVG
+    ════════════════════════════════════ */
+    function Plate({ level = 0, dry = false }) {
+      const r  = Math.sqrt(Math.max(level, 0));
+      const rx = 76 * r, ry = 31 * r;
+      return (
+        <svg width="390" height="236" viewBox="0 0 390 236"
+          style={{ overflow:'visible', filter:'drop-shadow(0 16px 30px rgba(0,0,0,.17))' }}>
+          <defs>
+            <radialGradient id="plRim"   cx="35%" cy="27%" r="70%">
+              <stop offset="0%"   stopColor="#EDF1FA"/>
+              <stop offset="42%"  stopColor="#CDD4E6"/>
+              <stop offset="100%" stopColor="#96A0B8"/>
+            </radialGradient>
+            <radialGradient id="plSurf"  cx="38%" cy="30%" r="65%">
+              <stop offset="0%"   stopColor="#F3F6FC"/>
+              <stop offset="48%"  stopColor="#D9E0F1"/>
+              <stop offset="100%" stopColor="#B2BAD0"/>
+            </radialGradient>
+            <radialGradient id="plBowl"  cx="40%" cy="34%" r="62%">
+              <stop offset="0%"   stopColor="#E6ECFA"/>
+              <stop offset="100%" stopColor="#BBC3D8"/>
+            </radialGradient>
+            <radialGradient id="wBody"   cx="32%" cy="28%" r="72%">
+              <stop offset="0%"   stopColor="#ADE5FC"/>
+              <stop offset="50%"  stopColor="#55BCE4"/>
+              <stop offset="100%" stopColor="#2294C8"/>
+            </radialGradient>
+            <radialGradient id="wShine" cx="26%" cy="24%" r="52%">
+              <stop offset="0%"   stopColor="rgba(255,255,255,.68)"/>
+              <stop offset="100%" stopColor="rgba(255,255,255,0)"/>
+            </radialGradient>
+          </defs>
+
+          {/* ground shadow */}
+          <ellipse cx={195} cy={224} rx={163} ry={14} fill="rgba(0,0,0,.13)"/>
+          {/* outer edge depth */}
+          <ellipse cx={195} cy={134} rx={165} ry={80} fill="#8891A8"/>
+          {/* rim top */}
+          <ellipse cx={195} cy={128} rx={162} ry={77} fill="url(#plRim)"/>
+          {/* rim specular */}
+          <ellipse cx={165} cy={94}  rx={98}  ry={29} fill="rgba(255,255,255,.26)"/>
+          {/* plate flat surface */}
+          <ellipse cx={195} cy={124} rx={130} ry={59} fill="url(#plSurf)"/>
+          {/* inner bowl */}
+          <ellipse cx={195} cy={121} rx={118} ry={53} fill="url(#plBowl)"/>
+          <ellipse cx={195} cy={121} rx={118} ry={53} fill="none"
+            stroke="rgba(88,96,120,.13)" strokeWidth={4}/>
+
+          {/* water */}
+          {!dry && level > 0.025 && (
+            <g>
+              <ellipse cx={195} cy={119} rx={rx*1.06} ry={ry*1.06}
+                fill="none" stroke="rgba(78,178,232,.22)" strokeWidth={2.5}
+                style={{ animation:'shimmer 3.2s ease-in-out infinite' }}/>
+              <ellipse cx={195} cy={119} rx={rx} ry={ry}
+                fill="url(#wBody)" opacity={.92}
+                style={{ animation:'shimmer 2.2s ease-in-out infinite' }}/>
+              <ellipse cx={177} cy={111} rx={rx*.44} ry={ry*.40} fill="url(#wShine)"/>
+            </g>
+          )}
+
+          {/* dry badge */}
+          {dry && (
+            <g>
+              <ellipse cx={195} cy={121} rx={64} ry={29}
+                fill="rgba(16,185,129,.1)" stroke="#6EE7B7" strokeWidth={2} strokeDasharray="5 3"/>
+              <text x={195} y={126} textAnchor="middle"
+                fill="#047857" fontSize={14} fontFamily="Poppins,sans-serif" fontWeight={700}>DRY ✓</text>
+            </g>
+          )}
+
+          {/* empty label */}
+          {!dry && level <= 0.025 && (
+            <text x={195} y={125} textAnchor="middle"
+              fill="#A8B2C4" fontSize={12} fontFamily="Poppins,sans-serif">— dry —</text>
+          )}
+
+          {/* rim edge ring */}
+          <ellipse cx={195} cy={128} rx={162} ry={77} fill="none"
+            stroke="rgba(232,236,250,.55)" strokeWidth={2}/>
+        </svg>
+      );
+    }
+
+    /* ════════════════════════════════════
+       MAIN TOOL
+    ════════════════════════════════════ */
+    function Tool() {
+      const [scene,   setScene]   = useState('predict');
+      const [pred,    setPred]    = useState(null);
+      const [locked,  setLocked]  = useState(false);
+      const [play,    setPlay]    = useState(false);
+      const [wLvl,    setWLvl]    = useState(1);
+      const [done,    setDone]    = useState(false);
+      const [pars,    setPars]    = useState([]);
+      const [flip,    setFlip]    = useState(false);
+      const [flipAns, setFlipAns] = useState(null);
+      const [qIdx,    setQIdx]    = useState(0);
+      const [ans,     setAns]     = useState(Array(QS.length).fill(null));
+      const [expOn,   setExpOn]   = useState(false);
+      const [score,   setScore]   = useState(0);
+      const [hov,     setHov]     = useState(null);
+      const rafRef = useRef(null);
+      const tsRef  = useRef(0);
+      const pidRef = useRef(0);
+
+      /* evaporation loop */
+      useEffect(() => {
+        if (!play || scene !== 'observe') return;
+        const total = 14000;
+        const tick = ts => {
+          if (!tsRef.current) tsRef.current = ts;
+          const dt = ts - tsRef.current; tsRef.current = ts;
+          setWLvl(p => {
+            const n = p - dt/total;
+            if (n <= 0) { setDone(true); setPlay(false); return 0; }
+            return n;
+          });
+          if (Math.random() < .22) {
+            const id = pidRef.current++;
+            const r  = Math.random();
+            setPars(p => [...p.slice(-34), { id, x: 20+Math.random()*60, r }]);
+          }
+          rafRef.current = requestAnimationFrame(tick);
+        };
+        rafRef.current = requestAnimationFrame(tick);
+        return () => { cancelAnimationFrame(rafRef.current); tsRef.current = 0; };
+      }, [play, scene]);
+
+      const go    = s => setScene(s);
+      const reset = () => {
+        setScene('predict'); setPred(null); setLocked(false);
+        setPlay(false); setWLvl(1); setDone(false); setPars([]);
+        setFlip(false); setFlipAns(null);
+        setQIdx(0); setAns(Array(QS.length).fill(null)); setExpOn(false); setScore(0);
+        tsRef.current = 0;
+      };
+      const answer = i => {
+        if (ans[qIdx] !== null) return;
+        const ok = i === QS[qIdx].ans;
+        setAns(p => { const n=[...p]; n[qIdx]=i; return n; });
+        if (ok) setScore(s=>s+1);
+        setExpOn(true);
+      };
+      const nextQ = () => {
+        if (qIdx < QS.length-1) { setQIdx(q=>q+1); setExpOn(false); }
+        else go('results');
+      };
+      const B = (id, s) => ({
+        ...s, cursor:'pointer', fontFamily:'Poppins,sans-serif', fontWeight:600,
+        border:'none', outline:'none',
+        transform: hov===id ? 'translateY(-2px) scale(1.03)' : 'none',
+        transition:'all .2s cubic-bezier(.4,0,.2,1)',
+      });
+
+      /* ── PREDICT ── */
+      const renderPredict = () => {
+        const opts = [
+          { icon:'💧', label:'It will seep through to the underside', sub:'Water passes through the metal' },
+          { icon:'💨', label:'It will evaporate into the air as vapour', sub:'Water becomes invisible vapour' },
+          { icon:'🪣', label:'It will stay on the plate forever', sub:'Water stays as liquid' },
+        ];
+        return (
+          <div style={{ animation:'fadeUp .42s ease-out', display:'flex', flexDirection:'column', alignItems:'center', gap:20, width:'100%' }}>
+
+            {/* Hero plate card */}
+            <div style={{
+              width:'100%', borderRadius:22,
+              background:'linear-gradient(162deg,#F0EBF8 0%,#FFF6EC 100%)',
+              border:`1.5px solid ${P.border}`,
+              boxShadow:'0 4px 22px rgba(83,48,134,.07)',
+              padding:'22px 0 10px',
+              display:'flex', flexDirection:'column', alignItems:'center', gap:0,
+            }}>
+              <div style={{ animation:'float 3.2s ease-in-out infinite' }}>
+                <Plate level={0.84}/>
+              </div>
+              <div style={{
+                background:P.lOrange, border:'1.5px solid #FCD9A8',
+                borderRadius:20, padding:'5px 18px', marginBottom:8,
+                fontSize:12, fontWeight:700, color:'#92400E',
+              }}>
+                💧 A tablespoon of water placed on this steel plate
+              </div>
+            </div>
+
+            {/* Question */}
+            <div style={{
+              width:'100%', background:P.surface, borderRadius:18,
+              border:`2px solid ${P.lPurple}`, padding:'18px 24px', textAlign:'center',
+              boxShadow:'0 2px 12px rgba(74,77,201,.07)',
+            }}>
+              <p style={{ fontSize:11, fontWeight:700, color:P.primary,
+                textTransform:'uppercase', letterSpacing:2.5, marginBottom:8 }}>
+                🔮 Think before you answer
+              </p>
+              <p style={{ fontSize:16, fontWeight:700, color:P.text, lineHeight:1.55, margin:0 }}>
+                What do you think will happen to the water on the steel plate?
+              </p>
+            </div>
+
+            {/* Options */}
+            <div style={{ width:'100%', display:'flex', flexDirection:'column', gap:10 }}>
+              {opts.map((o,i) => {
+                const sel = pred===i;
+                return (
+                  <button key={i} onClick={() => !locked && setPred(i)}
+                    onMouseEnter={() => !locked && setHov(`p${i}`)}
+                    onMouseLeave={() => setHov(null)}
+                    style={B(`p${i}`, {
+                      display:'flex', alignItems:'center', gap:16,
+                      padding:'16px 20px', borderRadius:16, textAlign:'left',
+                      background: sel ? grad : P.surface,
+                      border:`2.5px solid ${sel ? 'transparent' : P.border}`,
+                      color: sel ? 'white' : P.text,
+                      boxShadow: sel ? '0 8px 28px rgba(83,48,134,.28)' : '0 2px 8px rgba(0,0,0,.04)',
+                      animation:`popIn .4s ease-out ${i*.1}s both`,
+                    })}>
+                    <span style={{
+                      width:52, height:52, flexShrink:0, borderRadius:14,
+                      background: sel ? 'rgba(255,255,255,.18)' : `${P.lPurple}55`,
+                      display:'flex', alignItems:'center', justifyContent:'center', fontSize:26,
+                    }}>{o.icon}</span>
+                    <div style={{ flex:1 }}>
+                      <div style={{ fontWeight:700, fontSize:14, lineHeight:1.3 }}>{o.label}</div>
+                      <div style={{ fontSize:12, opacity:.7, marginTop:3 }}>{o.sub}</div>
+                    </div>
+                    <div style={{
+                      width:26, height:26, borderRadius:'50%', flexShrink:0,
+                      border:`2.5px solid ${sel ? 'rgba(255,255,255,.7)' : P.border}`,
+                      background: sel ? 'rgba(255,255,255,.22)' : 'transparent',
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                      color:'white', fontSize:13,
+                    }}>{sel && '✓'}</div>
+                  </button>
+                );
+              })}
+            </div>
+
+            {pred !== null && !locked && (
+              <button onClick={() => { setLocked(true); setTimeout(()=>go('observe'),420); }}
+                onMouseEnter={() => setHov('lock')} onMouseLeave={() => setHov(null)}
+                style={B('lock', {
+                  padding:'15px 46px', borderRadius:50, fontSize:15,
+                  background:grad, color:'white',
+                  boxShadow:'0 8px 30px rgba(83,48,134,.38)',
+                  animation:'breathe 2.6s ease-in-out infinite, popIn .45s ease-out',
+                })}>
+                Lock in my prediction →
+              </button>
+            )}
+          </div>
+        );
+      };
+
+      /* ── OBSERVE ── */
+      const renderObserve = () => (
+        <div style={{ animation:'fadeUp .42s ease-out', display:'flex', flexDirection:'column', alignItems:'center', gap:18, width:'100%' }}>
+
+          {/* Observation stage */}
+          <div style={{
+            width:'100%', borderRadius:22, position:'relative', overflow:'hidden',
+            background:'linear-gradient(170deg,#F9F2E4 0%,#F1E6CF 60%,#E9DAB9 100%)',
+            border:'1.5px solid rgba(220,196,150,.65)',
+            boxShadow:'inset 0 2px 18px rgba(0,0,0,.05), 0 6px 24px rgba(0,0,0,.08)',
+          }}>
+            {/* wood grain */}
+            <div style={{ position:'absolute', inset:0, opacity:.055,
+              background:'repeating-linear-gradient(91deg,#8B5E3C 0px,transparent 1px,transparent 24px)',
+              pointerEvents:'none' }}/>
+
+            {/* top bar */}
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center',
+              padding:'12px 18px 0', position:'relative', zIndex:2 }}>
+              <div style={{
+                display:'flex', alignItems:'center', gap:7,
+                background:'rgba(255,255,255,.78)', backdropFilter:'blur(10px)',
+                borderRadius:20, padding:'5px 14px',
+                fontSize:12, fontWeight:700,
+                color: play ? P.g1 : done ? P.ok : P.sub,
+                boxShadow:'0 2px 10px rgba(0,0,0,.1)',
+              }}>
+                {play && !done && (
+                  <span style={{ width:8, height:8, borderRadius:'50%', background:P.g2,
+                    display:'inline-block', animation:'blink 1s ease-in-out infinite' }}/>
+                )}
+                {play && !done ? 'Evaporating…' : done ? '✓ Fully evaporated!' : 'Press play to start'}
+              </div>
+              {wLvl > 0.02 && (
+                <div style={{
+                  background:'rgba(255,255,255,.78)', backdropFilter:'blur(10px)',
+                  borderRadius:20, padding:'5px 14px',
+                  fontSize:12, fontWeight:800, color:P.primary,
+                  boxShadow:'0 2px 10px rgba(0,0,0,.1)',
+                }}>
+                  Water: {Math.round(wLvl*100)}%
+                </div>
+              )}
+            </div>
+
+            {/* steam zone */}
+            <div style={{ position:'relative', height:128, overflow:'visible', zIndex:1 }}>
+              {pars.map(p => (
+                <div key={p.id} style={{
+                  position:'absolute',
+                  left:`${p.x}%`,
+                  bottom:'0%',
+                  width:  22 + p.r * 28,
+                  height: 28 + p.r * 34,
+                  borderRadius:'54% 46% 52% 48% / 62% 58% 42% 38%',
+                  background:`radial-gradient(ellipse at 38% 32%,
+                    rgba(220,242,255,${.66-p.r*.18}),
+                    rgba(200,228,250,${.18-p.r*.06}))`,
+                  animation:`steamUp ${2.2+p.r*1.2}s ease-out forwards`,
+                  filter:`blur(${3+p.r*3.5}px)`,
+                  pointerEvents:'none',
+                }}/>
+              ))}
+            </div>
+
+            {/* plate */}
+            <div style={{ display:'flex', justifyContent:'center', marginTop:-22, position:'relative', zIndex:2 }}>
+              <Plate level={wLvl}/>
+            </div>
+
+            {/* water bar */}
+            <div style={{ display:'flex', alignItems:'center', gap:10,
+              margin:'10px 24px 20px', position:'relative', zIndex:2 }}>
+              <span style={{ fontSize:11, fontWeight:700, color:'#8B7358', whiteSpace:'nowrap' }}>Water level</span>
+              <div style={{ flex:1, height:8, borderRadius:4,
+                background:'rgba(0,0,0,.12)', overflow:'hidden' }}>
+                <div style={{
+                  height:'100%', borderRadius:4,
+                  width:`${wLvl*100}%`,
+                  background:'linear-gradient(90deg,#55BCE4,#ADE5FC)',
+                  transition:'width .2s linear',
+                  boxShadow:'0 0 6px rgba(82,188,228,.55)',
+                }}/>
+              </div>
+            </div>
+          </div>
+
+          {/* controls */}
+          <div style={{ display:'flex', gap:10 }}>
+            <button
+              onClick={() => {
+                if (done) {
+                  setWLvl(1); setDone(false); setPars([]); tsRef.current=0;
+                  setTimeout(()=>setPlay(true),100);
+                } else setPlay(p=>!p);
+              }}
+              onMouseEnter={() => setHov('play')} onMouseLeave={() => setHov(null)}
+              style={B('play', {
+                padding:'13px 34px', borderRadius:50, fontSize:15,
+                background:grad, color:'white',
+                boxShadow:'0 6px 24px rgba(83,48,134,.36)',
+                display:'flex', alignItems:'center', gap:9,
+                animation:'breathe 2.6s ease-in-out infinite',
+              })}>
+              <span style={{ fontSize:18 }}>{play ? '⏸' : done ? '↺' : '▶'}</span>
+              {play ? 'Pause' : done ? 'Replay' : 'Play Simulation'}
+            </button>
+            <button
+              onClick={() => { setWLvl(1); setDone(false); setPars([]); setPlay(false); tsRef.current=0; }}
+              onMouseEnter={() => setHov('rst')} onMouseLeave={() => setHov(null)}
+              style={B('rst', {
+                padding:'13px 18px', borderRadius:50, fontSize:13,
+                background:P.surface, color:P.sub,
+                border:`2px solid ${P.border}`, boxShadow:'0 2px 8px rgba(0,0,0,.05)',
+              })}>↺ Reset</button>
+          </div>
+
+          {/* hint */}
+          <div style={{
+            width:'100%', background:P.lOrange, borderRadius:16,
+            border:'2px solid #FCD9A8', padding:'14px 18px',
+          }}>
+            <p style={{ fontSize:13, color:'#92400E', margin:0, lineHeight:1.65 }}>
+              👁 <strong>Watch carefully:</strong> The vapour rises <em>upward</em> into the air.
+              Is the water going <em>down</em> through the metal, or going <em>up</em> as invisible vapour?
+            </p>
+          </div>
+
+          {wLvl < 0.55 && (
+            <button onClick={() => go('flip')}
+              onMouseEnter={() => setHov('onxt')} onMouseLeave={() => setHov(null)}
+              style={B('onxt', {
+                padding:'14px 40px', borderRadius:50, fontSize:14,
+                background:gradPr, color:'white',
+                boxShadow:'0 6px 24px rgba(74,77,201,.35)',
+                animation:'popIn .5s ease-out',
+              })}>
+              🔍 Check the underside →
+            </button>
+          )}
+        </div>
+      );
+
+      /* ── FLIP ── */
+      const renderFlip = () => (
+        <div style={{ animation:'fadeUp .42s ease-out', display:'flex', flexDirection:'column', alignItems:'center', gap:20, width:'100%' }}>
+
+          <div style={{ textAlign:'center' }}>
+            <p style={{ fontSize:18, fontWeight:800, color:P.text, marginBottom:6 }}>
+              Let's check the underside of the plate!
+            </p>
+            <p style={{ fontSize:13, color:P.sub, maxWidth:420, margin:'0 auto' }}>
+              If water seeped through the metal, the bottom should be wet.
+            </p>
+          </div>
+
+          {/* 3D flip */}
+          <div style={{ perspective:1100, width:'100%', height:260,
+            display:'flex', alignItems:'center', justifyContent:'center' }}>
+            <div style={{
+              width:420, height:248,
+              transformStyle:'preserve-3d',
+              transform: flip ? 'rotateX(180deg)' : 'rotateX(0deg)',
+              transition:'transform .92s cubic-bezier(.4,0,.2,1)',
+              position:'relative',
+            }}>
+              {/* Front */}
+              <div style={{ position:'absolute', inset:0, backfaceVisibility:'hidden',
+                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8,
+                background:'linear-gradient(162deg,#F4F2FC,#EEF0FA)',
+                borderRadius:22, border:`1.5px solid ${P.border}`,
+              }}>
+                <Plate level={0}/>
+                <span style={{ fontSize:12, fontWeight:600, color:P.sub }}>
+                  TOP SURFACE — water has evaporated from here
+                </span>
+              </div>
+              {/* Back */}
+              <div style={{ position:'absolute', inset:0, backfaceVisibility:'hidden',
+                transform:'rotateX(180deg)',
+                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:8,
+                background:'linear-gradient(162deg,#ECFDF5,#D2F5E8)',
+                borderRadius:22, border:'1.5px solid #6EE7B7',
+              }}>
+                <Plate level={0} dry/>
+                <span style={{ fontSize:13, fontWeight:800, color:P.ok }}>
+                  ✓ UNDERSIDE — COMPLETELY DRY!
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {!flip ? (
+            <button onClick={() => setFlip(true)}
+              onMouseEnter={() => setHov('flip')} onMouseLeave={() => setHov(null)}
+              style={B('flip', {
+                padding:'15px 44px', borderRadius:50, fontSize:15,
+                background:grad, color:'white',
+                boxShadow:'0 8px 30px rgba(83,48,134,.38)',
+                animation:'pulse 2s ease-in-out infinite, popIn .4s ease-out',
+              })}>🔄 Flip the plate</button>
+          ) : (
+            <div style={{ width:'100%', display:'flex', flexDirection:'column', alignItems:'center', gap:14 }}>
+              <div style={{
+                background:'#ECFDF5', border:'2px solid #6EE7B7', borderRadius:18,
+                padding:'15px 22px', textAlign:'center', animation:'popIn .5s ease-out',
+              }}>
+                <p style={{ fontWeight:800, fontSize:15, color:'#065F46', marginBottom:5 }}>
+                  ✅ The underside is completely DRY!
+                </p>
+                <p style={{ fontSize:13, color:'#047857', margin:0 }}>
+                  This is proof that water did NOT seep through the metal plate.
+                </p>
+              </div>
+
+              <p style={{ fontWeight:700, fontSize:16, color:P.text, textAlign:'center' }}>
+                So where exactly did the water go? 🤔
+              </p>
+
+              <div style={{ display:'flex', gap:10, width:'100%' }}>
+                {['💨 It evaporated into the air as vapour','🧲 It was absorbed by the metal plate'].map((opt,i) => {
+                  const sel = flipAns===i;
+                  return (
+                    <button key={i} onClick={() => flipAns===null && setFlipAns(i)}
+                      onMouseEnter={() => flipAns===null && setHov(`fa${i}`)}
+                      onMouseLeave={() => setHov(null)}
+                      style={B(`fa${i}`, {
+                        flex:1, padding:'15px 12px', borderRadius:16,
+                        fontSize:13, fontWeight:600, textAlign:'center', lineHeight:1.4,
+                        background: sel ? (i===0?P.ok:P.err) : P.surface,
+                        border:`2.5px solid ${sel ? 'transparent' : P.border}`,
+                        color: sel ? 'white' : P.text,
+                        boxShadow: sel ? `0 6px 20px ${i===0?P.ok:P.err}55` : '0 2px 8px rgba(0,0,0,.05)',
+                      })}>{opt}</button>
+                  );
+                })}
+              </div>
+
+              {flipAns !== null && (
+                <>
+                  <div style={{
+                    width:'100%',
+                    background: flipAns===0?'#ECFDF5':'#FEF2F2',
+                    border:`2px solid ${flipAns===0?'#6EE7B7':'#FCA5A5'}`,
+                    borderRadius:14, padding:'14px 18px',
+                    animation: flipAns===0 ? 'popIn .4s ease-out' : 'shake .4s ease-out',
+                  }}>
+                    <p style={{ fontWeight:800, fontSize:14,
+                      color:flipAns===0?'#065F46':'#991B1B', marginBottom:5 }}>
+                      {flipAns===0 ? '✅ Correct!' : '❌ Not quite…'}
+                    </p>
+                    <p style={{ fontSize:13, color:flipAns===0?'#047857':'#B91C1C', margin:0, lineHeight:1.6 }}>
+                      {flipAns===0
+                        ? 'The water evaporated — it changed into invisible water vapour and mixed with the surrounding air!'
+                        : "The dry underside proves nothing was absorbed. The water went UPWARD as vapour — that's evaporation!"}
+                    </p>
+                  </div>
+                  <button onClick={() => go('quiz')}
+                    onMouseEnter={() => setHov('fqz')} onMouseLeave={() => setHov(null)}
+                    style={B('fqz', {
+                      padding:'15px 46px', borderRadius:50, fontSize:15,
+                      background:grad, color:'white',
+                      boxShadow:'0 8px 30px rgba(83,48,134,.38)',
+                      animation:'popIn .5s ease-out',
+                    })}>📝 Take the Quiz →</button>
+                </>
+              )}
+            </div>
+          )}
+        </div>
+      );
+
+      /* ── QUIZ ── */
+      const renderQuiz = () => {
+        const q   = QS[qIdx];
+        const sel = ans[qIdx];
+        const ok  = sel === q.ans;
+        return (
+          <div key={qIdx} style={{ animation:'fadeUp .4s ease-out',
+            display:'flex', flexDirection:'column', gap:14,
+            width:'100%', maxWidth:530, margin:'0 auto' }}>
+
+            {/* pips */}
+            <div style={{ display:'flex', gap:6, justifyContent:'center' }}>
+              {QS.map((qq,i) => (
+                <div key={i} style={{
+                  height:8, borderRadius:4,
+                  width: i===qIdx ? 38 : 8,
+                  background: ans[i]!==null ? (ans[i]===qq.ans?P.ok:P.err) : i===qIdx?P.primary:P.border,
+                  transition:'all .3s ease',
+                  boxShadow: i===qIdx ? `0 0 8px ${P.primary}88` : undefined,
+                }}/>
+              ))}
+            </div>
+
+            {/* question card */}
+            <div style={{
+              background:`linear-gradient(140deg,${P.g1}11,${P.g2}11)`,
+              border:`2px solid ${P.lPurple}`, borderRadius:22,
+              padding:'22px 26px', textAlign:'center',
+            }}>
+              <p style={{ fontSize:11, fontWeight:700, color:P.primary,
+                textTransform:'uppercase', letterSpacing:2.5, marginBottom:12 }}>
+                Question {qIdx+1} of {QS.length}
+              </p>
+              <p style={{ fontSize:16, fontWeight:700, color:P.text, margin:0, lineHeight:1.55 }}>
+                {q.q}
+              </p>
+            </div>
+
+            {/* options */}
+            <div style={{ display:'flex', flexDirection:'column', gap:9 }}>
+              {q.opts.map((opt,i) => {
+                const isSel = sel===i, isOk = i===q.ans;
+                let bg=P.surface, bc=P.border, tc=P.text;
+                if (sel!==null) {
+                  if (isOk)       { bg='#ECFDF5'; bc='#6EE7B7'; tc='#065F46'; }
+                  else if (isSel) { bg='#FEF2F2'; bc='#FCA5A5'; tc='#991B1B'; }
+                }
+                return (
+                  <button key={i} onClick={() => answer(i)} disabled={sel!==null}
+                    onMouseEnter={() => sel===null && setHov(`q${i}`)}
+                    onMouseLeave={() => setHov(null)}
+                    style={B(`q${i}`, {
+                      display:'flex', alignItems:'center', gap:13,
+                      padding:'14px 16px', borderRadius:14, textAlign:'left',
+                      background:bg, border:`2.5px solid ${bc}`, color:tc,
+                      fontSize:13, lineHeight:1.4,
+                      opacity: sel!==null && !isSel && !isOk ? .42 : 1,
+                      boxShadow: hov===`q${i}` && sel===null ? '0 4px 18px rgba(0,0,0,.1)' : '0 2px 6px rgba(0,0,0,.04)',
+                      animation:`popIn .36s ease-out ${i*.07}s both`,
+                    })}>
+                    <span style={{
+                      width:32, height:32, borderRadius:'50%', flexShrink:0,
+                      display:'flex', alignItems:'center', justifyContent:'center',
+                      background: sel!==null ? (isOk?P.ok : isSel?P.err : P.border) : `${P.lPurple}88`,
+                      color: sel!==null && (isOk||isSel) ? 'white' : P.primary,
+                      fontWeight:700, fontSize:13, transition:'all .25s',
+                    }}>
+                      {sel!==null ? (isOk?'✓' : isSel?'✗' : String.fromCharCode(65+i)) : String.fromCharCode(65+i)}
+                    </span>
+                    <span style={{ fontWeight: isSel||isOk ? 600 : 500 }}>{opt}</span>
+                  </button>
+                );
+              })}
+            </div>
+
+            {expOn && (
+              <div style={{
+                background: ok?'#ECFDF5':'#FEF2F2',
+                border:`2px solid ${ok?'#6EE7B7':'#FCA5A5'}`,
+                borderRadius:14, padding:'14px 18px',
+                animation: ok?'popIn .4s ease-out':'shake .4s ease-out',
+              }}>
+                <p style={{ fontWeight:800, fontSize:13.5,
+                  color:ok?'#065F46':'#991B1B', marginBottom:5 }}>
+                  {ok ? '🎉 Correct!' : '💡 Not quite...'}
+                </p>
+                <p style={{ fontSize:12.5, color:ok?'#047857':'#B91C1C', margin:0, lineHeight:1.65 }}>
+                  {q.exp}
+                </p>
+              </div>
+            )}
+
+            {expOn && (
+              <button onClick={nextQ}
+                onMouseEnter={() => setHov('nq')} onMouseLeave={() => setHov(null)}
+                style={B('nq', {
+                  padding:'14px 38px', borderRadius:50, fontSize:14,
+                  background:grad, color:'white',
+                  boxShadow:'0 6px 22px rgba(83,48,134,.35)',
+                  alignSelf:'center', animation:'popIn .42s ease-out',
+                })}>
+                {qIdx < QS.length-1 ? 'Next Question →' : 'See My Results →'}
+              </button>
+            )}
+          </div>
+        );
+      };
+
+      /* ── RESULTS ── */
+      const renderResults = () => {
+        const pct = Math.round(score/QS.length*100);
+        const { msg, em, col } = score===5
+          ? { msg:'Excellent! You understand evaporation perfectly!', em:'🏆', col:'#F59E0B' }
+          : score>=3
+          ? { msg:'Great work! Review the key concept once more.',    em:'⭐',  col:P.primary }
+          : { msg:'Watch the simulation again and retry!',            em:'💪',  col:P.g2 };
+        return (
+          <div style={{ animation:'fadeUp .42s ease-out', display:'flex', flexDirection:'column', alignItems:'center', gap:22, width:'100%' }}>
+
+            {/* score ring */}
+            <div style={{
+              width:166, height:166, borderRadius:'50%',
+              background:`conic-gradient(${col} ${pct*3.6}deg,#E4E2F4 0deg)`,
+              display:'flex', alignItems:'center', justifyContent:'center',
+              animation:'scoreIn .9s cubic-bezier(.175,.885,.32,1.275)',
+              boxShadow:`0 10px 44px ${col}44`,
+            }}>
+              <div style={{ width:128, height:128, borderRadius:'50%', background:P.surface,
+                display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+                boxShadow:'inset 0 2px 8px rgba(0,0,0,.08)',
+              }}>
+                <span style={{ fontSize:38 }}>{em}</span>
+                <span style={{ fontWeight:800, fontSize:26, color:P.text, lineHeight:1.1 }}>
+                  {score}/{QS.length}
+                </span>
+              </div>
+            </div>
+
+            <p style={{ fontWeight:700, fontSize:17, color:P.text, textAlign:'center', maxWidth:380, margin:0 }}>
+              {msg}
+            </p>
+
+            {/* Q dots */}
+            <div style={{ display:'flex', gap:10 }}>
+              {QS.map((qq,i) => (
+                <div key={i} style={{
+                  width:44, height:44, borderRadius:'50%',
+                  background: ans[i]===qq.ans ? P.ok : P.err,
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  color:'white', fontWeight:700, fontSize:17,
+                  animation:`popIn .4s ease-out ${i*.1}s both`,
+                  boxShadow:`0 4px 15px ${ans[i]===qq.ans?P.ok:P.err}55`,
+                }}>
+                  {ans[i]===qq.ans ? '✓' : '✗'}
+                </div>
+              ))}
+            </div>
+
+            {/* Concept card */}
+            <div style={{
+              width:'100%',
+              background:`linear-gradient(140deg,${P.g1}10,${P.g2}10)`,
+              border:`2px solid ${P.lPurple}`, borderRadius:22,
+              padding:'22px 26px',
+            }}>
+              <p style={{ fontSize:11, fontWeight:800, color:P.primary,
+                textTransform:'uppercase', letterSpacing:2.5, marginBottom:12 }}>
+                🧪 Key Concept Recap
+              </p>
+              <p style={{ fontWeight:700, fontSize:15, color:P.text, marginBottom:13 }}>
+                Water does NOT seep through metal — it evaporates.
+              </p>
+              <ul style={{ fontSize:13, color:P.sub, paddingLeft:20, lineHeight:2.1, margin:0 }}>
+                <li><strong>Evaporation</strong> = liquid water → invisible water vapour</li>
+                <li>Dry underside = proof water never seeped through</li>
+                <li>Water vapour mixes invisibly into the surrounding air</li>
+                <li>Evaporation happens continuously, even at room temperature</li>
+                <li>Water doesn't disappear — it changes <em>state</em></li>
+              </ul>
+            </div>
+
+            <div style={{ display:'flex', gap:10 }}>
+              <button onClick={reset}
+                onMouseEnter={() => setHov('rty')} onMouseLeave={() => setHov(null)}
+                style={B('rty', {
+                  padding:'14px 36px', borderRadius:50, fontSize:14,
+                  background:grad, color:'white',
+                  boxShadow:'0 6px 24px rgba(83,48,134,.36)',
+                })}>↺ Try Again</button>
+              <button onClick={() => {
+                  setWLvl(1); setDone(false); setPars([]); setPlay(false); tsRef.current=0;
+                  go('observe');
+                }}
+                onMouseEnter={() => setHov('rwt')} onMouseLeave={() => setHov(null)}
+                style={B('rwt', {
+                  padding:'14px 26px', borderRadius:50, fontSize:14,
+                  background:P.surface, color:P.sub,
+                  border:`2px solid ${P.border}`,
+                  boxShadow:'0 2px 8px rgba(0,0,0,.05)',
+                })}>👁 Watch Again</button>
+            </div>
+          </div>
+        );
+      };
+
+      /* ── step labels ── */
+      const steps = [
+        { key:'predict', label:'Predict' },
+        { key:'observe', label:'Observe' },
+        { key:'flip',    label:'Flip Plate' },
+        { key:'quiz',    label:'Quiz' },
+        { key:'results', label:'Results' },
+      ];
+      const si = steps.findIndex(s => s.key === scene);
+
+      const TITLES = {
+        predict:'Make Your Prediction', observe:'Observe the Water',
+        flip:'Check the Underside',     quiz:'Test Your Understanding',
+        results:'Your Results',
+      };
+      const SUBS = {
+        predict:'What do you think will happen to the water on the steel plate?',
+        observe:'Watch carefully — where does the water actually go?',
+        flip:"Does water seep through a steel plate? Let's find out!",
+        quiz:'Chapter 8: A Journey through States of Water — NCERT Class 6',
+        results:'Chapter 8: Evaporation & States of Water',
+      };
+
+      /* ── RENDER ── */
+      return (
+        <div style={{ fontFamily:'Poppins,sans-serif', background:P.surface,
+          borderRadius:28, overflow:'hidden',
+          boxShadow:'0 28px 80px rgba(83,48,134,.15), 0 4px 16px rgba(0,0,0,.08)',
+        }}>
+
+          {/* HEADER */}
+          <div style={{ background:grad, padding:'26px 36px 22px', position:'relative', overflow:'hidden' }}>
+            <div style={{ position:'absolute', top:-55, right:-55, width:175, height:175,
+              borderRadius:'50%', background:'rgba(255,255,255,.07)', pointerEvents:'none' }}/>
+            <div style={{ position:'absolute', bottom:-30, left:72, width:105, height:105,
+              borderRadius:'50%', background:'rgba(255,255,255,.05)', pointerEvents:'none' }}/>
+            <div style={{ position:'relative' }}>
+              <span style={{
+                display:'inline-block', background:'rgba(255,255,255,.2)', borderRadius:20,
+                padding:'4px 14px', fontSize:11, fontWeight:700, color:'white',
+                letterSpacing:1.5, textTransform:'uppercase', marginBottom:10,
+              }}>Class 6 · Chapter 8 · Science</span>
+              <h2 style={{ fontWeight:800, fontSize:24, color:'white', margin:'0 0 7px', letterSpacing:-.3 }}>
+                {TITLES[scene]}
+              </h2>
+              <p style={{ fontSize:13, color:'rgba(255,255,255,.82)', margin:0 }}>
+                {SUBS[scene]}
+              </p>
+            </div>
+          </div>
+
+          {/* STEP TRACKER */}
+          <div style={{ display:'flex', alignItems:'center', padding:'16px 34px',
+            background:P.bg, borderBottom:`1px solid ${P.border}` }}>
+            {steps.map((s,i) => (
+              <Fragment key={s.key}>
+                <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5, flex:1 }}>
+                  <div style={{
+                    width:34, height:34, borderRadius:'50%',
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    fontSize:13, fontWeight:700,
+                    background: i<si ? P.ok : i===si ? grad : '#E8E5F4',
+                    color: i<=si ? 'white' : P.sub,
+                    boxShadow: i===si ? `0 4px 15px ${P.primary}44` : 'none',
+                    transition:'all .35s ease',
+                  }}>
+                    {i<si ? '✓' : i+1}
+                  </div>
+                  <span style={{
+                    fontSize:10, whiteSpace:'nowrap',
+                    fontWeight: i===si ? 700 : 500,
+                    color: i===si ? P.primary : i<si ? P.ok : P.sub,
+                    transition:'color .35s ease',
+                  }}>{s.label}</span>
+                </div>
+                {i < steps.length-1 && (
+                  <div style={{
+                    height:2.5, flex:1, marginBottom:20, borderRadius:2,
+                    background: i<si ? P.ok : P.border,
+                    transition:'background .4s ease',
+                  }}/>
+                )}
+              </Fragment>
+            ))}
+          </div>
+
+          {/* CONTENT */}
+          <div style={{ padding:'30px 36px', minHeight:420,
+            display:'flex', flexDirection:'column', alignItems:'center' }}>
+            {scene==='predict' && renderPredict()}
+            {scene==='observe' && renderObserve()}
+            {scene==='flip'    && renderFlip()}
+            {scene==='quiz'    && renderQuiz()}
+            {scene==='results' && renderResults()}
+          </div>
+
+          {/* FOOTER */}
+          <div style={{ background:P.bg, borderTop:`1px solid ${P.border}`,
+            padding:'12px 34px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            <span style={{ fontSize:11, color:P.sub }}>
+              Curiosity | Textbook of Science | Grade 6 | NCERT
+            </span>
+            <span style={{
+              fontSize:11, fontWeight:700, color:P.primary,
+              background:`${P.lPurple}66`, borderRadius:20, padding:'3px 13px',
+            }}>Activity 8.2 — Evaporation</span>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<Tool/>);
+  </script>
+</body>
+</html>

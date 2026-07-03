@@ -1,0 +1,162 @@
+{
+  "toolId": "M3.S5.T8.C25.2D1",
+  "title": "Weigh the cups",
+  "subtype": "simulation",
+  "conceptId": "M3.S5.T8.C25",
+  "relatedConceptIds": [],
+  "module": "M3",
+  "placement": {
+    "beat": "Apply",
+    "where": "replaces NCERT Grade 6 Science Ch.6 Activity 6.8 'How heavy? How light?' — same volume of different materials has different mass/weight; the student weighs each choice on a balance and picks the heavier one"
+  },
+  "sharedState": {
+    "fields": [
+      "questionIndex",
+      "total",
+      "score",
+      "solved",
+      "finished",
+      "operatorMode"
+    ]
+  },
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": [
+        "{type:'ready', toolId}",
+        "{type:'state', state}",
+        "{type:'event', name, detail}",
+        "{type:'response', id, result}"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "weigh(idOrArray) — THE do-verb: pick the heavier choice for the CURRENT question; id is a choice id/label (e.g. 'A'|'B'|'C','water','iron') or an array; correct locks it, an array auto-advances.",
+      "select(idOrArray)",
+      "compare(a,b | array) — narrate which of the given current-question choices is heavier WITHOUT locking the answer (a preview/hint); a,b are choice ids/labels, or pass one array.",
+      "next() — advance to the next question after a correct weigh(); on the last question it finishes the quiz."
+    ]
+  },
+  "studentControls": [
+    {
+      "control": "Pick a choice for the current question (Cup A/B/C, Cotton/Water, Iron/Feathers/Same)",
+      "effect": "lights the chosen item, tips the balance and shows its live weight read-out; a correct pick locks green with a one-line reason and reveals the Next button, a wrong pick shakes red with a hint and lets the student retry"
+    },
+    {
+      "control": "Next Question / See Results button (after a correct pick)",
+      "effect": "advances to the next weighing question or to the summary card"
+    },
+    {
+      "control": "Restart quiz / Try Again button",
+      "effect": "clears score, solved questions and selection and returns to the first question"
+    },
+    {
+      "control": "Mute / unmute button (top-right)",
+      "effect": "toggles the tap/correct/wrong/completion sound cues"
+    }
+  ],
+  "answerKey": {
+    "questions": [
+      {
+        "id": 1,
+        "prompt": "Three identical half-filled cups (water / sand / pebbles) — which is heaviest?",
+        "choices": {
+          "A": "Cup A — Water",
+          "B": "Cup B — Sand",
+          "C": "Cup C — Pebbles"
+        },
+        "correct": "C",
+        "correctName": "pebbles",
+        "reason": "Pebbles are denser than sand or water, so the same volume of pebbles has the most mass."
+      },
+      {
+        "id": 2,
+        "prompt": "Half a cup of cotton wool vs half a cup of water — which has more mass?",
+        "choices": {
+          "cotton": "Cotton Wool",
+          "water": "Water"
+        },
+        "correct": "water",
+        "correctName": "water",
+        "reason": "Water is much denser than cotton wool. The same volume of water has far more mass."
+      },
+      {
+        "id": 3,
+        "prompt": "1 kg of iron vs 1 kg of feathers — which has more mass?",
+        "choices": {
+          "iron": "Iron Block",
+          "feathers": "Feathers",
+          "same": "They are the same"
+        },
+        "correct": "same",
+        "correctName": "same",
+        "reason": "1 kg is 1 kg! Mass is the amount of matter. The material and size do not change the stated mass."
+      }
+    ],
+    "validArgIds": [
+      "A",
+      "B",
+      "C",
+      "cotton",
+      "water",
+      "iron",
+      "feathers",
+      "same",
+      "pebbles",
+      "sand",
+      "Cup A — Water",
+      "Cup B — Sand",
+      "Cup C — Pebbles",
+      "Cotton Wool",
+      "Iron Block",
+      "Feathers",
+      "They are the same",
+      "heaviest",
+      "heavier"
+    ],
+    "argResolution": "weigh()/select()/compare()/highlight() resolve an arg against the CURRENT question's choice ids and labels first, then a global alias map (e.g. 'pebbles'->C, 'heaviest'->the current correct answer, and qualified 'qid:choice' strings). Each 'do' verb accepts a single id OR an array so the agent can credit several picks at once.",
+    "total": 3,
+    "rule": "Same volume of a denser material has more mass/weight. A balance tips toward the heavier pan; equal stated masses keep it level.",
+    "operatorModes": [
+      "ai",
+      "student"
+    ],
+    "operatorModeNote": "ai = focused DEMO: the student choice buttons are hidden and inert (the agent drives via weigh()/compare()/highlight()) BUT the weighing phenomenon stays — the balance/cups scene and the live weight read-out remain visible in both modes; a '👩‍🏫 watch' caption + chip show. student = full interactive controls. Default student."
+  },
+  "props": {
+    "defaults": {
+      "width": 0,
+      "height": 0,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false
+    },
+    "additionalProps": {
+      "finalMessage": "Mass = the amount of matter in an object. More matter packed in the same space means more mass. A kilogram is a kilogram — no matter what material it is!"
+    }
+  },
+  "events": [
+    "ready",
+    "weighed",
+    "selected",
+    "compared",
+    "answer_correct",
+    "answer_incorrect",
+    "completed",
+    "reset",
+    "operator_mode_changed"
+  ],
+  "scientificFacts": [
+    "The same amount of space (volume) filled with a denser material holds more matter, so it weighs more.",
+    "Pebbles are denser than sand, and sand is denser than water — equal cups of them have different masses.",
+    "Mass is the amount of matter in an object; 1 kilogram of iron and 1 kilogram of feathers have exactly the same mass.",
+    "A balance tips down on the heavier side and stays level when both sides have equal mass."
+  ]
+}

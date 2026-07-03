@@ -1,0 +1,128 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Floating Ring Magnets – Reasoning Tool",
+    "instructions_for_student": "Look at the floating ring magnets on the vertical stand. Magnet X floats above Magnet Y. Answer each question by selecting the correct option. Watch the animation to check your reasoning.",
+    "data": {
+      "toolName": "magnet_reasoning_tool",
+      "parameters": {
+        "width": 980,
+        "height": 700,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "question1Options": [
+            "Gravity is too weak here",
+            "Like poles repel each other",
+            "The stand is slippery"
+          ],
+          "question2Options": [
+            "Remove the stand from the setup",
+            "Flip X so unlike poles face each other",
+            "Add a third magnet on top"
+          ],
+          "correctAnswer1": 1,
+          "correctAnswer2": 1,
+          "magnetColor": "#4A4DC9",
+          "standColor": "#533086"
+        }
+      }
+    },
+    "metadata": {
+      "subject": "Science – Magnetism",
+      "grade": "6",
+      "chapter": "Chapter 4: Exploring Magnets",
+      "section": "4.2 Poles of Magnet / 4.4 Attraction and Repulsion between Magnets",
+      "ncert_reference": "Curiosity | Textbook of Science | Grade 6",
+      "learning_objectives": [
+        "Understand that like magnetic poles repel each other",
+        "Understand that unlike magnetic poles attract each other",
+        "Apply pole interaction rules to predict magnet behaviour",
+        "Reason through a cause-and-effect scenario using magnetism"
+      ],
+      "concepts_covered": [
+        "Magnetic poles (North and South)",
+        "Repulsion between like poles",
+        "Attraction between unlike poles",
+        "Poles always exist in pairs"
+      ],
+      "design_tokens": {
+        "fontFamily": "Poppins",
+        "primaryColor": "#4A4DC9",
+        "gradientStart": "#533086",
+        "gradientEnd": "#FC9145",
+        "accentAmber": "#f59e0b",
+        "lightPurple": "#C1C1EA",
+        "lightOrange": "#FFF3E4",
+        "background": "#F5F5F5"
+      }
+    },
+    "agent_readme": {
+      "tool_id": "magnet_reasoning_tool",
+      "description": "An interactive two-question reasoning tool that simulates two ring magnets on a vertical stand. Magnet X floats above Magnet Y due to repulsion. Students answer why X floats and how to make X touch Y without pushing. Correct answers trigger physics animations (repulsion arrows, flip, snap-down).",
+      "quick_reference": {
+        "question1Options": "Array of 3 strings; option at index correctAnswer1 is the correct choice",
+        "question2Options": "Array of 3 strings; option at index correctAnswer2 is the correct choice",
+        "correctAnswer1": "Zero-based index of the correct answer for question 1 (default: 1)",
+        "correctAnswer2": "Zero-based index of the correct answer for question 2 (default: 1)",
+        "magnetColor": "Hex color for stand and magnet highlights (default: #4A4DC9)",
+        "standColor": "Hex color for the vertical rod (default: #533086)"
+      },
+      "animations": {
+        "q1_correct": "Repulsion arrows animate between facing surfaces of X and Y; sparkles burst",
+        "q2_correct_step1": "Magnet X flips (pole reversal animation ~700ms)",
+        "q2_correct_step2": "Magnet X snaps down onto Y with elastic bounce; attraction arrows animate; sparkles burst",
+        "completion": "Full-width gradient completion banner appears with key-concept summary"
+      },
+      "customisation_examples": [
+        {
+          "scenario": "Default NCERT lesson (Chapter 4, Grade 6)",
+          "additionalProps": {
+            "question1Options": ["Gravity is too weak here", "Like poles repel each other", "The stand is slippery"],
+            "question2Options": ["Remove the stand from the setup", "Flip X so unlike poles face each other", "Add a third magnet on top"],
+            "correctAnswer1": 1,
+            "correctAnswer2": 1
+          }
+        },
+        {
+          "scenario": "Simpler language for Grade 4",
+          "additionalProps": {
+            "question1Options": ["The magnet is very light", "Same poles push away from each other", "The stand has magic glue"],
+            "question2Options": ["Use a longer stand", "Turn magnet X upside down so different poles face", "Remove magnet Y"],
+            "correctAnswer1": 1,
+            "correctAnswer2": 1
+          }
+        },
+        {
+          "scenario": "Challenge mode – four options",
+          "additionalProps": {
+            "question1Options": [
+              "Earth's gravity is reversed at this location",
+              "Like poles of two magnets repel each other",
+              "The stand is made of a non-magnetic material",
+              "Air pressure is pushing X upward"
+            ],
+            "question2Options": [
+              "Heat magnet Y to reduce its magnetic strength",
+              "Flip magnet X so its unlike pole faces Y",
+              "Add a copper shield between the magnets",
+              "Increase the height of the stand"
+            ],
+            "correctAnswer1": 1,
+            "correctAnswer2": 1
+          }
+        }
+      ],
+      "decision_tree": {
+        "student_asks_why_X_floats": "Use default config — correctAnswer1 points to 'like poles repel'",
+        "student_asks_how_to_make_contact": "Use default config — correctAnswer2 points to 'flip X'",
+        "teacher_wants_harder_questions": "Use four-option example with more distractors",
+        "younger_grade": "Use simpler language example",
+        "custom_scenario": "Provide your own question1Options / question2Options arrays, set correctAnswer indices"
+      }
+    }
+  }

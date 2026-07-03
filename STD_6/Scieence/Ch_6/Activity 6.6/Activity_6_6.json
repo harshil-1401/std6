@@ -1,0 +1,251 @@
+{
+    "toolName": "materials_sorter_tool",
+    "version": "1.0.0",
+    "description": "Interactive drag-and-sort activity for NCERT Grade 6 Science, Chapter 6 (Materials Around Us), Activity 6.6. Students drag six labelled object tiles into three bins — Transparent, Translucent, or Opaque. Correct drops lock in green with a one-line reason; wrong drops bounce back with a contextual hint. When all six are placed correctly, Table 6.4 renders at the bottom with the three columns filled. A reset button replays the activity. Responsive: drag-and-drop on desktop, tap-to-select-then-tap-bin on mobile.",
+    "chapter": {
+      "subject": "Science",
+      "grade": 6,
+      "chapter_number": 6,
+      "chapter_name": "Materials Around Us",
+      "section": "6.3.3 Explore materials through which one can see or cannot see",
+      "activity": "Activity 6.6 — Let us classify",
+      "table": "Table 6.4 — Classification of objects"
+    },
+    "parameters": {
+      "width": {
+        "type": "number",
+        "default": 1100,
+        "description": "Maximum container width in pixels. The tool is fully responsive and will shrink below this width."
+      },
+      "height": {
+        "type": "number",
+        "default": "auto",
+        "description": "Height is content-driven by default; the layout adapts to viewport."
+      },
+      "themeColor": {
+        "type": "string",
+        "default": "#4A4DC9",
+        "description": "Primary accent (purple from design system). Used in headers, progress, and primary bins."
+      },
+      "darkMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Reserved for future dark theme. Currently the tool renders in the light Singularity theme."
+      },
+      "additionalProps": {
+        "type": "object",
+        "description": "Tool-specific configuration. All fields are optional — sensible Activity 6.6 defaults are used.",
+        "properties": {
+          "items": {
+            "type": "array",
+            "description": "Override the six default objects. Each item is the full sorter tile config.",
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "category", "reason", "hint"],
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Unique identifier, e.g. 'glass_tumbler'"
+                },
+                "name": {
+                  "type": "string",
+                  "description": "Display label on the tile, e.g. 'Glass tumbler'"
+                },
+                "category": {
+                  "type": "string",
+                  "enum": ["transparent", "translucent", "opaque"],
+                  "description": "The correct bin this item belongs in"
+                },
+                "emoji": {
+                  "type": "string",
+                  "description": "Single emoji shown on the tile, e.g. '🥃'"
+                },
+                "reason": {
+                  "type": "string",
+                  "description": "One-line explanation shown when correctly placed. Keep under 80 characters."
+                },
+                "hint": {
+                  "type": "string",
+                  "description": "Short hint shown when student drops the item on the wrong bin. Should nudge thinking without revealing the answer."
+                }
+              }
+            }
+          },
+          "categories": {
+            "type": "object",
+            "description": "Override labels or descriptions of the three bins. Keys must be 'transparent', 'translucent', 'opaque'.",
+            "properties": {
+              "transparent": {
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              },
+              "translucent": {
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              },
+              "opaque": {
+                "type": "object",
+                "properties": {
+                  "label": { "type": "string" },
+                  "description": { "type": "string" }
+                }
+              }
+            }
+          },
+          "showTableOnComplete": {
+            "type": "boolean",
+            "default": true,
+            "description": "When true (default), Table 6.4 with all three columns filled is rendered at the bottom once every item is correctly placed."
+          },
+          "successMessage": {
+            "type": "string",
+            "default": "Brilliant! You filled Table 6.4 correctly.",
+            "description": "Message shown in the success banner and table subtitle on completion."
+          }
+        },
+        "examples": [
+          {
+            "description": "Default — exact Activity 6.6 from the NCERT textbook",
+            "value": {}
+          },
+          {
+            "description": "Custom item set with everyday objects",
+            "value": {
+              "items": [
+                {
+                  "id": "plastic_bottle",
+                  "name": "Plastic bottle",
+                  "category": "transparent",
+                  "emoji": "🍾",
+                  "reason": "Clear plastic — you can see what is inside.",
+                  "hint": "Can you see the water level inside it clearly?"
+                },
+                {
+                  "id": "tracing_paper",
+                  "name": "Tracing paper",
+                  "category": "translucent",
+                  "emoji": "📜",
+                  "reason": "Hazy — light passes but shapes are blurred.",
+                  "hint": "Light gets through, but a clear view does not."
+                },
+                {
+                  "id": "metal_spoon",
+                  "name": "Metal spoon",
+                  "category": "opaque",
+                  "emoji": "🥄",
+                  "reason": "Metal blocks all light completely.",
+                  "hint": "Shine a torch behind it — does any light come through?"
+                }
+              ]
+            }
+          },
+          {
+            "description": "Show without table at the end (for a quick warm-up)",
+            "value": {
+              "showTableOnComplete": false,
+              "successMessage": "Great work — you sorted them all!"
+            }
+          }
+        ]
+      }
+    },
+    "defaultItems": [
+      {
+        "id": "glass_tumbler",
+        "name": "Glass tumbler",
+        "category": "transparent",
+        "emoji": "🥃",
+        "reason": "Clear glass — you can see straight through it.",
+        "hint": "Hold a glass up — can you read the words behind it clearly?"
+      },
+      {
+        "id": "butter_paper",
+        "name": "Butter paper",
+        "category": "translucent",
+        "emoji": "📄",
+        "reason": "Light passes through, but the view is blurry — not clear.",
+        "hint": "Light gets through, but shapes look hazy. Not fully clear, not fully blocked."
+      },
+      {
+        "id": "eraser",
+        "name": "Eraser",
+        "category": "opaque",
+        "emoji": "🩹",
+        "reason": "No light passes through — completely blocks the view.",
+        "hint": "Try shining a torch behind it. Does any light come through?"
+      },
+      {
+        "id": "frosted_glass",
+        "name": "Frosted glass",
+        "category": "translucent",
+        "emoji": "🪟",
+        "reason": "Blurry — light passes but no clear view.",
+        "hint": "Light gets through, but you only see fuzzy outlines."
+      },
+      {
+        "id": "wooden_board",
+        "name": "Wooden board",
+        "category": "opaque",
+        "emoji": "🪵",
+        "reason": "Wood blocks all light — you cannot see through it.",
+        "hint": "Wood is dense — light has no way through."
+      },
+      {
+        "id": "window_glass",
+        "name": "Window glass",
+        "category": "transparent",
+        "emoji": "🪟",
+        "reason": "A clear window — you see the outside view clearly.",
+        "hint": "Think of a clean window pane. Can you see the garden through it?"
+      }
+    ],
+    "interactions": {
+      "desktop": "HTML5 native drag-and-drop. Drag a tile, drop on a bin.",
+      "mobile": "Tap-to-select then tap-to-place. Tap a tile to highlight it, then tap a bin to drop it there. Triggered automatically when viewport width < 760px.",
+      "correctDrop": "Tile flies into the bin, locks with green check + accent border + one-line reason. Glow pulse animation.",
+      "wrongDrop": "Bin briefly flashes red, the tile shakes and stays in the tray, and a purple hint bubble appears under the tile for ~3 seconds.",
+      "completion": "All six placed → success banner appears, confetti animation plays, Table 6.4 renders at the bottom with all three columns filled. Each row staggers in.",
+      "reset": "Clears all placements and hints; tray refills with all six tiles in order."
+    },
+    "designSystem": {
+      "fontFamily": "Poppins",
+      "palette": {
+        "primaryPurple": "#4A4DC9",
+        "primaryOrange": "#FF7212",
+        "deepPurple": "#533086",
+        "warmOrange": "#FC9145",
+        "lightPurple": "#C1C1EA",
+        "creamOrange": "#FFF3E4",
+        "textDark": "#4E4E4E",
+        "neutralGreyMid": "#CACACA",
+        "neutralGreyLight": "#EBEBEB",
+        "neutralGreyPale": "#F5F5F5",
+        "success": "#22c55e",
+        "error": "#ef4444"
+      },
+      "shape": "Rounded pill buttons (24px horizontal padding), 14–18px cards, 999px badges",
+      "elevation": "Subtle shadows with purple tint",
+      "responsive": {
+        "breakpoint": "760px",
+        "below": "Single-column bins, 2-column tray, tap-to-place input mode",
+        "above": "Three-column bins, auto-fit tray (~140px tiles), drag-and-drop input mode"
+      }
+    },
+    "accessibility": {
+      "keyboard": "Native drag-and-drop on desktop; tap-to-place on mobile (works with assistive tech taps).",
+      "fontScaling": "Uses relative px sizing consistent with 16px root.",
+      "color": "All bin colours have white text with WCAG-AA-grade contrast; success and error states use icons + text, not colour alone.",
+      "motion": "Animations are short (<1s) and non-essential — completion still works without them. Confetti is decorative and pointer-events-none."
+    },
+    "agentNotes": {
+      "whenToUse": "Use this tool when a Grade 6 student is studying section 6.3.3 of the Curiosity textbook (transparent / translucent / opaque materials) or doing Activity 6.6. Also use as a quick formative-assessment activity any time the concepts come up in conversation.",
+      "doNotUseWhen": "The student needs a long explanation (use prose instead). The student is on a topic other than light-transmission classification (use a different sorter or build a new one).",
+      "instructionLine": "Drag each of the six objects into Transparent, Translucent, or Opaque. Read the reason on each correct drop."
+    }
+  }

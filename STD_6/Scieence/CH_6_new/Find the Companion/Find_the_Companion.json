@@ -1,0 +1,225 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Match the Opposite Properties — Companion Pair Game",
+    "toolName": "companion_pair_game",
+    "description": "A two-column tap-to-match activity where students find OPPOSITE property pairs. Students tap a left property chip to select it, then tap its opposite on the right. Correct opposite pairs lock green with a reason and a coloured SVG Bézier connector line. Wrong taps shake red and clear. An instructions banner, animated 'opposites' badge, score pill, progress bar, confetti, and summary card complete the experience.",
+  
+    "parameters": {
+      "width": 800,
+      "height": 600,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "additionalProps": {
+        "title": "Match the Opposite Properties",
+        "subtitle": "Each property on the left has an OPPOSITE on the right — tap a word to select it, then tap its opposite",
+        "rightColumnOrder": ["Soft", "Insoluble", "Opaque", "Light", "Dull", "Fluid"],
+        "pairs": [
+          {
+            "id": "hard",
+            "left": "Hard",
+            "right": "Soft",
+            "reason": "Hard & Soft are OPPOSITE texture properties — one resists compression, the other yields easily."
+          },
+          {
+            "id": "lustrous",
+            "left": "Lustrous",
+            "right": "Dull",
+            "reason": "Lustrous & Dull are OPPOSITES describing surface shine — metals are lustrous; wood and paper are non-lustrous."
+          },
+          {
+            "id": "transparent",
+            "left": "Transparent",
+            "right": "Opaque",
+            "reason": "Transparent & Opaque are OPPOSITES — transparent lets you see through it; opaque blocks all light completely."
+          },
+          {
+            "id": "soluble",
+            "left": "Soluble",
+            "right": "Insoluble",
+            "reason": "Soluble & Insoluble are OPPOSITES — soluble materials dissolve in water; insoluble ones remain separate."
+          },
+          {
+            "id": "dense",
+            "left": "Dense",
+            "right": "Fluid",
+            "reason": "Dense & Fluid are OPPOSITES — dense describes tightly packed matter; fluid flows freely with no fixed shape."
+          },
+          {
+            "id": "heavy",
+            "left": "Heavy",
+            "right": "Light",
+            "reason": "Heavy & Light are OPPOSITE properties of mass — objects with more mass feel heavier."
+          }
+        ]
+      }
+    },
+  
+    "schema": {
+      "description": "All agent-configurable content lives inside additionalProps. Every pair must represent true OPPOSITE properties so the instructions banner and 'opposites' badge remain accurate.",
+      "additionalProps": {
+        "title": {
+          "type": "string",
+          "description": "Heading shown in the purple header bar. Should communicate that the task is about finding opposites.",
+          "default": "Match the Opposite Properties"
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Instruction line shown beneath the heading. Should reinforce the 'opposite' concept.",
+          "default": "Each property on the left has an OPPOSITE on the right — tap a word to select it, then tap its opposite"
+        },
+        "rightColumnOrder": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Ordered list of right-column words. Must match the 'right' field of every pair. Controls the shuffled display order in Column II — set this to a different order than the left column so students must actively think.",
+          "example": ["Soft", "Insoluble", "Opaque", "Light", "Dull", "Fluid"]
+        },
+        "pairs": {
+          "type": "array",
+          "description": "Array of left–right OPPOSITE word pairs. Every pair must be a genuine conceptual opposite so the instructions banner ('Hard is the opposite of Soft') remains accurate for the subject.",
+          "minItems": 2,
+          "maxItems": 10,
+          "items": {
+            "type": "object",
+            "required": ["id", "left", "right", "reason"],
+            "properties": {
+              "id":     { "type": "string", "description": "Unique identifier (kebab-case recommended)." },
+              "left":   { "type": "string", "description": "Word shown in Column I — Properties." },
+              "right":  { "type": "string", "description": "OPPOSITE word shown in Column II — Opposite Properties." },
+              "reason": {
+                "type": "string",
+                "description": "One-line explanation revealed on correct match. Recommended format: 'Left & Right are OPPOSITES — explanation sentence.' The word OPPOSITES should appear so the feedback reinforces the concept."
+              }
+            }
+          }
+        }
+      }
+    },
+  
+    "ui_behaviour": {
+      "interaction_model": "tap-to-select then tap-to-match (no drag required — works on touch devices)",
+  
+      "new_in_this_version": [
+        "Animated 'opposites' badge with two-way arrows icon sits next to the header title — pulses gently to draw attention.",
+        "Instructions banner between header and game area shows a concrete example: Hard ↔ is the opposite of ↔ Soft so students know the task before touching anything.",
+        "Column II header now reads 'Column II — Opposite Properties' instead of 'Companions'.",
+        "Center gap between columns shows a small 'opposites' label above the SVG lines.",
+        "Hint bar uses opposite-specific language: 'Now tap its OPPOSITE property on the right →'.",
+        "Matched tag on left chip reads 'opposite: Soft' instead of just 'Soft'.",
+        "Cross-reference tag on right chips reads '↔ opposite of (i)' instead of '↔ (i)'.",
+        "Summary card title reads 'All Opposites Matched!' and shows an 'opposite' badge between each pair in the grid.",
+        "All default pair reasons now start with 'X & Y are OPPOSITE…' to reinforce the concept on every reveal."
+      ],
+  
+      "correct_feedback": [
+        "Left chip border turns green",
+        "Check icon replaces label badge",
+        "Companion tag pops in below reading 'opposite: [word]'",
+        "Reason slides in italicised — starts with 'X & Y are OPPOSITES…'",
+        "SVG Bézier line animates from left endpoint to right endpoint with colour-coded dots",
+        "Score pill pulses"
+      ],
+      "wrong_feedback": [
+        "Right chip shakes and flashes red (#fef2f2 background)",
+        "Selection is cleared after 600 ms"
+      ],
+      "right_column_opacity": "0.55 when no left chip is selected, 1.0 when a selection is active — focuses the student on available targets",
+      "summary_card": "Full-screen gradient overlay with confetti, trophy, 'All Opposites Matched!' title, score/attempt count, 2-col pair grid (left badge ↔ 'opposite' badge ↔ right badge + reason), Play Again button",
+      "hint_bar": "Context-sensitive — 'Tap a property on the left, then find its opposite on the right!', 'Now tap its OPPOSITE property on the right →', or '{n} of {total} opposites matched'"
+    },
+  
+    "agent_readme": {
+      "overview": "CompanionPairGame is a two-column OPPOSITE-matching widget. Students click a left chip (property word) to select it (glows, scales up), then click a right chip (its opposite). The UI consistently uses the word 'opposite' across the badge, instructions banner, column header, hint bar, matched tags, and summary — so every interaction reinforces the concept. Correct pairs lock with an animated SVG connector line. Wrong taps shake and clear.",
+  
+      "architecture_notes": [
+        "Single .tsx file, all inline styles, no Tailwind.",
+        "Keyframes injected via useEffect into document.head with unique id 'cpg-kf-v2' — cleaned up on unmount.",
+        "Two new keyframes added: cpgBadgePop (used for the 'opposite' tag in summary) and cpgOppositeGlow (used for the header badge pulse).",
+        "Custom OppositeIcon SVG component (two curved opposite arrows) used in header badge, instructions banner, hint bar, and matched tags — no external icon dependency.",
+        "Instructions banner is always visible above the matching area and is hard-coded to show the first pair (pairs[0].left ↔ pairs[0].right) as the example — ensure pairs[0] is a clear, student-friendly opposite.",
+        "SVG lines recalculated via useRef DOM measurements in recalcLines(), called after each match with two setTimeout passes (120 ms and 420 ms) to handle hint-block expand/collapse layout shifts.",
+        "rightColumnOrder controls Column II order independently of Column I.",
+        "setStepDetails() called once on mount: currentMode: 'practice', isPaused: true.",
+        "stopAutoNext / setStopAutoNext props accepted but not actively used."
+      ],
+  
+      "content_guidelines": [
+        "Every pair MUST be a genuine conceptual opposite — the instructions banner will display pairs[0] as the example 'X is the opposite of Y'.",
+        "Reason strings should begin with 'X & Y are OPPOSITES — …' to match the reinforcement pattern used throughout the UI.",
+        "rightColumnOrder should differ from the left column order to prevent positional guessing.",
+        "Keep pair count between 2 and 10; the layout scrolls vertically for larger sets."
+      ],
+  
+      "examples": [
+        {
+          "name": "Chapter 6 Science — default 6 opposite pairs",
+          "parameters": {}
+        },
+        {
+          "name": "Electricity — 4 opposite pairs",
+          "parameters": {
+            "additionalProps": {
+              "title": "Electricity — Match the Opposites",
+              "subtitle": "Each electrical property on the left has an OPPOSITE on the right — find all 4 pairs!",
+              "rightColumnOrder": ["Insulator", "Negative", "Parallel", "Resistance"],
+              "pairs": [
+                { "id": "c1", "left": "Conductor",  "right": "Insulator",   "reason": "Conductor & Insulator are OPPOSITES — one allows current flow, the other blocks it." },
+                { "id": "c2", "left": "Positive",   "right": "Negative",    "reason": "Positive & Negative are OPPOSITE electric charge types." },
+                { "id": "c3", "left": "Series",     "right": "Parallel",    "reason": "Series & Parallel are OPPOSITE circuit configurations." },
+                { "id": "c4", "left": "Voltage",    "right": "Resistance",  "reason": "Voltage & Resistance are OPPOSITES — voltage drives current; resistance opposes it." }
+              ]
+            }
+          }
+        },
+        {
+          "name": "States of Matter — 3 opposite pairs",
+          "parameters": {
+            "additionalProps": {
+              "title": "States of Matter — Match the Opposites",
+              "subtitle": "Each state or change on the left has an OPPOSITE on the right — find all 3 pairs!",
+              "rightColumnOrder": ["Gas", "Freezing", "Condensation"],
+              "pairs": [
+                { "id": "s1", "left": "Solid",       "right": "Gas",          "reason": "Solid & Gas are OPPOSITES — solid has fixed shape and volume; gas has neither." },
+                { "id": "s2", "left": "Melting",     "right": "Freezing",     "reason": "Melting & Freezing are OPPOSITE changes of state — solid→liquid vs liquid→solid." },
+                { "id": "s3", "left": "Evaporation", "right": "Condensation", "reason": "Evaporation & Condensation are OPPOSITES — liquid→gas vs gas→liquid." }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Biology — Cell Organelle Functions — 4 pairs",
+          "parameters": {
+            "additionalProps": {
+              "title": "Cell Organelles — Match the Function",
+              "subtitle": "Each organelle on the left has a matching function on the right — find all 4 pairs!",
+              "rightColumnOrder": ["Energy production", "Protein synthesis", "Digestion", "Storage"],
+              "pairs": [
+                { "id": "b1", "left": "Mitochondria", "right": "Energy production", "reason": "Mitochondria & Energy production are LINKED — mitochondria produce ATP, the cell's fuel." },
+                { "id": "b2", "left": "Ribosome",     "right": "Protein synthesis",  "reason": "Ribosome & Protein synthesis are LINKED — ribosomes translate mRNA into proteins." },
+                { "id": "b3", "left": "Lysosome",     "right": "Digestion",          "reason": "Lysosome & Digestion are LINKED — lysosomes break down waste using enzymes." },
+                { "id": "b4", "left": "Vacuole",      "right": "Storage",            "reason": "Vacuole & Storage are LINKED — vacuoles store water, nutrients, and waste." }
+              ]
+            }
+          }
+        }
+      ],
+  
+      "decision_tree": {
+        "default_chapter6":    "Pass no additionalProps — renders the 6 Chapter-6 science opposite property pairs.",
+        "custom_opposites":    "Provide pairs[] where every left–right pairing is a genuine opposite. Set reason strings to start with 'X & Y are OPPOSITES — …'.",
+        "function_matching":   "If pairs are not true opposites (e.g. organelle→function), adjust the title/subtitle/reason wording accordingly and note that the header 'opposites' badge and banner will still show — communicate that to students.",
+        "change_heading":      "Set additionalProps.title and additionalProps.subtitle.",
+        "fewer_pairs":         "2–4 pairs for a short warm-up activity.",
+        "more_pairs":          "Up to 10 pairs; the layout scrolls vertically inside the card."
+      },
+  
+      "error_handling": {
+        "missing_pairs":               "Falls back to DEFAULT_PAIRS (6 Chapter-6 science opposite pairs).",
+        "rightColumnOrder_mismatch":   "If a word in rightColumnOrder has no matching pair.right, it is silently filtered out.",
+        "duplicate_right_words":       "Each 'right' value must be unique; duplicates will cause SVG lines to share an endpoint.",
+        "empty_reason":                "If reason is an empty string the reason line renders blank — always supply a reason starting with 'X & Y are OPPOSITES — …'.",
+        "non_opposite_pairs":          "If pairs are not genuine opposites, the instructions banner ('X is the opposite of Y') will be misleading — ensure content accuracy."
+      }
+    },
+  
+    "instructions_for_student": "Tap a property word on the left to select it, then find its OPPOSITE on the right and tap it. A green connector line and a fun fact appear when you get it right — a red shake tells you to try again. Match all opposites to win!"
+  }

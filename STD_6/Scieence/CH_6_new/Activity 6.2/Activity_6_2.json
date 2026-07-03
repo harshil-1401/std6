@@ -1,0 +1,124 @@
+{
+    "toolName": "group_objects_by_material",
+    "version": "1.0.0",
+    "description": "Interactive 'Group the Objects' sorting activity for NCERT Class 6 Science, Chapter 6 'Materials Around Us' (Activity 6.2). Students sort 12 everyday objects into four material bins (Metal, Wood, Plastic, Clay) by drag-and-drop or tap. Validation is immediate: only the correct bin accepts an object, a wrong bin shakes and flashes red. Ends with a first-try score, stars and confetti, then a concept review of any objects that took more than one try.",
+    "subject": "Science",
+    "grade": 6,
+    "chapter": "6 - Materials Around Us",
+    "activity": "Activity 6.2 - Let us group",
+    "concept": "Classification of objects by a common property (material)",
+  
+    "rendering": {
+      "type": "react-tsx",
+      "file": "group_objects_by_material.tsx",
+      "export": "default",
+      "dependencies": "react-only (icons are inline SVG, no external icon library)",
+      "responsive": true,
+      "selfSizing": "Component is responsive with maxWidth 920px and adapts down to 320px. width/height props are accepted by the interface but not required."
+    },
+  
+    "parameters": {
+      "gradeLevel": {
+        "type": "number",
+        "enum": [6, 7, 8],
+        "default": 6,
+        "description": "Selects the tier preset that controls celebration intensity, copy tone, font sizing and review language. 6 = heaviest gamification + story framing (recommended for this chapter); 7 = moderate; 8 = lighter and more formal. Can be set directly as props.gradeLevel or via props.additionalProps.gradeLevel."
+      },
+      "width": {
+        "type": "number",
+        "default": 800,
+        "required": false,
+        "description": "Accepted by the standard props interface. The tool is responsive and does not depend on this value."
+      },
+      "height": {
+        "type": "number",
+        "default": 600,
+        "required": false,
+        "description": "Accepted by the standard props interface. The tool is responsive and does not depend on this value."
+      }
+    },
+  
+    "additionalProps": {
+      "description": "Tool-specific dynamic content. Currently the only honored field is gradeLevel; the object set and bins are fixed (see 'content' below). Custom objects/bins are not yet configurable.",
+      "schema": {
+        "gradeLevel": {
+          "type": "number",
+          "enum": [6, 7, 8],
+          "default": 6,
+          "description": "Overrides props.gradeLevel when present."
+        }
+      },
+      "examples": {
+        "class6_default": { "gradeLevel": 6 },
+        "class7_lighter": { "gradeLevel": 7 },
+        "class8_formal": { "gradeLevel": 8 }
+      }
+    },
+  
+    "externalControls": {
+      "setStepDetails": "Optional callback. Receives { currentStep, totalSteps, isPaused, currentMode } where currentStep = number of objects placed, totalSteps = 12, currentMode = 'sort'.",
+      "stopAutoNext": "Accepted by interface; not used (this is a single-screen practice tool, not a stepped explainer).",
+      "setStopAutoNext": "Accepted by interface; not used."
+    },
+  
+    "interaction": {
+      "modes": ["drag", "tap"],
+      "drag": "Pointer-events based (works with mouse, touch and stylus). A ghost of the object follows the pointer; the hovered bin highlights and scales; release drops it.",
+      "tap": "Tap an object to pick it up (it highlights and pulses), then tap a bin to place it. Tap a placed object to send it back to the tray.",
+      "validation": "Immediate. A correct material bin accepts the object; a wrong bin rejects it (object shakes, bin flashes red, status line shows 'Not quite ...'). Wrong placements never stick.",
+      "completion": "When all 12 objects are correctly placed, the result popup opens automatically after a short delay. There is no manual submit button."
+    },
+  
+    "content": {
+      "note": "Fixed in this version. Objects are shuffled into a fresh order on every play.",
+      "bins": [
+        { "key": "metal", "label": "Metal", "emoji": "\u2699\ufe0f", "color": "#4A4DC9" },
+        { "key": "wood", "label": "Wood", "emoji": "\ud83c\udf33", "color": "#166534" },
+        { "key": "plastic", "label": "Plastic", "emoji": "\u2673", "color": "#0891b2" },
+        { "key": "clay", "label": "Clay", "emoji": "\ud83c\udffa", "color": "#DB2777" }
+      ],
+      "objects": [
+        { "id": "key", "label": "Key", "emoji": "\ud83d\udd11", "material": "metal" },
+        { "id": "coin", "label": "Coin", "emoji": "\ud83e\ude99", "material": "metal" },
+        { "id": "bolt", "label": "Iron bolt", "emoji": "\ud83d\udd29", "material": "metal" },
+        { "id": "pencil", "label": "Pencil", "emoji": "\u270f\ufe0f", "material": "wood" },
+        { "id": "board", "label": "Wooden board", "emoji": "\ud83e\udeb5", "material": "wood" },
+        { "id": "bat", "label": "Cricket bat", "emoji": "\ud83c\udfcf", "material": "wood" },
+        { "id": "bottle", "label": "Plastic bottle", "emoji": "\ud83e\uddf4", "material": "plastic" },
+        { "id": "bucket", "label": "Bucket", "emoji": "\ud83e\udea3", "material": "plastic" },
+        { "id": "cup", "label": "Plastic cup", "emoji": "\ud83e\udd64", "material": "plastic" },
+        { "id": "diya", "label": "Clay lamp (diya)", "emoji": "\ud83e\ude94", "material": "clay" },
+        { "id": "pot", "label": "Clay pot", "emoji": "\ud83c\udffa", "material": "clay" },
+        { "id": "brick", "label": "Brick", "emoji": "\ud83e\uddf1", "material": "clay" }
+      ]
+    },
+  
+    "assessment": {
+      "scoring": "Score = number of objects placed in the correct bin on the FIRST try (out of 12). Because wrong placements never stick, the final board is always fully correct; the score rewards getting it right without a wrong attempt.",
+      "stars": "1-5 stars shown for grade 6 and 7 (scaled to the first-try percentage). No stars for grade 8.",
+      "encouragement": "Message tier based on percentage: >=90% high, 60-89% mid, <60% low.",
+      "review": "After the result, students can review only the 'tricky' objects (those that needed more than one try). Each review card shows the object, its correct material group, the number of tries, and a real-world explanation (e.g. a brick is clay baked in a kiln, a cricket bat is willow wood)."
+    },
+  
+    "modes": {
+      "sort": {
+        "description": "Single sorting screen with immediate validation, result popup and concept review.",
+        "totalObjects": 12,
+        "bins": 4
+      }
+    },
+  
+    "agentUsage": {
+      "recommendedCall": {
+        "toolName": "group_objects_by_material",
+        "parameters": {
+          "gradeLevel": 6
+        }
+      },
+      "notes": [
+        "Best used while teaching Class 6 Chapter 6, Activity 6.2 (classification of materials).",
+        "Set gradeLevel: 7 or 8 to reuse the same activity with a lighter tone and smaller celebration for older revision.",
+        "The object set and material bins are fixed in this version; tell the team if you want them made configurable via additionalProps (e.g. additionalProps.objects / additionalProps.bins)."
+      ]
+    }
+  }

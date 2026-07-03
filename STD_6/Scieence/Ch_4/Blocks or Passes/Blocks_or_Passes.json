@@ -1,0 +1,172 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Magnetic Sorting Challenge",
+    "instructions_for_student": "Drag each material card into the correct bin. Think about whether each material is magnetic or non-magnetic to decide if it blocks or passes the magnetic effect.",
+    "data": {
+      "toolName": "magnetic_sorting_tool",
+      "parameters": {
+        "width": 700,
+        "height": 750,
+        "themeColor": "#533086",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "title": "Magnetic Sorting Challenge",
+          "subtitle": "Drag each material into the correct bin",
+          "blocksBinLabel": "Blocks Magnetic Effect",
+          "noblockBinLabel": "Does NOT Block Magnetic Effect",
+          "completionMessage": "All materials sorted correctly! 🧲",
+          "cards": [
+            {
+              "id": "wood",
+              "label": "Wood",
+              "emoji": "🪵",
+              "bin": "noblock",
+              "reason": "Wood is non-magnetic, so the magnetic effect passes through it."
+            },
+            {
+              "id": "glass",
+              "label": "Glass",
+              "emoji": "🪟",
+              "bin": "noblock",
+              "reason": "Glass is non-magnetic, so the magnetic effect passes through it."
+            },
+            {
+              "id": "iron",
+              "label": "Iron Sheet",
+              "emoji": "🔩",
+              "bin": "blocks",
+              "reason": "Iron is a magnetic material — it absorbs and blocks the magnetic effect."
+            },
+            {
+              "id": "cardboard",
+              "label": "Cardboard",
+              "emoji": "📦",
+              "bin": "noblock",
+              "reason": "Cardboard is non-magnetic, so the magnetic effect passes through it."
+            },
+            {
+              "id": "plastic",
+              "label": "Plastic",
+              "emoji": "🧴",
+              "bin": "noblock",
+              "reason": "Plastic is non-magnetic, so the magnetic effect passes through it."
+            },
+            {
+              "id": "steel",
+              "label": "Steel Plate",
+              "emoji": "🛡️",
+              "bin": "blocks",
+              "reason": "Steel contains iron and is magnetic — it absorbs and blocks the magnetic effect."
+            },
+            {
+              "id": "rubber",
+              "label": "Rubber",
+              "emoji": "⭕",
+              "bin": "noblock",
+              "reason": "Rubber is non-magnetic, so the magnetic effect passes through it."
+            },
+            {
+              "id": "aluminium",
+              "label": "Aluminium Foil",
+              "emoji": "✨",
+              "bin": "noblock",
+              "reason": "Aluminium is non-magnetic, so the magnetic effect passes through it."
+            }
+          ]
+        }
+      }
+    },
+    "_schema_version": "2.1",
+    "_tool_meta": {
+      "component": "MagneticSortingTool",
+      "file": "MagneticSortingTool.tsx",
+      "subject": "Science",
+      "topic": "Magnets – Chapter 4 Exploring Magnets (Grade 6 NCERT)",
+      "activity_reference": "Activity 4.7: Let us investigate — Effect of magnet through non-magnetic materials (Table 4.2)",
+      "design_theme": {
+        "primary": "#533086",
+        "secondary": "#FC9145",
+        "accent_green": "#16a34a",
+        "accent_red": "#dc2626",
+        "font": "Poppins",
+        "palette_source": "Singularity Design System (fecu104.pdf / Singularity_tool_Design_1.pdf)",
+        "colors_used": ["#533086", "#FC9145", "#C1C1EA", "#FFF3E4", "#F5F5F5", "#4E4E4E", "#CACACA", "#EBEBEB", "#16a34a", "#dc2626"]
+      },
+      "no_external_dependencies": true,
+      "icons": "inline SVG only — no lucide-react or external icon libraries",
+      "interaction_model": "drag-and-drop (desktop) + touch-drag (mobile)",
+      "sorting_logic": {
+        "blocks_bin": "magnetic materials only — iron, steel, nickel, cobalt (and their alloys)",
+        "noblock_bin": "all non-magnetic materials — wood, glass, cardboard, plastic, rubber, aluminium, etc."
+      },
+      "agent_readme": {
+        "description": "A two-bin drag-and-drop sorting tool. Cards start shuffled in a pool below the two bins. Students drag each material card into 'Blocks magnetic effect' (magnetic materials: iron, steel) or 'Does NOT block magnetic effect' (all others). Correct placements lock green and reveal a one-line reason. Wrong placements bounce back with a hint asking whether the material is magnetic. A completion modal shows all sorted items with reasons and the key insight.",
+        "additionalProps_schema": {
+          "title": { "type": "string", "description": "Main heading", "default": "Magnetic Sorting Challenge" },
+          "subtitle": { "type": "string", "description": "Instruction subheading", "default": "Drag each material into the correct bin" },
+          "blocksBinLabel": { "type": "string", "description": "Label for the 'blocks' bin", "default": "Blocks Magnetic Effect" },
+          "noblockBinLabel": { "type": "string", "description": "Label for the 'does not block' bin", "default": "Does NOT Block Magnetic Effect" },
+          "completionMessage": { "type": "string", "description": "Heading shown on the completion modal", "default": "All materials sorted correctly! 🧲" },
+          "cards": {
+            "type": "array",
+            "description": "Array of material cards. Must have at least 2 cards; recommended 6–10 for classroom use.",
+            "items": {
+              "id": { "type": "string", "description": "Unique identifier (no spaces)" },
+              "label": { "type": "string", "description": "Display name of the material" },
+              "emoji": { "type": "string", "description": "Emoji representing the material" },
+              "bin": { "type": "string", "enum": ["blocks", "noblock"], "description": "'blocks' for magnetic materials; 'noblock' for non-magnetic materials" },
+              "reason": { "type": "string", "description": "One-line explanation shown after correct placement" }
+            }
+          }
+        },
+        "magnetic_materials_reference": {
+          "magnetic_blocks": ["iron", "steel", "nickel", "cobalt", "iron alloys", "ferrite"],
+          "non_magnetic_passes": ["wood", "glass", "cardboard", "plastic", "rubber", "aluminium", "copper", "paper", "fabric", "water", "air"]
+        },
+        "customisation_examples": [
+          {
+            "_comment": "Simplified 4-card version for younger students",
+            "additionalProps": {
+              "title": "Does it Block?",
+              "subtitle": "Sort these 4 materials",
+              "cards": [
+                { "id": "iron2",  "label": "Iron Nail",   "emoji": "📌", "bin": "blocks",  "reason": "Iron is magnetic — it blocks the effect." },
+                { "id": "wood2",  "label": "Wooden Plank","emoji": "🪵", "bin": "noblock", "reason": "Wood is non-magnetic — effect passes through." },
+                { "id": "steel2", "label": "Steel Spoon", "emoji": "🥄", "bin": "blocks",  "reason": "Steel is magnetic — it blocks the effect." },
+                { "id": "paper",  "label": "Paper Sheet", "emoji": "📄", "bin": "noblock", "reason": "Paper is non-magnetic — effect passes through." }
+              ]
+            }
+          },
+          {
+            "_comment": "Extended 10-card version including copper and nickel",
+            "additionalProps": {
+              "title": "Advanced Magnetic Sort",
+              "subtitle": "Sort all 10 materials — can you get them all?",
+              "cards": [
+                { "id": "iron3",    "label": "Iron Sheet",     "emoji": "🔩", "bin": "blocks",  "reason": "Iron is magnetic." },
+                { "id": "steel3",   "label": "Steel Plate",    "emoji": "🛡️", "bin": "blocks",  "reason": "Steel contains iron and is magnetic." },
+                { "id": "nickel",   "label": "Nickel Coin",    "emoji": "🪙", "bin": "blocks",  "reason": "Nickel is a magnetic metal." },
+                { "id": "copper",   "label": "Copper Wire",    "emoji": "🔌", "bin": "noblock", "reason": "Copper is non-magnetic." },
+                { "id": "wood3",    "label": "Wood",           "emoji": "🪵", "bin": "noblock", "reason": "Wood is non-magnetic." },
+                { "id": "glass3",   "label": "Glass",          "emoji": "🪟", "bin": "noblock", "reason": "Glass is non-magnetic." },
+                { "id": "plastic3", "label": "Plastic",        "emoji": "🧴", "bin": "noblock", "reason": "Plastic is non-magnetic." },
+                { "id": "rubber3",  "label": "Rubber",         "emoji": "⭕", "bin": "noblock", "reason": "Rubber is non-magnetic." },
+                { "id": "alumin3",  "label": "Aluminium",      "emoji": "✨", "bin": "noblock", "reason": "Aluminium is non-magnetic." },
+                { "id": "card3",    "label": "Cardboard",      "emoji": "📦", "bin": "noblock", "reason": "Cardboard is non-magnetic." }
+              ]
+            }
+          }
+        ],
+        "decision_tree": {
+          "standard_8_cards": "Use the default cards array — covers the exact 8 materials from Activity 4.7 (Table 4.2) of NCERT Grade 6 Science Chapter 4",
+          "fewer_cards": "Reduce the cards array to any number ≥ 2",
+          "add_nickel_cobalt": "Add nickel/cobalt cards with bin='blocks' for extended learning",
+          "custom_topic": "Replace all card objects with new materials for a different sorting activity (keep bin field as 'blocks' or 'noblock')"
+        }
+      }
+    }
+  }

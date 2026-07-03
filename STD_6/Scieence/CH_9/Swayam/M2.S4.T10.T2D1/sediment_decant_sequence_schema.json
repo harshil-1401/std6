@@ -1,0 +1,138 @@
+{
+  "toolName": "sediment_decant_sequence",
+  "componentName": "SedimentDecantSequence",
+  "version": "1.0.0",
+  "title": "Settle & Pour: Sedimentation + Decantation",
+  "activity": "Topic M2.S4.T10 / Fig. 9.9 — Removing tea leaves without a strainer (sedimentation, then decantation)",
+  "description": "A tap-and-slide Class 6 guided experiment on the two-step separation sequence for a heavier insoluble solid in a liquid. In Explore (learn) mode the student sees a pan of tea with the leaves mixed through it, predicts what a fast tilt will do, presses 'Wait' to watch the leaves sediment to the bottom (SEDIMENTATION), then drags a tilt slider to pour the clear tea into a cup (DECANTATION). The pour control is physically honest: a slow tilt keeps the leaves resting and only clear tea flows out, but a fast yank lifts the settled leaves so the cup fills with cloudy tea — the built-in failure case that teaches 'tilt slowly'. The wrap states the rule (sedimentation first, then decantation; works only on INSOLUBLE solids). Quiz (practice) mode is a gamified round on the step order, the two names, the fast-tilt failure, the insoluble rule (salt never settles), and the rice-washing real-world case, with a result popup (score count-up, stars, confetti) and a wrong-answer concept review. No drag-drop of cards anywhere — only taps and one tilt slider.",
+  "toolType": "hybrid (guided experiment + gamified quiz)",
+  "topic_id": "M2.S4.T10",
+  "tool_id": "M2.S4.T10.T2D1",
+  "subtype": "guided_experiment",
+
+  "parameters": {
+    "width": 840,
+    "height": 600,
+    "gradeLevel": 6,
+    "themeColor": "#3b82f6",
+    "darkMode": false,
+    "initialMode": "learn",
+    "enabledModes": ["learn", "practice"],
+    "showModeSelector": true,
+    "showNavigation": true,
+    "showPlayPause": true,
+    "showStepIndicator": true,
+    "initialStep": 0,
+    "filterSteps": [],
+    "animationSpeed": 1,
+    "autoPlayDuration": 8000,
+    "additionalProps": {
+      "panState": "mixed",
+      "tiltAngle": 0,
+      "cupContents": "empty",
+      "showHints": true,
+      "feedbackMessage": "Wait for the leaves to settle before tilting. Tilt slowly."
+    }
+  },
+
+  "parameterSchema": {
+    "gradeLevel": { "type": "number", "enum": [6, 7, 8], "default": 6, "description": "Selects the tier preset. 6 = heaviest gamification, story framing, biggest text, slowest/most dramatic settle, 70-particle confetti + 5 stars. 7 = moderate. 8 = light/formal. This tool is authored for Class 6." },
+    "themeColor": { "type": "string", "default": "#3b82f6", "description": "Accent hint. The tool uses the Singularity palette internally — header purple, SEDIMENTATION tag purple #4A4DC9, DECANTATION tag + CTAs orange #FF7212." },
+    "initialMode": { "type": "string", "enum": ["learn", "practice"], "default": "learn", "description": "Which mode opens first." },
+    "enabledModes": { "type": "array", "items": "learn | practice", "default": ["learn", "practice"], "description": "Modes shown in the selector (Explore / Quiz)." },
+    "showModeSelector": { "type": "boolean", "default": true, "description": "Show the Explore/Quiz toggle in the header." },
+    "showNavigation": { "type": "boolean", "default": true, "description": "Show Back/Next in Explore. Auto-hidden when filterSteps freezes the tool on a single screen." },
+    "showPlayPause": { "type": "boolean", "default": true, "description": "Reserved; this interactive tool advances via Next/Back and in-stage taps, not host autoplay." },
+    "filterSteps": { "type": "array", "items": "string", "default": [], "description": "Freeze the Explore flow on ONE screen and hide the nav. Accepts a single-element array of S1..S4: S1=See the mix, S2=Predict, S3=Wait/sedimentation, S4=Tilt/decantation (slow = clear, fast = cloudy; ends with the rule + quiz CTA). Empty = full free-running flow." },
+    "autoPlayDuration": { "type": "number", "default": 8000, "description": "Host auto-advance hint, in ms. Ignored for actual stepping — the tool calls setStopAutoNext(true) because every screen needs interaction." }
+  },
+
+  "additionalPropsSchema": {
+    "panState": {
+      "type": "string",
+      "enum": ["mixed", "settling", "settled"],
+      "default": "mixed",
+      "description": "Initial settle state of the pan when the tool mounts. 'mixed' = leaves suspended throughout (start of the experiment), 'settling' = part-way settled, 'settled' = leaves already resting at the bottom (clear tea on top). Use 'settled' to drop a learner straight onto the decantation step."
+    },
+    "tiltAngle": {
+      "type": "number",
+      "default": 0,
+      "minimum": 0,
+      "maximum": 60,
+      "description": "Initial tilt of the pan/pour control in degrees (0 = upright, 60 = fully tipped). Pouring begins past ~16°. Useful to present a frozen 'mid-pour' illustration."
+    },
+    "cupContents": {
+      "type": "string",
+      "enum": ["empty", "clear", "cloudy"],
+      "default": "empty",
+      "description": "Initial contents of the cup. 'clear' = a successful slow decantation has already half-filled the cup with clear tea; 'cloudy' = a fast tilt has poured disturbed, leaf-laden tea (the failure outcome). Lets an agent open the tool on a worked example."
+    },
+    "showHints": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the small inline coaching hints under the slider and pan."
+    },
+    "feedbackMessage": {
+      "type": "string",
+      "default": "Wait for the leaves to settle before tilting. Tilt slowly.",
+      "description": "One-line coaching message shown under the pan on the See-the-mix and Test-fast-tilt screens."
+    },
+    "predictionPrompt": {
+      "type": "string",
+      "default": "Will tilting FAST pour clear tea or cloudy tea?",
+      "description": "Question shown on the Predict screen (S2)."
+    },
+    "liquidLabel": {
+      "type": "string",
+      "default": "tea",
+      "description": "Re-theme the liquid. Pair with solidLabel/colours to reuse the same mechanic for other sediment→decant cases, e.g. 'muddy water', 'rice water'."
+    },
+    "solidLabel": {
+      "type": "string",
+      "default": "tea leaves",
+      "description": "Name of the heavier insoluble solid that settles, e.g. 'tea leaves', 'mud', 'rice grains', 'sand'."
+    },
+    "liquidColor": {
+      "type": "string",
+      "default": "#C97B30",
+      "description": "Hex colour of the still-mixed liquid (clears toward an internal lighter tint once settled)."
+    },
+    "solidColor": {
+      "type": "string",
+      "default": "#5A3A1A",
+      "description": "Hex colour of the settled solid band and the suspended-particle cloud."
+    }
+  },
+
+  "modes": [
+    { "id": "learn", "label": "Explore", "description": "See the mixed pan → predict the fast-tilt effect → press Wait to watch sedimentation → drag the tilt slider to decant slowly (a fast yank goes cloudy — the built-in failure case), then the rule wrap and quiz CTA." },
+    { "id": "practice", "label": "Quiz", "description": "Gamified 4-question round on step order, the two names, the fast-tilt failure, the insoluble rule, and rice-washing → result popup → wrong-answer concept review → play again with a fresh shuffle." }
+  ],
+
+  "steps": {
+    "learn": [
+      { "id": "S1", "title": "See the mixed pan", "type": "interactive", "description": "A pan of tea with leaves mixed throughout; a cup waits alongside. Sets the problem: get clear tea, leave the leaves behind." },
+      { "id": "S2", "title": "Predict the tilt effect", "type": "interactive", "description": "Student predicts whether a fast tilt pours clear or cloudy tea (tap-select). Gate: a prediction is made." },
+      { "id": "S3", "title": "Wait for sedimentation", "type": "interactive", "description": "Press 'Wait' to watch the heavier insoluble leaves sink and settle into a dark band at the bottom; a SEDIMENTATION tag appears. Gate: settling completes." },
+      { "id": "S4", "title": "Tilt slowly to decant", "type": "interactive", "description": "Drag the tilt slider; a slow tilt pours clear tea into the cup while the leaves stay put (DECANTATION tag). A fast yank lifts the settled leaves so the cup goes cloudy — the built-in failure case that teaches 'tilt slowly'. Closes with the sedimentation-then-decantation rule and a 'Take the Quiz' CTA." }
+    ],
+    "practice": [
+      { "id": 10, "title": "Quiz round", "type": "quiz", "description": "4 randomized questions: which step comes first; name the pour-off step (decantation); the fast-tilt outcome; will salt settle (insoluble rule); rice-washing as decantation. Silent play." },
+      { "id": 11, "title": "Result", "type": "result", "description": "Score count-up, 5 stars, 70-particle confetti, tier encouragement, CTAs." },
+      { "id": 12, "title": "Review", "type": "review", "description": "Wrong-answer cards with cause-and-effect explanations; prev/next; play again." }
+    ]
+  },
+
+  "interactionNotes": [
+    "Tap/click + ONE tilt slider — no drag-and-drop of cards (house rule; robust on mobile for young students).",
+    "The pan/cup is a single responsive SVG side-view scene driven by four numbers: settle (0..1), tilt (deg), poured (0..1), disturb (0..1). The maths is physically honest so the picture always reads true.",
+    "Failure case is emergent, not scripted: tilt SPEED (deg/sec) above a threshold raises 'disturb', which lifts the settled band and turns both the pour stream and the cup cloudy. Easing off lets it slowly re-settle.",
+    "Sedimentation animation duration scales by tier (slowest at Class 6 for drama).",
+    "filterSteps S1..S4 freezes Explore on a single screen and hides Back/Next, for embedding one moment at a time alongside a lesson.",
+    "Calls setStopAutoNext(true) and reports setStepDetails on every step/phase change.",
+    "Responsive from 320px; touch targets 56px at Class 6; scene caps at 560px wide and scales down with the container."
+  ],
+
+  "objective_id": "M2.S4.T10.O2",
+  "instructions_for_student": "Wait for the leaves to settle, then tilt slowly to pour clear tea. Try a fast tilt too — see what goes wrong."
+}

@@ -1,0 +1,136 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Magnet Interaction Quiz",
+    "instructions_for_student": "For each pair of poles approaching each other, predict whether they will attract or repel. Try to get all four correct!",
+    "data": {
+      "toolName": "magnet_prediction_quiz",
+      "parameters": {
+        "width": 560,
+        "height": 680,
+        "themeColor": "#533086",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "title": "Magnet Interaction Quiz",
+          "subtitle": "Predict whether the magnets will attract or repel",
+          "completionMessage": "Quiz Complete! 🧲",
+          "scenarios": [
+            {
+              "id": 1,
+              "leftPole": "N",
+              "rightPole": "N",
+              "correctAnswer": "repel",
+              "explanation": "N–N are like poles, so they repel each other."
+            },
+            {
+              "id": 2,
+              "leftPole": "N",
+              "rightPole": "S",
+              "correctAnswer": "attract",
+              "explanation": "N–S are unlike poles, so they attract each other."
+            },
+            {
+              "id": 3,
+              "leftPole": "S",
+              "rightPole": "S",
+              "correctAnswer": "repel",
+              "explanation": "S–S are like poles, so they repel each other."
+            },
+            {
+              "id": 4,
+              "leftPole": "S",
+              "rightPole": "N",
+              "correctAnswer": "attract",
+              "explanation": "S–N are unlike poles, so they attract each other."
+            }
+          ]
+        }
+      }
+    },
+    "_schema_version": "2.1",
+    "_tool_meta": {
+      "component": "MagnetPredictionQuiz",
+      "file": "MagnetPredictionQuiz.tsx",
+      "subject": "Science",
+      "topic": "Magnets – Chapter 4 Exploring Magnets (Grade 6 NCERT)",
+      "activity_reference": "Activity 4.5: Let us experiment — Attraction and Repulsion between Magnets",
+      "design_theme": {
+        "primary": "#533086",
+        "secondary": "#FC9145",
+        "accent_green": "#16a34a",
+        "accent_red": "#dc2626",
+        "font": "Poppins",
+        "palette_source": "Singularity Design System (fecu104.pdf / Singularity_tool_Design_1.pdf)",
+        "colors_used": ["#533086", "#FC9145", "#C1C1EA", "#FFF3E4", "#F5F5F5", "#4E4E4E", "#CACACA", "#EBEBEB", "#16a34a", "#dc2626"]
+      },
+      "no_external_dependencies": true,
+      "icons": "inline SVG only — no lucide-react or external icon libraries imported",
+      "interaction_model": "click-based sequential quiz",
+      "physics_reference": {
+        "like_poles": "N-N and S-S → repel",
+        "unlike_poles": "N-S and S-N → attract"
+      },
+      "agent_readme": {
+        "description": "A sequential 4-scenario prediction quiz. Each scenario card shows two colour-coded bar magnets (red=N, blue=S) facing each other with their active poles labelled. Student clicks Attract or Repel. Correct answer locks green; wrong locks red and shows what the correct answer was. After all scenarios a score screen appears with per-round breakdown, star rating, and the golden rule summary. The magnets animate apart (repel) or together (attract) after answering.",
+        "additionalProps_schema": {
+          "title": { "type": "string", "description": "Main heading", "default": "Magnet Interaction Quiz" },
+          "subtitle": { "type": "string", "description": "Instruction subheading", "default": "Predict whether the magnets will attract or repel" },
+          "completionMessage": { "type": "string", "description": "Heading on score screen", "default": "Quiz Complete! 🧲" },
+          "scenarios": {
+            "type": "array",
+            "description": "Array of quiz scenarios. Each scenario shows two magnets approaching each other.",
+            "items": {
+              "id": { "type": "number", "description": "Sequential scenario number (1-based)" },
+              "leftPole": { "type": "string", "enum": ["N", "S"], "description": "The active pole of the LEFT magnet (facing right)" },
+              "rightPole": { "type": "string", "enum": ["N", "S"], "description": "The active pole of the RIGHT magnet (facing left)" },
+              "correctAnswer": { "type": "string", "enum": ["attract", "repel"], "description": "Physics: unlike poles → attract, like poles → repel" },
+              "explanation": { "type": "string", "description": "One-line explanation shown after student answers" }
+            }
+          }
+        },
+        "pole_physics_reference": {
+          "N_vs_N": "repel — like poles",
+          "S_vs_S": "repel — like poles",
+          "N_vs_S": "attract — unlike poles",
+          "S_vs_N": "attract — unlike poles"
+        },
+        "customisation_examples": [
+          {
+            "_comment": "2-round quick quiz — only the two repulsion cases",
+            "additionalProps": {
+              "title": "Repulsion Check",
+              "subtitle": "Which pole pairs push each other away?",
+              "scenarios": [
+                { "id": 1, "leftPole": "N", "rightPole": "N", "correctAnswer": "repel", "explanation": "N–N like poles repel each other." },
+                { "id": 2, "leftPole": "S", "rightPole": "S", "correctAnswer": "repel", "explanation": "S–S like poles repel each other." }
+              ]
+            }
+          },
+          {
+            "_comment": "6-round extended quiz with repeated scenarios for extra practice",
+            "additionalProps": {
+              "title": "Magnetic Force Challenge",
+              "subtitle": "6 rounds — perfect your prediction skills!",
+              "scenarios": [
+                { "id": 1, "leftPole": "N", "rightPole": "N", "correctAnswer": "repel",   "explanation": "N–N are like poles — they repel." },
+                { "id": 2, "leftPole": "N", "rightPole": "S", "correctAnswer": "attract", "explanation": "N–S are unlike poles — they attract." },
+                { "id": 3, "leftPole": "S", "rightPole": "S", "correctAnswer": "repel",   "explanation": "S–S are like poles — they repel." },
+                { "id": 4, "leftPole": "S", "rightPole": "N", "correctAnswer": "attract", "explanation": "S–N are unlike poles — they attract." },
+                { "id": 5, "leftPole": "N", "rightPole": "N", "correctAnswer": "repel",   "explanation": "Like poles always repel — remember!" },
+                { "id": 6, "leftPole": "N", "rightPole": "S", "correctAnswer": "attract", "explanation": "Unlike poles always attract — well done!" }
+              ]
+            }
+          }
+        ],
+        "decision_tree": {
+          "default_4_scenarios": "Covers all 4 pole combinations once — N-N, N-S, S-S, S-N",
+          "fewer_scenarios": "Reduce to any 1-3 scenarios from the array",
+          "extra_practice": "Duplicate or add scenarios for more repetition",
+          "change_explanations": "Edit the 'explanation' field for curriculum-specific wording"
+        }
+      }
+    }
+  }

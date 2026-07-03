@@ -1,0 +1,187 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Bar Magnet U-Clip Selection Tool",
+    "description": "An interactive educational tool for Grade 6 Science – Chapter 4: Exploring Magnets. Students identify which option correctly shows how many U-clips stick at positions A (left pole), B (middle), and C (right pole) of a bar magnet.",
+    "data": {
+      "toolName": "magnet_selection_tool",
+      "parameters": {
+        "width": 680,
+        "height": 600,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "magnetLabel": "Bar Magnet",
+          "northLabel": "N",
+          "southLabel": "S",
+          "instructionText": "Look at the three positions on the bar magnet. Select the option that correctly shows how many U-clips stick at each position. Remember what you learnt about where iron filings cluster.",
+          "options": [
+            { "label": "(i)",   "values": { "A": 10, "B": 2,  "C": 10 } },
+            { "label": "(ii)",  "values": { "A": 10, "B": 10, "C": 2  } },
+            { "label": "(iii)", "values": { "A": 2,  "B": 10, "C": 10 } },
+            { "label": "(iv)",  "values": { "A": 10, "B": 10, "C": 10 } }
+          ],
+          "correctIndex": 0,
+          "correctExplanation": "The magnetic pull is strongest at the poles (A and C), so more U-clips stick there and very few in the middle (B).",
+          "incorrectHint": "Remember where iron filings clustered on the bar magnet. Which parts attract most?"
+        }
+      }
+    },
+    "instructions_for_student": "Look at the three positions on the bar magnet. Select the option that correctly shows how many U-clips stick at each position. Remember what you learnt about where iron filings cluster.",
+    "subject": "Science",
+    "grade": 6,
+    "chapter": "Chapter 4 – Exploring Magnets",
+    "curriculum": "NCERT Curiosity",
+    "activity_reference": "Activity 4 – Atharv's Experiment (Fig. 4.15)",
+  
+    "_schema": {
+      "additionalProps": {
+        "magnetLabel": {
+          "type": "string",
+          "description": "Label shown in the card header for the magnet type",
+          "default": "Bar Magnet"
+        },
+        "northLabel": {
+          "type": "string",
+          "description": "Label for the north pole on the magnet diagram",
+          "default": "N"
+        },
+        "southLabel": {
+          "type": "string",
+          "description": "Label for the south pole on the magnet diagram",
+          "default": "S"
+        },
+        "instructionText": {
+          "type": "string",
+          "description": "Instruction shown to the student above the options table"
+        },
+        "options": {
+          "type": "array",
+          "description": "The four multiple-choice options. Each has a label and values for positions A, B, C.",
+          "items": {
+            "label": "string – displayed option label e.g. '(i)'",
+            "values": {
+              "A": "number – U-clip count at left pole",
+              "B": "number – U-clip count at middle",
+              "C": "number – U-clip count at right pole"
+            }
+          }
+        },
+        "correctIndex": {
+          "type": "number",
+          "description": "Zero-based index of the correct option in the options array",
+          "default": 0
+        },
+        "correctExplanation": {
+          "type": "string",
+          "description": "One-line explanation shown when student selects the correct answer"
+        },
+        "incorrectHint": {
+          "type": "string",
+          "description": "Hint shown when student selects an incorrect answer"
+        }
+      },
+      "parameters": {
+        "themeColor": {
+          "type": "string",
+          "description": "Primary accent/highlight color (hex). Affects button, badge, and highlight colors.",
+          "default": "#f59e0b"
+        },
+        "darkMode": {
+          "type": "boolean",
+          "description": "Enable dark theme for night-time or low-light environments",
+          "default": false
+        },
+        "width": {
+          "type": "number",
+          "description": "Max width of the card in pixels",
+          "default": 680
+        }
+      }
+    },
+  
+    "_agent_examples": [
+      {
+        "description": "Default Activity 4 from NCERT textbook",
+        "call": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Bar Magnet U-Clip Selection Tool",
+          "data": {
+            "toolName": "magnet_selection_tool",
+            "parameters": {
+              "themeColor": "#f59e0b",
+              "additionalProps": {
+                "correctIndex": 0
+              }
+            }
+          }
+        }
+      },
+      {
+        "description": "Dark mode variant for projector/classroom use",
+        "call": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Bar Magnet U-Clip Selection Tool – Dark",
+          "data": {
+            "toolName": "magnet_selection_tool",
+            "parameters": {
+              "themeColor": "#fc9145",
+              "darkMode": true,
+              "additionalProps": {
+                "correctIndex": 0,
+                "correctExplanation": "Excellent! Magnetic poles attract the most – that is why U-clips cluster at A and C.",
+                "incorrectHint": "Think: where do iron filings bunch up on a bar magnet?"
+              }
+            }
+          }
+        }
+      },
+      {
+        "description": "Custom options for a horseshoe/U-shaped magnet quiz",
+        "call": {
+          "frontend_action": "show_interactive_tool",
+          "title": "U-Shaped Magnet Quiz",
+          "data": {
+            "toolName": "magnet_selection_tool",
+            "parameters": {
+              "themeColor": "#4A4DC9",
+              "additionalProps": {
+                "magnetLabel": "U-Shaped Magnet",
+                "northLabel": "N",
+                "southLabel": "S",
+                "instructionText": "A U-shaped magnet has both poles at the open ends. Which option shows the correct U-clip distribution?",
+                "options": [
+                  { "label": "(i)",   "values": { "A": 8,  "B": 1,  "C": 8  } },
+                  { "label": "(ii)",  "values": { "A": 1,  "B": 8,  "C": 1  } },
+                  { "label": "(iii)", "values": { "A": 8,  "B": 8,  "C": 8  } },
+                  { "label": "(iv)",  "values": { "A": 1,  "B": 1,  "C": 8  } }
+                ],
+                "correctIndex": 0,
+                "correctExplanation": "Both ends of a U-shaped magnet are poles, so U-clips cluster at both A and C.",
+                "incorrectHint": "Both open ends of a U-magnet are poles. Where would clips be attracted most?"
+              }
+            }
+          }
+        }
+      }
+    ],
+  
+    "_decision_tree": {
+      "description": "When to use this tool vs others",
+      "use_this_tool_when": [
+        "Student asks about magnetic pole strength / iron filings distribution",
+        "Activity involves choosing correct U-clip / iron filing counts",
+        "MCQ-style question about bar magnet properties",
+        "Atharv's U-clip experiment from NCERT Chapter 4"
+      ],
+      "do_not_use_when": [
+        "Question is about compass direction (use compass direction tool)",
+        "Question is about magnetic vs non-magnetic materials sorting",
+        "Open-ended explanation question (use text response)"
+      ]
+    }
+  }

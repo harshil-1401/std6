@@ -1,0 +1,188 @@
+{
+    "toolName": "ball_bounce_tool",
+    "version": "1.0.0",
+    "title": "Which ball bounces the highest?",
+    "description": "Interactive drop-and-measure experiment for NCERT Grade 6 Science Chapter 6 'Materials Around Us', Activity 6.4. Balls of the same size but different materials are dropped from a fixed height; a physics-flavoured animation shows each bounce, a guide line marks the peak, and the bounce height is recorded into Table 6.2 with a High/Medium/Low level.",
+  
+    "curriculum": {
+      "board": "NCERT / CBSE",
+      "grade": 6,
+      "subject": "Science",
+      "book": "Curiosity — Textbook of Science, Grade 6",
+      "chapter": "Chapter 6 — Materials Around Us",
+      "section": "6.2 How to Group Materials? (Activity 6.4: Let us explore)",
+      "concepts": [
+        "Different materials have different properties",
+        "The material an object is made of decides how it behaves",
+        "Bounce height as a comparable, recordable observation",
+        "Recording observations in a structured table (Table 6.2)"
+      ],
+      "learningObjectives": [
+        "Observe that same-sized balls bounce differently because of their material",
+        "Compare and rank bounce heights (high / medium / low)",
+        "Record experimental observations into a table",
+        "Connect a material's property (springy, hard, soft) to an outcome"
+      ]
+    },
+  
+    "designSystem": {
+      "name": "Singularity",
+      "font": "Poppins",
+      "tokens": {
+        "purple": "#533086",
+        "purpleSoft": "#C1C1EA",
+        "purpleWash": "#EFEDF7",
+        "orange": "#FC9145",
+        "orangeSoft": "#FFF3E4",
+        "ink": "#2E2747",
+        "grey": "#4E4E4E",
+        "greyLine": "#E3E0EE",
+        "page": "#F5F5F5",
+        "panel": "#FFFFFF"
+      },
+      "conventions": [
+        "import React as the literal first line",
+        "function declarations only at module scope (no arrow functions)",
+        "hooks accessed as React.useState / React.useEffect / React.useRef",
+        "no Tailwind, no lucide-react; inline SVG ball faces only",
+        "keyframes injected via useEffect into a <style> tag",
+        "ResizeObserver-driven breakpoints via a single SIZING map (S/M/L)",
+        "fixed 1fr 1fr two-column grid on M and L widths, single column only on the narrowest (S) width",
+        "always-on text captions and live numeric readouts alongside the animation"
+      ]
+    },
+  
+    "interactionModel": {
+      "modes": {
+        "experiment": "Pick one ball via the material swatches, press Drop, and watch it fall, squash on impact, and bounce to its peak. The peak guide line and the table row fill in automatically.",
+        "compare": "Press 'Drop all together' to release all balls at the same instant in side-by-side lanes. Each ball falls and bounces with its own physics, so their differing bounce heights are visible simultaneously and the whole table fills at once."
+      },
+      "controls": [
+        "Mode tabs — 'Drop one' (single ball) and 'Drop all together' (simultaneous)",
+        "Material swatch row — in experiment mode tap to choose which ball to test; in compare mode all are active",
+        "Primary button — Drop the selected ball, or Drop all together",
+        "Reset — clears the stage and the recorded table"
+      ],
+      "stageLayout": "In compare mode the stage is split into equal vertical lanes, one per ball, each with its own ball, contact ring, dashed peak guide line (labelled in cm) and a name chip below the floor. A shared dashed line at the top marks the common drop height.",
+      "animation": {
+        "fall": "easeIn (accelerating) descent over ~720ms / animationSpeed",
+        "impact": "ball squashes; an expanding contact ring is spawned per ball",
+        "rise": "easeOut (decelerating) ascent to peak = bounceFactor of drop height",
+        "settle": "easeIn return to floor; bounce height committed to the table",
+        "simultaneity": "A single requestAnimationFrame loop advances every active ball each frame, so all balls in compare mode are released and animate together."
+      },
+      "recording": "When a drop completes, each tested ball's measured bounce (dropHeightCm * bounceFactor, rounded) is written to the table keyed by ball id, along with its High/Medium/Low level pill."
+    },
+  
+    "parameters": {
+      "width": { "type": "number", "default": 800, "description": "Suggested render width; layout is fully responsive via ResizeObserver." },
+      "height": { "type": "number", "default": 600, "description": "Advisory only; component sizes itself to content." },
+      "initialMode": { "type": "string", "enum": ["experiment", "compare"], "default": "experiment" },
+      "showModeSelector": { "type": "boolean", "default": true, "description": "Show/hide the Drop & test / Compare all tabs." },
+      "themeColor": { "type": "string", "default": "#533086", "description": "Primary accent (Singularity purple)." },
+      "animationSpeed": { "type": "number", "default": 1, "description": "Multiplier; 2 = twice as fast, 0.5 = half speed." }
+    },
+  
+    "additionalProps": {
+      "description": "Tool-specific dynamic content the agent can pass to customise the experiment.",
+      "properties": {
+        "balls": {
+          "type": "array",
+          "description": "Override the default set of balls. Each entry fully defines a ball.",
+          "items": {
+            "id": { "type": "string", "description": "Unique id, used as table/record key." },
+            "name": { "type": "string", "description": "Display name, e.g. 'Tennis ball'." },
+            "material": { "type": "string", "description": "Material label, e.g. 'Rubber + felt'." },
+            "bounceFactor": { "type": "number", "description": "Fraction (0..1) of drop height the ball returns to. 0.62 = bounces to 62% of drop height." },
+            "level": { "type": "string", "enum": ["High", "Medium", "Low"], "description": "Bounce level pill shown in the table." },
+            "fill": { "type": "string", "description": "Main ball colour (hex)." },
+            "fill2": { "type": "string", "description": "Darker shade for the radial gradient (hex)." },
+            "stroke": { "type": "string", "description": "Outline / contact-ring colour (hex)." },
+            "art": { "type": "string", "enum": ["tennis", "cricket", "exercise"], "description": "Which inline-SVG surface pattern to draw." },
+            "note": { "type": "string", "description": "One-line explanation shown when the ball is selected." }
+          }
+        },
+        "dropHeightCm": { "type": "number", "default": 100, "description": "The fixed height balls are dropped from, in cm. Bounce readings scale to this." },
+        "highlightBallId": { "type": "string", "description": "Pre-select and emphasise this ball on load." },
+        "showTable": { "type": "boolean", "default": true, "description": "Show/hide the Table 6.2 recording grid." },
+        "showMaterials": { "type": "boolean", "default": true, "description": "Show/hide the material swatch selector row." },
+        "autoRecord": { "type": "boolean", "default": true, "description": "Auto-fill the table row when a drop completes." }
+      }
+    },
+  
+    "defaultData": {
+      "dropHeightCm": 100,
+      "balls": [
+        { "id": "tennis", "name": "Tennis ball", "material": "Rubber + felt", "bounceFactor": 0.62, "level": "High", "art": "tennis" },
+        { "id": "cricket", "name": "Cricket ball", "material": "Cork + leather", "bounceFactor": 0.18, "level": "Low", "art": "cricket" },
+        { "id": "exercise", "name": "Hand exercise ball", "material": "Soft foam", "bounceFactor": 0.30, "level": "Medium", "art": "exercise" }
+      ]
+    },
+  
+    "agentDecisionTree": {
+      "Student opens Activity 6.4 / 'which ball bounces highest'": "Use defaults, initialMode 'experiment'.",
+      "Teacher wants a side-by-side comparison": "Set initialMode 'compare'; the 'Drop all together' button releases every ball at once in its own lane and fills the whole table.",
+      "Lesson is about one specific ball": "Set additionalProps.highlightBallId and consider showMaterials false to reduce distraction.",
+      "Custom set of materials (e.g. steel, clay, sponge)": "Pass additionalProps.balls with your own bounceFactor and level values.",
+      "Different release height in the worksheet": "Set additionalProps.dropHeightCm; all bounce readings rescale.",
+      "Want a clean animation-only view": "Set showTable false and showModeSelector false."
+    },
+  
+    "toolCallExamples": [
+      {
+        "title": "Default Activity 6.4",
+        "frontend_action": "show_interactive_tool",
+        "data": { "toolName": "ball_bounce_tool", "parameters": {} },
+        "instructions_for_student": "Drop each ball from the same height and see which one bounces back the highest."
+      },
+      {
+        "title": "Drop all balls together",
+        "frontend_action": "show_interactive_tool",
+        "data": { "toolName": "ball_bounce_tool", "parameters": { "initialMode": "compare" } },
+        "instructions_for_student": "Press 'Drop all together' to release all three at once and watch which one bounces back the highest."
+      },
+      {
+        "title": "Focus on the tennis ball only",
+        "frontend_action": "show_interactive_tool",
+        "data": {
+          "toolName": "ball_bounce_tool",
+          "parameters": { "additionalProps": { "highlightBallId": "tennis", "showMaterials": false } }
+        },
+        "instructions_for_student": "The springy rubber tennis ball bounces the highest. Drop it and read the bounce height."
+      },
+      {
+        "title": "Drop from 150 cm",
+        "frontend_action": "show_interactive_tool",
+        "data": {
+          "toolName": "ball_bounce_tool",
+          "parameters": { "additionalProps": { "dropHeightCm": 150 } }
+        },
+        "instructions_for_student": "Now we drop from 150 cm. Notice the bounce heights are bigger but the order stays the same."
+      },
+      {
+        "title": "Custom materials — rubber vs clay vs sponge",
+        "frontend_action": "show_interactive_tool",
+        "data": {
+          "toolName": "ball_bounce_tool",
+          "parameters": {
+            "additionalProps": {
+              "dropHeightCm": 100,
+              "balls": [
+                { "id": "rubber", "name": "Rubber ball", "material": "Rubber", "bounceFactor": 0.7, "level": "High", "fill": "#43A047", "fill2": "#1B5E20", "stroke": "#0D3010", "art": "exercise", "note": "Rubber is very springy and returns most of the energy." },
+                { "id": "clay", "name": "Clay ball", "material": "Baked clay", "bounceFactor": 0.05, "level": "Low", "fill": "#A1492B", "fill2": "#6D2E18", "stroke": "#3E190D", "art": "cricket", "note": "Hard, brittle clay does not spring back at all." },
+                { "id": "sponge", "name": "Sponge ball", "material": "Sponge", "bounceFactor": 0.28, "level": "Medium", "fill": "#FFD54F", "fill2": "#FB8C00", "stroke": "#E65100", "art": "exercise", "note": "Soft sponge squashes and absorbs energy." }
+              ]
+            }
+          }
+        },
+        "instructions_for_student": "Predict the order before you drop them, then test your guess."
+      }
+    ],
+  
+    "errorHandling": {
+      "empty additionalProps": "Falls back to the three default textbook balls dropped from 100 cm.",
+      "bounceFactor out of range": "Values are used as-is; keep within 0..1 for a sensible bounce.",
+      "unknown highlightBallId": "Ignored; first ball is selected instead.",
+      "balls array empty": "Ignored; defaults are used."
+    }
+  }

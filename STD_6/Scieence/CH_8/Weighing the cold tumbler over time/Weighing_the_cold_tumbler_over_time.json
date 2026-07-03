@@ -1,0 +1,126 @@
+{
+    "toolName": "condensation_mass_balance_tool",
+    "version": "1.0.0",
+    "description": "Predict-Observe-Explain digital-balance simulation. A covered glass of iced water sits on a digital balance; the student first predicts whether the mass will increase, decrease, or stay the same, then steps a 5-minute timer to watch droplets condense on the cold outer wall and the reading climb. A toggleable 'inside level' mark settles the question of whether the water seeped out. Targets the misconception that the droplets come from inside the sealed tumbler. Ends with a gamified score reveal (stars + confetti) and a review phase explaining every wrong answer.",
+  
+    "concept": {
+      "subject": "Science",
+      "grade": "Class 6 (NCERT 'Curiosity', Ch.9 Methods of Separation in Everyday Life) — extends to Class 9 conservation of mass / states of water",
+      "bigIdea": "Condensation deposits water vapour from the surrounding air onto a cold surface, ADDING mass to the setup; the sealed water inside is unchanged.",
+      "misconception": {
+        "belief": "A covered glass can lose or hold steady mass; the droplets on the outside 'come from the cold water inside' seeping through the glass.",
+        "resolution": "The reading climbs because water vapour already in the surrounding air condenses on the cold outer surface, adding mass. Glass is non-porous; the inside water level is unchanged."
+      }
+    },
+  
+    "parameters": {
+      "width": { "type": "number", "default": 860, "description": "Maximum component width in pixels; the layout is fully fluid below this." },
+      "height": { "type": "number", "default": 640, "description": "Reference height; the figure scales responsively." },
+      "initialMode": { "type": "string", "enum": ["learn"], "default": "learn", "description": "Single learn/POE mode." },
+      "showModeSelector": { "type": "boolean", "default": false, "description": "Hidden by default (single mode)." },
+      "enabledModes": { "type": "array", "items": { "type": "string" }, "default": ["learn"], "description": "Enabled modes." },
+      "showNavigation": { "type": "boolean", "default": true, "description": "Show step controls." },
+      "showPlayPause": { "type": "boolean", "default": true, "description": "Gate the timer-step control." },
+      "showStepIndicator": { "type": "boolean", "default": true, "description": "Show the Predict / Observe (min) / Explain step chip in the header." },
+      "animationSpeed": { "type": "number", "default": 1, "description": "Multiplier for the count-up / droplet animation (0.5 = slower, 2 = faster)." },
+      "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Primary brand colour (Singularity indigo)." },
+      "darkMode": { "type": "boolean", "default": false, "description": "Reserved; tool ships light-themed by design." }
+    },
+  
+    "additionalProps": {
+      "description": "Tool-specific dynamic content the agent can pass to retune the experiment.",
+      "schema": {
+        "startReading": { "type": "number", "default": 248.0, "description": "Balance reading in grams at minute 0 (the covered tumbler + iced water)." },
+        "ratePerInterval": { "type": "number", "default": 0.8, "description": "Mass gained, in the chosen unit, per timer interval as vapour condenses." },
+        "intervalMinutes": { "type": "number", "default": 5, "description": "Minutes advanced per 'Step' press; also the row spacing of the record table." },
+        "totalIntervals": { "type": "number", "default": 6, "description": "Number of timer steps before the run completes (6 x 5 min = 30 min, matching the textbook 0-30 min record table)." },
+        "liquidLabel": { "type": "string", "default": "iced water", "description": "Label for the cold liquid inside the tumbler." },
+        "unit": { "type": "string", "default": "g", "description": "Mass unit shown on the digital display." },
+        "correctPrediction": { "type": "string", "enum": ["increase", "decrease", "same"], "default": "increase", "description": "The scientifically correct prediction (increase, for condensation)." }
+      },
+      "examples": {
+        "default_iced_water": {
+          "startReading": 248.0,
+          "ratePerInterval": 0.9,
+          "intervalMinutes": 5,
+          "totalIntervals": 4
+        },
+        "humid_day_faster_condensation": {
+          "startReading": 312.5,
+          "ratePerInterval": 1.6,
+          "intervalMinutes": 5,
+          "totalIntervals": 4,
+          "liquidLabel": "ice-cold lassi"
+        },
+        "slow_air_conditioned_room": {
+          "startReading": 205.0,
+          "ratePerInterval": 0.4,
+          "intervalMinutes": 5,
+          "totalIntervals": 6
+        },
+        "long_run_thirty_minutes": {
+          "startReading": 260.0,
+          "ratePerInterval": 0.7,
+          "intervalMinutes": 5,
+          "totalIntervals": 6
+        }
+      }
+    },
+  
+    "phases": {
+      "predict": "Student commits to increase / decrease / stay-the-same before anything moves. Stored as checkpoint 1. The textbook record table is shown empty (all rows blank).",
+      "observe": "Student presses 'Step +5 min' repeatedly; the reading count-ups, droplets grow and ice melts, a '+0.8 g' gain badge floats up, and the matching row of the record table fills (with a highlight pulse). A 'source' checkpoint fires after 10 minutes.",
+      "level": "After the run, student toggles the inside level mark; a 'level unchanged' checkpoint fires.",
+      "explain": "Mechanism panel: the mass came from water vapour in the air condensing on the cold surface; the sealed water inside is unchanged. Compares prediction vs result.",
+      "result": "Count-up score out of 3, 5 stars, confetti, encouragement line, Review / Play-again CTAs.",
+      "review": "Shows each wrong answer with the chosen vs correct option and a 2-4 sentence concept explanation."
+    },
+  
+    "recordTable": {
+      "description": "Textbook-style worksheet table rendered below the figure, matching the NCERT 'Time / Mass of water' record sheet. Auto-fills one row per timer step.",
+      "columns": ["Time (min)", "Mass of water (g)"],
+      "rows": "0, 5, 10, ... up to intervalMinutes x totalIntervals (default 0-30 min, 7 rows)",
+      "behaviour": "Rows are blank until reached; the just-filled row pulses light-orange; values use the live balance reading (tabular-nums)."
+    },
+  
+    "checkpoints": {
+      "cp-predict": { "prompt": "Over 20 minutes, the reading will...", "correct": "Increase", "scored": true },
+      "cp-source": { "prompt": "Where did the droplets on the OUTSIDE come from?", "correct": "Water vapour in the surrounding air condensed on the cold surface", "scored": true },
+      "cp-level": { "prompt": "What happened to the water level INSIDE the sealed tumbler?", "correct": "It is unchanged — the outside water came from the air", "scored": true }
+    },
+  
+    "steps": {
+      "1": { "title": "The Setup", "phase": "predict" },
+      "2": { "title": "Minute 0 to 5", "phase": "observe" },
+      "3": { "title": "Minute 5 to 10", "phase": "observe" },
+      "4": { "title": "Minute 10 to 15", "phase": "observe" },
+      "5": { "title": "Minute 15 to 20", "phase": "observe" },
+      "6": { "title": "Where did it come from?", "phase": "explain" }
+    },
+  
+    "theme": {
+      "font": "Poppins",
+      "palette": {
+        "primary": "#4A4DC9",
+        "primaryDark": "#533086",
+        "primaryLight": "#C1C1EA",
+        "primaryGhost": "#EDEDF8",
+        "accent": "#FF7212",
+        "accentDark": "#FC9145",
+        "accentLight": "#FFF3E4",
+        "gray700": "#4E4E4E",
+        "gray400": "#CACACA",
+        "gray200": "#EBEBEB",
+        "gray100": "#F5F5F5"
+      },
+      "buttons": "Pill-shaped (radius 9999); Contained primary / Contained accent (CTA) / Outlined / Ghost variants; 48px min touch target",
+      "headerGradient": "linear-gradient(135deg, #533086, #FF7212)",
+      "source": "Matches the supplied design system (Poppins, #4A4DC9 + #FF7212, purple-to-orange gradient, pill buttons)."
+    },
+  
+    "responsive": {
+      "breakpoint": "575px (ResizeObserver on the component wrapper)",
+      "mobile": "Single-column prediction and explain grids, smaller figure (300px), 14-15px body, full-width stacked CTAs, 48px touch targets.",
+      "desktop": "Three-up prediction grid, 360px figure, two-column explain cards, inline CTA row."
+    }
+  }

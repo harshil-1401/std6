@@ -1,0 +1,139 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Compass Prediction Quiz",
+    "instructions_for_student": "For each scenario, predict whether the compass needle will move towards or away from the approaching bar magnet. Try to get all four correct!",
+    "data": {
+      "toolName": "compass_prediction_quiz",
+      "parameters": {
+        "width": 600,
+        "height": 700,
+        "themeColor": "#533086",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "title": "Compass Prediction Quiz",
+          "subtitle": "Predict how the compass needle will react!",
+          "rounds": [
+            {
+              "id": 1,
+              "magnetPole": "N",
+              "needlePole": "N",
+              "correctAnswer": "away",
+              "explanation": "N–N are like poles — they repel, so the needle moves away."
+            },
+            {
+              "id": 2,
+              "magnetPole": "N",
+              "needlePole": "S",
+              "correctAnswer": "toward",
+              "explanation": "N–S are unlike poles — they attract, so the needle moves towards the magnet."
+            },
+            {
+              "id": 3,
+              "magnetPole": "S",
+              "needlePole": "N",
+              "correctAnswer": "toward",
+              "explanation": "S–N are unlike poles — they attract, so the needle moves towards the magnet."
+            },
+            {
+              "id": 4,
+              "magnetPole": "S",
+              "needlePole": "S",
+              "correctAnswer": "away",
+              "explanation": "S–S are like poles — they repel, so the needle moves away."
+            }
+          ]
+        }
+      }
+    },
+    "_schema_version": "2.1",
+    "_tool_meta": {
+      "component": "CompassPredictionQuiz",
+      "file": "CompassPredictionQuiz.tsx",
+      "subject": "Science",
+      "topic": "Magnets – Chapter 4 Exploring Magnets (Grade 6 NCERT)",
+      "activity_reference": "Activity 4.6: Let us experiment — Compass needle and a magnet",
+      "design_theme": {
+        "primary": "#533086",
+        "secondary": "#FC9145",
+        "accent_green": "#16a34a",
+        "accent_red": "#dc2626",
+        "font": "Poppins",
+        "palette_source": "Singularity Design System (fecu104.pdf)",
+        "colors_used": ["#533086", "#FC9145", "#C1C1EA", "#FFF3E4", "#F5F5F5", "#4E4E4E", "#CACACA", "#EBEBEB"]
+      },
+      "no_external_dependencies": true,
+      "icons": "inline SVG only — no lucide-react or other icon libraries imported",
+      "agent_readme": {
+        "description": "A 4-round prediction quiz. Each round shows a CSS/SVG compass with its needle at rest and a bar magnet approaching from the right. The student sees which pole of the magnet faces which pole of the needle and clicks one of two buttons. Correct answers lock green; wrong answers lock red. Both show a one-line explanation. After 4 rounds a score screen appears with per-round breakdown, star rating, and the golden rule summary.",
+        "interaction_model": "click-based (no drag and drop)",
+        "validation": "correctAnswer field must be 'toward' or 'away'; determined by pole interaction physics (unlike = attract = toward, like = repel = away)",
+        "additionalProps_schema": {
+          "title": {
+            "type": "string",
+            "description": "Main heading shown at top of tool",
+            "default": "Compass Prediction Quiz"
+          },
+          "subtitle": {
+            "type": "string",
+            "description": "Subheading instruction line",
+            "default": "Predict how the compass needle will react!"
+          },
+          "rounds": {
+            "type": "array",
+            "description": "Array of quiz rounds. Minimum 1, recommended 4 to cover all pole combos.",
+            "items": {
+              "id": { "type": "number", "description": "Sequential round number (1-based)" },
+              "magnetPole": { "type": "string", "enum": ["N", "S"], "description": "The pole of the bar magnet that faces the compass needle" },
+              "needlePole": { "type": "string", "enum": ["N", "S"], "description": "The pole of the compass needle that faces the approaching magnet" },
+              "correctAnswer": { "type": "string", "enum": ["toward", "away"], "description": "Physics rule: unlike poles attract (toward), like poles repel (away)" },
+              "explanation": { "type": "string", "description": "One-line explanation shown after the student answers" }
+            }
+          }
+        },
+        "pole_physics_reference": {
+          "N_vs_N": "away  — like poles repel",
+          "S_vs_S": "away  — like poles repel",
+          "N_vs_S": "toward — unlike poles attract",
+          "S_vs_N": "toward — unlike poles attract"
+        },
+        "customisation_examples": [
+          {
+            "_comment": "2-round mini quiz (just attraction cases)",
+            "additionalProps": {
+              "title": "Quick Attraction Check",
+              "subtitle": "Which pole combinations attract?",
+              "rounds": [
+                { "id": 1, "magnetPole": "N", "needlePole": "S", "correctAnswer": "toward", "explanation": "N–S unlike poles attract — needle moves towards." },
+                { "id": 2, "magnetPole": "S", "needlePole": "N", "correctAnswer": "toward", "explanation": "S–N unlike poles attract — needle moves towards." }
+              ]
+            }
+          },
+          {
+            "_comment": "6-round extended quiz with repeated rounds for practice",
+            "additionalProps": {
+              "title": "Magnetic Force Challenge",
+              "subtitle": "All 6 rounds — can you get a perfect score?",
+              "rounds": [
+                { "id": 1, "magnetPole": "N", "needlePole": "N", "correctAnswer": "away",   "explanation": "N–N like poles repel — needle moves away." },
+                { "id": 2, "magnetPole": "N", "needlePole": "S", "correctAnswer": "toward", "explanation": "N–S unlike poles attract — needle moves towards." },
+                { "id": 3, "magnetPole": "S", "needlePole": "N", "correctAnswer": "toward", "explanation": "S–N unlike poles attract — needle moves towards." },
+                { "id": 4, "magnetPole": "S", "needlePole": "S", "correctAnswer": "away",   "explanation": "S–S like poles repel — needle moves away." },
+                { "id": 5, "magnetPole": "N", "needlePole": "N", "correctAnswer": "away",   "explanation": "Like poles always repel — try to remember!" },
+                { "id": 6, "magnetPole": "S", "needlePole": "N", "correctAnswer": "toward", "explanation": "Unlike poles always attract — great job!" }
+              ]
+            }
+          }
+        ],
+        "decision_tree": {
+          "default_4_rounds": "Use the default rounds array — covers all 4 pole combinations exactly once (N-N, N-S, S-N, S-S)",
+          "fewer_rounds": "Remove rounds from the array; minimum 1 round required",
+          "extra_practice": "Duplicate rounds or add new combinations for extended practice",
+          "change_explanations": "Edit the 'explanation' field per round for curriculum-specific wording"
+        }
+      }
+    }
+  }

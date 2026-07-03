@@ -1,0 +1,198 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Magnet Pole Finder — Fig. 4.17",
+    "toolName": "magnet_pole_finder",
+    "version": "1.0.0",
+    "subject": "Science",
+    "grade": 6,
+    "chapter": 4,
+    "topic": "Exploring Magnets",
+    "textbook_reference": "NCERT Curiosity — Grade 6 Science, Chapter 4, Fig. 4.17",
+  
+    "theme": {
+      "primaryColor": "#f59e0b",
+      "primaryDark": "#d97706",
+      "primaryDeep": "#92400e",
+      "northPoleColor": "#4A4DC9",
+      "northPoleLight": "#C1C1EA",
+      "southPoleColor": "#FF7212",
+      "southPoleLight": "#FFF3E4",
+      "fontPrimary": "Baloo 2",
+      "fontBody": "Nunito",
+      "backgroundGradient": ["#fffbeb", "#fff7ed"]
+    },
+  
+    "diagram": {
+      "description": "Three bar magnets arranged in an L-shape. Magnet 1 and Magnet 2 are horizontal; Magnet 3 is vertical.",
+      "magnets": [
+        {
+          "id": "magnet_1",
+          "label": "Magnet 1",
+          "orientation": "horizontal",
+          "ends": [
+            { "id": 1, "position": "left", "polarity": "blank" },
+            { "id": 2, "position": "right", "polarity": "blank" }
+          ]
+        },
+        {
+          "id": "magnet_2",
+          "label": "Magnet 2",
+          "orientation": "horizontal",
+          "ends": [
+            { "id": 3, "position": "left", "polarity": "blank" },
+            { "id": 4, "position": "right", "polarity": "blank" }
+          ]
+        },
+        {
+          "id": "magnet_3",
+          "label": "Magnet 3",
+          "orientation": "vertical",
+          "ends": [
+            { "id": 5, "position": "top", "polarity": "N", "given": true },
+            { "id": 6, "position": "bottom", "polarity": "blank" }
+          ]
+        }
+      ],
+      "junctions": [
+        {
+          "between": [2, 3],
+          "type": "attract",
+          "label": "attract (unlike poles)",
+          "orientation": "horizontal"
+        },
+        {
+          "between": [4, 5],
+          "type": "attract",
+          "label": "attract (unlike poles)",
+          "orientation": "vertical"
+        }
+      ]
+    },
+  
+    "steps": [
+      {
+        "stepNumber": 1,
+        "endId": 6,
+        "rule": "Same Magnet Rule",
+        "ruleIcon": "🧲",
+        "ruleExplanation": "Both ends of the same magnet always have OPPOSITE poles. One end is N, the other must be S.",
+        "prompt": "End 6 — same magnet as End 5",
+        "hint": "Ends 5 & 6 are both ends of Magnet 3. End 5 = N, so End 6 must be the OPPOSITE!",
+        "wrongAnswerHint": "Remember: Same magnet = OPPOSITE poles! One end is N, the other must be S.",
+        "correctAnswer": "S",
+        "junctionWith": 5,
+        "junctionType": null
+      },
+      {
+        "stepNumber": 2,
+        "endId": 4,
+        "rule": "Junction Attract Rule",
+        "ruleIcon": "🔗",
+        "ruleExplanation": "When two magnet ends touch and ATTRACT each other, they must be UNLIKE poles (one N and one S).",
+        "prompt": "End 4 — junction with End 5",
+        "hint": "Ends 4 & 5 are touching and ATTRACT each other. End 5 = N. Unlike poles attract — so End 4 is...?",
+        "wrongAnswerHint": "Remember: ATTRACT means UNLIKE poles → if one end is N, the other must be S!",
+        "correctAnswer": "S",
+        "junctionWith": 5,
+        "junctionType": "attract"
+      },
+      {
+        "stepNumber": 3,
+        "endId": 3,
+        "rule": "Same Magnet Rule",
+        "ruleIcon": "🧲",
+        "ruleExplanation": "Both ends of the same magnet always have OPPOSITE poles.",
+        "prompt": "End 3 — same magnet as End 4",
+        "hint": "Ends 3 & 4 are both ends of Magnet 2. We found End 4 = S, so End 3 must be the OPPOSITE!",
+        "wrongAnswerHint": "Remember: Same magnet = OPPOSITE poles! End 4 is S, so End 3 must be N.",
+        "correctAnswer": "N",
+        "junctionWith": 4,
+        "junctionType": null
+      },
+      {
+        "stepNumber": 4,
+        "endId": 2,
+        "rule": "Junction Attract Rule",
+        "ruleIcon": "🔗",
+        "ruleExplanation": "When two magnet ends touch and ATTRACT each other, they must be UNLIKE poles.",
+        "prompt": "End 2 — junction with End 3",
+        "hint": "Ends 2 & 3 are touching and ATTRACT each other. End 3 = N. Unlike poles attract — so End 2 is...?",
+        "wrongAnswerHint": "Remember: ATTRACT means UNLIKE poles → if one end is N, the other must be S!",
+        "correctAnswer": "S",
+        "junctionWith": 3,
+        "junctionType": "attract"
+      },
+      {
+        "stepNumber": 5,
+        "endId": 1,
+        "rule": "Same Magnet Rule",
+        "ruleIcon": "🧲",
+        "ruleExplanation": "Both ends of the same magnet always have OPPOSITE poles.",
+        "prompt": "End 1 — same magnet as End 2",
+        "hint": "Ends 1 & 2 are both ends of Magnet 1. We found End 2 = S, so End 1 must be the OPPOSITE!",
+        "wrongAnswerHint": "Remember: Same magnet = OPPOSITE poles! End 2 is S, so End 1 must be N.",
+        "correctAnswer": "N",
+        "junctionWith": 2,
+        "junctionType": null
+      }
+    ],
+  
+    "finalAnswers": {
+      "1": "N",
+      "2": "S",
+      "3": "N",
+      "4": "S",
+      "5": "N",
+      "6": "S"
+    },
+  
+    "rules": {
+      "sameMagnetRule": {
+        "name": "Same Magnet Rule",
+        "icon": "🧲",
+        "description": "The two ends of the same bar magnet always have OPPOSITE poles. If one end is North (N), the other end must be South (S), and vice versa.",
+        "studentFriendly": "Same magnet → opposite poles! It's like a see-saw — one side up, other side down."
+      },
+      "junctionAttractRule": {
+        "name": "Junction Attract Rule",
+        "icon": "🔗",
+        "description": "When two ends of different magnets are touching and attract each other, they must be UNLIKE poles (North attracts South, South attracts North).",
+        "studentFriendly": "Friends are different! N and S attract each other. Same poles push away."
+      }
+    },
+  
+    "learningObjectives": [
+      "Understand that every magnet has two poles: North (N) and South (S)",
+      "Apply the 'Same Magnet Rule': ends of the same magnet always have opposite poles",
+      "Apply the 'Junction Attract Rule': magnets that attract must have unlike poles touching",
+      "Work systematically through a chain of magnets to determine all pole positions"
+    ],
+  
+    "scoring": {
+      "stars": {
+        "3": { "maxTotalWrongAnswers": 0, "label": "Perfect!" },
+        "2": { "maxTotalWrongAnswers": 3, "label": "Great job!" },
+        "1": { "maxTotalWrongAnswers": 99, "label": "Good try!" }
+      }
+    },
+  
+    "instructions_for_student": "Start from End 5 which is marked N (already given!). At each step, use the junction arrow or same-magnet rule to figure out what the nearby end must be. Select N or S — correct labels lock in and turn coloured. Complete all 5 blanks to finish!",
+  
+    "parameters": {
+      "width": 660,
+      "height": "auto",
+      "themeColor": "#f59e0b",
+      "darkMode": false,
+      "showNavigation": false,
+      "showPlayPause": false,
+      "showStepIndicator": true,
+      "animationSpeed": 1,
+      "additionalProps": {
+        "givenEnd": 5,
+        "givenPole": "N",
+        "totalBlanks": 5,
+        "magnetCount": 3,
+        "arrangementShape": "L-shape"
+      }
+    }
+  }

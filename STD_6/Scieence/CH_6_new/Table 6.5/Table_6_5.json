@@ -1,0 +1,201 @@
+{
+    "toolName": "table65_recorder_tool",
+    "version": "1.0.0",
+    "description": "A digital Table 6.5 recorder for NCERT Grade 6 Science, Chapter 6 — Materials Around Us, Activity 6.7. Five fixed material rows (Sugar, Salt, Chalk powder, Sand, Sawdust). Three columns: Predict (student chooses 'Dissolves' / 'Does not'), Observe (same toggle after the experiment), Match (auto-filled Yes/No by comparing predict vs observe). A dynamic summary bar shows 'X of 5 predictions matched'. A synthesis text field prompts a one-sentence pattern statement; on submit it reveals the textbook explanation plus four key-concept pills. Wrong observation entries show a contextual hint. Confetti on synthesis submission. Fully responsive — compact pill toggles on mobile.",
+    "chapter": {
+      "subject": "Science",
+      "grade": 6,
+      "chapter_number": 6,
+      "chapter_name": "Materials Around Us",
+      "section": "6.3.4 What is soluble in water; what is not?",
+      "activity": "Activity 6.7 — Let us explore",
+      "table": "Table 6.5 — Mixing different materials in water"
+    },
+    "parameters": {
+      "width": {
+        "type": "number",
+        "default": 900,
+        "description": "Maximum container width in pixels. Fully responsive below this."
+      },
+      "themeColor": {
+        "type": "string",
+        "default": "#4A4DC9",
+        "description": "Primary accent colour used in header gradient and primary buttons."
+      },
+      "darkMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Reserved for a future dark theme."
+      },
+      "additionalProps": {
+        "type": "object",
+        "description": "Tool-specific configuration. All fields are optional — Activity 6.7 defaults are used.",
+        "properties": {
+          "materials": {
+            "type": "array",
+            "description": "Override the five default material rows. Each item is one row in the table.",
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "emoji", "correctPredict", "correctObserve", "hintText"],
+              "properties": {
+                "id": { "type": "string", "description": "Unique identifier, e.g. 'sugar'" },
+                "name": { "type": "string", "description": "Display name shown in the Material column." },
+                "emoji": { "type": "string", "description": "Single emoji for the material icon." },
+                "correctPredict": {
+                  "type": "string",
+                  "enum": ["dissolves", "does_not"],
+                  "description": "The scientifically correct answer for the Predict column."
+                },
+                "correctObserve": {
+                  "type": "string",
+                  "enum": ["dissolves", "does_not"],
+                  "description": "The scientifically correct answer for the Observe column (usually same as correctPredict)."
+                },
+                "hintText": {
+                  "type": "string",
+                  "description": "Short hint shown under the row when the student's observation is wrong."
+                }
+              }
+            },
+            "examples": [
+              {
+                "id": "glucose",
+                "name": "Glucose",
+                "emoji": "🍯",
+                "correctPredict": "dissolves",
+                "correctObserve": "dissolves",
+                "hintText": "Glucose is a sugar — it dissolves fully and makes water taste sweet."
+              }
+            ]
+          },
+          "showCorrectness": {
+            "type": "boolean",
+            "default": true,
+            "description": "When true, wrong Observe entries show a ⚠️ 'Check again' label under the toggle."
+          },
+          "showHints": {
+            "type": "boolean",
+            "default": true,
+            "description": "When true, a contextual hint banner is shown below any row with a wrong Observe entry."
+          },
+          "synthesisPrompt": {
+            "type": "string",
+            "default": "Looking at your table, which kinds of solids dissolve in water and which do not? Write one sentence describing the pattern.",
+            "description": "Custom question shown above the synthesis text field."
+          },
+          "successMessage": {
+            "type": "string",
+            "default": "Great observations! You matched the textbook results.",
+            "description": "Message shown in the summary bar when all rows are complete but not all predictions matched."
+          }
+        },
+        "examples": [
+          {
+            "description": "Default — exact Activity 6.7 with five NCERT materials",
+            "value": {}
+          },
+          {
+            "description": "Extended set — add glucose and wheat flour",
+            "value": {
+              "materials": [
+                { "id": "sugar", "name": "Sugar", "emoji": "🍬", "correctPredict": "dissolves", "correctObserve": "dissolves", "hintText": "Sugar breaks into invisible particles — the solution is clear and sweet." },
+                { "id": "salt", "name": "Salt", "emoji": "🧂", "correctPredict": "dissolves", "correctObserve": "dissolves", "hintText": "Salt is highly soluble — it disappears quickly when stirred in water." },
+                { "id": "chalk", "name": "Chalk powder", "emoji": "⚪", "correctPredict": "does_not", "correctObserve": "does_not", "hintText": "Chalk forms a cloudy suspension that settles over time." },
+                { "id": "sand", "name": "Sand", "emoji": "🏖️", "correctPredict": "does_not", "correctObserve": "does_not", "hintText": "Sand is insoluble — it sinks even after vigorous stirring." },
+                { "id": "sawdust", "name": "Sawdust", "emoji": "🪵", "correctPredict": "does_not", "correctObserve": "does_not", "hintText": "Sawdust floats or remains visible after stirring." },
+                { "id": "glucose", "name": "Glucose", "emoji": "🍯", "correctPredict": "dissolves", "correctObserve": "dissolves", "hintText": "Glucose is a sugar — it dissolves fully and makes water taste sweet." },
+                { "id": "flour", "name": "Wheat flour", "emoji": "🌾", "correctPredict": "does_not", "correctObserve": "does_not", "hintText": "Flour does not dissolve — it forms a cloudy mixture and eventually settles." }
+              ],
+              "synthesisPrompt": "Based on your extended table, write one rule about which kinds of household solids dissolve in water.",
+              "successMessage": "Excellent! Your extended observations are accurate."
+            }
+          },
+          {
+            "description": "Minimal — no hints, teacher-graded mode",
+            "value": {
+              "showCorrectness": false,
+              "showHints": false,
+              "synthesisPrompt": "Write one sentence: what pattern do you see in your results?"
+            }
+          }
+        ]
+      }
+    },
+    "defaultMaterials": [
+      { "id": "sugar", "name": "Sugar", "emoji": "🍬", "correctPredict": "dissolves", "correctObserve": "dissolves", "hintText": "Sugar breaks into invisible particles — the solution is clear and sweet." },
+      { "id": "salt", "name": "Salt", "emoji": "🧂", "correctPredict": "dissolves", "correctObserve": "dissolves", "hintText": "Salt is highly soluble — it disappears quickly when stirred in water." },
+      { "id": "chalk", "name": "Chalk powder", "emoji": "⚪", "correctPredict": "does_not", "correctObserve": "does_not", "hintText": "Chalk forms a cloudy suspension that settles over time." },
+      { "id": "sand", "name": "Sand", "emoji": "🏖️", "correctPredict": "does_not", "correctObserve": "does_not", "hintText": "Sand is insoluble — it sinks even after vigorous stirring." },
+      { "id": "sawdust", "name": "Sawdust", "emoji": "🪵", "correctPredict": "does_not", "correctObserve": "does_not", "hintText": "Sawdust floats or remains visible after stirring." }
+    ],
+    "columns": {
+      "predict": {
+        "description": "Student's prediction before stirring. Two-button pill toggle: Dissolves / Does not.",
+        "options": ["dissolves", "does_not"],
+        "autoFill": false
+      },
+      "observe": {
+        "description": "Student's actual observation after stirring. Same two-button toggle.",
+        "options": ["dissolves", "does_not"],
+        "autoFill": false,
+        "correctnessCheck": true
+      },
+      "match": {
+        "description": "Auto-filled. Green ✓ if predict === observe, red ✗ if different. Blank if either column is empty.",
+        "autoFill": true,
+        "logic": "predict === observe ? 'yes' : 'no'"
+      }
+    },
+    "summaryBar": {
+      "description": "Dynamic bar below the table. Shows 'X of Y rows completed' while in progress, 'X of Y predictions matched observations' when all filled. Mini match-pill badges per material. Turns green when all rows are complete.",
+      "confettiOnSynthesisSubmit": true
+    },
+    "synthesisSection": {
+      "description": "Text area prompting a one-sentence pattern statement. Submit button enabled when input ≥ 6 characters. On submit: shows student's answer in a green card, textbook explanation in a purple card, and four key-concept pills (Soluble, Insoluble, Dissolved ≠ destroyed, Physical change).",
+      "minChars": 6,
+      "textbookPattern": "Soluble materials (sugar, salt) completely disappear when stirred — their particles are too small to see but are still present. Insoluble materials (chalk powder, sand, sawdust) do not mix with water and remain visible even after stirring.",
+      "keyConceptPills": [
+        "Soluble = disappears",
+        "Insoluble = visible",
+        "Dissolved ≠ destroyed",
+        "Physical change only"
+      ]
+    },
+    "interactions": {
+      "verdictToggle": "Pill-style two-button toggle. Tap once to select; tap again to deselect (returns to empty state). Green for 'Dissolves', red for 'Does not'.",
+      "matchBadge": "Auto-renders as grey dash (–) until both predict and observe are filled. Then green ✓ or red ✗ with a pop-in animation.",
+      "wrongObserve": "Shows ⚠️ 'Check again' label below the Observe toggle. If showHints is true, an amber hint banner appears below the row.",
+      "synthesisSubmit": "Disabled (greyed) until synthesis.trim().length ≥ 6. On submit: green answer card + purple textbook card + key concept pills + confetti. 'Edit answer' button returns to input. 'Start over' resets entire tool.",
+      "reset": "Clears all toggle selections, synthesis text, and submitted state."
+    },
+    "designSystem": {
+      "fontFamily": "Poppins",
+      "palette": {
+        "primaryPurple": "#4A4DC9",
+        "primaryOrange": "#FF7212",
+        "deepPurple": "#533086",
+        "warmOrange": "#FC9145",
+        "lightPurple": "#C1C1EA",
+        "creamOrange": "#FFF3E4",
+        "textDark": "#4E4E4E",
+        "success": "#22C55E",
+        "error": "#EF4444"
+      },
+      "responsive": {
+        "mobileBreakpoint": "620px",
+        "mobile": "Compact pill labels ('✓ Yes' / '✗ No'), smaller emoji icons, stacked summary bar",
+        "tabletPlus": "Full 'Dissolves' / 'Does not' labels, 36px emoji icons, horizontal summary bar"
+      }
+    },
+    "agentNotes": {
+      "whenToUse": "Use when a Grade 6 student is doing or has done Activity 6.7 (mixing materials in water) from section 6.3.4 of the Curiosity textbook. Also use as a standalone data-recording activity when teaching solubility concepts.",
+      "coreConceptsReinforced": [
+        "Prediction vs observation as distinct scientific skills",
+        "Solubility — soluble vs insoluble materials",
+        "Dissolving is a physical change — matter is conserved",
+        "Pattern recognition from experimental data",
+        "Scientific synthesis — drawing conclusions from observations"
+      ],
+      "instructionLine": "Write your predictions and observations for each material. Then describe the pattern you see."
+    }
+  }

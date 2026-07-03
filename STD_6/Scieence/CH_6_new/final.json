@@ -1,0 +1,242 @@
+{
+    "meta": {
+      "title": "Spotlight Sort",
+      "activity": "Activity 6.2 — Let us group",
+      "chapter": "Chapter 6 — Materials Around Us",
+      "class": "Class 6",
+      "subject": "Science (Curiosity)",
+      "description": "Students observe one object at a time and tag it across 4 properties: Material, Hardness, Lustre, and Transparency."
+    },
+  
+    "theme": {
+      "primaryDark":  "#533086",
+      "primary":      "#4A4DC9",
+      "primaryLight": "#EDEDF8",
+      "accent":       "#FF7212",
+      "accentDark":   "#FC9145",
+      "success":      "#2ECC71",
+      "danger":       "#E53E3E",
+      "gray900":      "#1A1A2E",
+      "gray700":      "#4E4E4E",
+      "gray400":      "#CACACA",
+      "gray200":      "#EBEBEB",
+      "gray100":      "#F5F5F5",
+      "font":         "Poppins"
+    },
+  
+    "groups": [
+      {
+        "id":       "material",
+        "label":    "Material",
+        "icon":     "🧪",
+        "question": "What is it made of?",
+        "color":    "#4A4DC9",
+        "light":    "#EDEDF8"
+      },
+      {
+        "id":       "hardness",
+        "label":    "Hard or Soft?",
+        "icon":     "💪",
+        "question": "Can you compress or scratch it?",
+        "color":    "#0891b2",
+        "light":    "#DBEAFE"
+      },
+      {
+        "id":       "lustre",
+        "label":    "Shine",
+        "icon":     "✨",
+        "question": "Does its surface reflect light?",
+        "color":    "#B45309",
+        "light":    "#FEF3C7"
+      },
+      {
+        "id":       "transparency",
+        "label":    "Transparency",
+        "icon":     "👁️",
+        "question": "Can you see through it?",
+        "color":    "#7C3AED",
+        "light":    "#EDE9FE"
+      }
+    ],
+  
+    "tags": [
+      { "id": "metal",       "group": "material",     "label": "Metal"       },
+      { "id": "glass",       "group": "material",     "label": "Glass"       },
+      { "id": "paper",       "group": "material",     "label": "Paper"       },
+      { "id": "rubber",      "group": "material",     "label": "Rubber"      },
+      { "id": "wood",        "group": "material",     "label": "Wood"        },
+      { "id": "clay",        "group": "material",     "label": "Clay"        },
+      { "id": "cotton",      "group": "material",     "label": "Cotton"      },
+      { "id": "plastic",     "group": "material",     "label": "Plastic"     },
+      { "id": "hard",        "group": "hardness",     "label": "Hard"        },
+      { "id": "soft",        "group": "hardness",     "label": "Soft"        },
+      { "id": "shiny",       "group": "lustre",       "label": "Shiny"       },
+      { "id": "dull",        "group": "lustre",       "label": "Dull"        },
+      { "id": "transparent", "group": "transparency", "label": "Transparent" },
+      { "id": "translucent", "group": "transparency", "label": "Translucent" },
+      { "id": "opaque",      "group": "transparency", "label": "Opaque"      }
+    ],
+  
+    "objects": [
+      {
+        "id":    "key",
+        "name":  "Metal Key",
+        "emoji": "🔑",
+        "clue":  "Cold to touch · Heavy for its size · Surface catches light",
+        "cluePoints": [
+          "Cold to touch",
+          "Heavy for its size",
+          "Surface catches light"
+        ],
+        "correctTags": ["metal", "hard", "shiny", "opaque"],
+        "material": "Iron / Steel"
+      },
+      {
+        "id":    "notebook",
+        "name":  "Notebook",
+        "emoji": "📓",
+        "clue":  "Light in hand · Cover bends easily · Surface looks dull",
+        "cluePoints": [
+          "Light in hand",
+          "Cover bends easily",
+          "Surface looks dull"
+        ],
+        "correctTags": ["paper", "soft", "dull", "opaque"],
+        "material": "Paper"
+      },
+      {
+        "id":    "marble",
+        "name":  "Glass Marble",
+        "emoji": "🔵",
+        "clue":  "Smooth and cold · You can see right through it · Very hard",
+        "cluePoints": [
+          "Smooth and cold",
+          "You can see right through it",
+          "Very hard"
+        ],
+        "correctTags": ["glass", "hard", "dull", "transparent"],
+        "material": "Glass"
+      },
+      {
+        "id":    "eraser",
+        "name":  "Eraser",
+        "emoji": "🧽",
+        "clue":  "Squishy and flexible · Dull matte surface · Easy to squeeze",
+        "cluePoints": [
+          "Squishy and flexible",
+          "Dull matte surface",
+          "Easy to squeeze"
+        ],
+        "correctTags": ["rubber", "soft", "dull", "opaque"],
+        "material": "Rubber"
+      },
+      {
+        "id":    "coin",
+        "name":  "Copper Coin",
+        "emoji": "🪙",
+        "clue":  "Heavy for its size · Shiny surface · Cannot compress at all",
+        "cluePoints": [
+          "Heavy for its size",
+          "Shiny surface",
+          "Cannot compress at all"
+        ],
+        "correctTags": ["metal", "hard", "shiny", "opaque"],
+        "material": "Copper (Metal)"
+      },
+      {
+        "id":    "ruler",
+        "name":  "Wooden Ruler",
+        "emoji": "📏",
+        "clue":  "Slightly rough surface · Hard to scratch · Dull appearance",
+        "cluePoints": [
+          "Slightly rough surface",
+          "Hard to scratch",
+          "Dull appearance"
+        ],
+        "correctTags": ["wood", "hard", "dull", "opaque"],
+        "material": "Wood"
+      },
+      {
+        "id":    "butterPaper",
+        "name":  "Butter Paper",
+        "emoji": "📄",
+        "clue":  "Very thin · Hold to light — shapes visible but not clearly",
+        "cluePoints": [
+          "Very thin",
+          "Hold to light — shapes visible but not clearly"
+        ],
+        "correctTags": ["paper", "soft", "dull", "translucent"],
+        "material": "Paper (treated)"
+      },
+      {
+        "id":    "brick",
+        "name":  "Clay Brick",
+        "emoji": "🧱",
+        "clue":  "Rough and heavy · Cannot see through · Very hard surface",
+        "cluePoints": [
+          "Rough and heavy",
+          "Cannot see through",
+          "Very hard surface"
+        ],
+        "correctTags": ["clay", "hard", "dull", "opaque"],
+        "material": "Baked Clay"
+      },
+      {
+        "id":    "cotton",
+        "name":  "Cotton Ball",
+        "emoji": "☁️",
+        "clue":  "Lightest of all · Compresses in seconds · Soft and fluffy",
+        "cluePoints": [
+          "Lightest of all",
+          "Compresses in seconds",
+          "Soft and fluffy"
+        ],
+        "correctTags": ["cotton", "soft", "dull", "opaque"],
+        "material": "Cotton"
+      },
+      {
+        "id":    "plasticBag",
+        "name":  "Plastic Bag",
+        "emoji": "🛍️",
+        "clue":  "Thin and flexible · You can clearly see objects through it",
+        "cluePoints": [
+          "Thin and flexible",
+          "You can clearly see objects through it"
+        ],
+        "correctTags": ["plastic", "soft", "dull", "transparent"],
+        "material": "Plastic"
+      }
+    ],
+  
+    "scoring": {
+      "tagsPerObject": 4,
+      "totalObjects":  10,
+      "totalTags":     40,
+      "thresholds": {
+        "high":   0.8,
+        "medium": 0.55
+      },
+      "messages": {
+        "high":   "Excellent scientist! 🔬",
+        "medium": "Good work! A few to revisit 🙂",
+        "low":    "Every mistake is a discovery! 💡"
+      },
+      "stars": {
+        "5": 0.9,
+        "4": 0.7,
+        "3": 0.5,
+        "2": 0.3,
+        "1": 0.0
+      }
+    },
+  
+    "ui": {
+      "confettiCount":    55,
+      "confettiTrigger":  0.55,
+      "countUpDuration":  1000,
+      "cardAnimation":    "cardIn 0.38s cubic-bezier(.34,1.4,.64,1) both",
+      "tagAnimation":     "tagBounce 0.28s cubic-bezier(.34,1.56,.64,1) both",
+      "shakeAnimation":   "shake 0.4s ease",
+      "successAnimation": "greenPop 0.4s ease"
+    }
+  }

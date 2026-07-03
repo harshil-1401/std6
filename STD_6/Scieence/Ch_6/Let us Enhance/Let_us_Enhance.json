@@ -1,0 +1,276 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "End-of-Chapter Quiz — Chapter 6: Materials Around Us",
+    "toolName": "chapter_quiz",
+    "description": "10-question MCQ quiz. One question per screen. Correct tap = green + reason. Wrong tap = red shake + retry. Progress bar tracks all 10. Summary shows score, time, per-question results, and weakest topic to revise.",
+  
+    "correct_answer_distribution": {
+      "note": "Correct answers are deliberately spread across all four positions to prevent pattern-guessing.",
+      "q1":  "a",
+      "q2":  "d",
+      "q3":  "a",
+      "q4":  "c",
+      "q5":  "b",
+      "q6":  "d",
+      "q7":  "a",
+      "q8":  "c",
+      "q9":  "d",
+      "q10": "b"
+    },
+  
+    "parameters": {
+      "width": 800,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "additionalProps": {
+        "title": "End-of-Chapter Quiz",
+        "subtitle": "Answer each question — read the reason on every correct answer.",
+        "showTimer": true,
+        "questions": [
+          {
+            "id": "q1",
+            "topic": "materials",
+            "question": "Which statement best defines a \"material\"?",
+            "options": [
+              { "id": "a", "text": "Any substance used to create or make an object" },
+              { "id": "b", "text": "Only metals and plastics used in construction" },
+              { "id": "c", "text": "Any living organism found in the environment" },
+              { "id": "d", "text": "Any object that has a fixed and rigid shape" }
+            ],
+            "correctId": "a",
+            "reason": "A material is any substance used to create objects — wood, glass, clay, metal, plastic, and more all qualify.",
+            "hint": "Think about what ALL objects — from a notebook to a bridge — are made FROM."
+          },
+          {
+            "id": "q2",
+            "topic": "lustre",
+            "question": "Paper, wood, rubber, and jute are examples of which type of material?",
+            "options": [
+              { "id": "a", "text": "Lustrous materials — they have a shiny surface" },
+              { "id": "b", "text": "Transparent materials — light passes through them" },
+              { "id": "c", "text": "Soluble materials — they dissolve in water easily" },
+              { "id": "d", "text": "Non-lustrous materials — they do not have a shiny surface" }
+            ],
+            "correctId": "d",
+            "reason": "Paper, wood, rubber, and jute are non-lustrous — their surfaces do not shine when light falls on them.",
+            "hint": "The opposite of lustrous. These materials have no natural shine or metallic glow."
+          },
+          {
+            "id": "q3",
+            "topic": "lustre",
+            "question": "\"All that glitters is not gold.\" What does this mean in the context of lustre?",
+            "options": [
+              { "id": "a", "text": "Not all shiny materials are metals — some are coated with plastic or wax" },
+              { "id": "b", "text": "All metals lose their lustre when exposed to air and moisture" },
+              { "id": "c", "text": "Gold is the only truly lustrous metal in nature" },
+              { "id": "d", "text": "Only freshly cut wood can appear shiny like a metal" }
+            ],
+            "correctId": "a",
+            "reason": "Some non-metals are polished or coated with plastic or wax to appear shiny — lustre alone does not prove a material is a metal.",
+            "hint": "The saying warns us not to judge by appearance. Can non-metals look shiny too?"
+          },
+          {
+            "id": "q4",
+            "topic": "transparency",
+            "question": "Sheeta's brother watches the hide-and-seek game through a glass window. Why can he see clearly?",
+            "options": [
+              { "id": "a", "text": "Glass is opaque — it reflects light so images appear on it" },
+              { "id": "b", "text": "Glass is translucent — shapes are visible but blurry" },
+              { "id": "c", "text": "Glass is transparent — objects can be seen clearly through it" },
+              { "id": "d", "text": "Glass is lustrous — its shiny surface acts like a mirror" }
+            ],
+            "correctId": "c",
+            "reason": "Glass is transparent — it allows light to pass through completely, so objects on the other side are seen clearly.",
+            "hint": "Transparent materials let ALL light through with no distortion — you can see details clearly."
+          },
+          {
+            "id": "q5",
+            "topic": "transparency",
+            "question": "Which combination correctly classifies these three objects?",
+            "options": [
+              { "id": "a", "text": "Eraser = transparent · Frosted glass = opaque · Clear glass = translucent" },
+              { "id": "b", "text": "Eraser = opaque · Frosted glass = translucent · Clear glass = transparent" },
+              { "id": "c", "text": "Eraser = translucent · Frosted glass = transparent · Clear glass = opaque" },
+              { "id": "d", "text": "Eraser = lustrous · Frosted glass = soluble · Clear glass = hard" }
+            ],
+            "correctId": "b",
+            "reason": "Eraser (opaque — no light through), frosted glass (translucent — blurry vision), clear glass (transparent — clear vision).",
+            "hint": "Opaque = no vision · Translucent = blurry vision · Transparent = clear vision. Match each material."
+          },
+          {
+            "id": "q6",
+            "topic": "solubility",
+            "question": "Ghulan's mother prepares shikanji by mixing sugar, salt, and lemon juice in water. What happens to the sugar and salt?",
+            "options": [
+              { "id": "a", "text": "They remain as visible particles at the bottom — they are insoluble" },
+              { "id": "b", "text": "They float on the surface and separate from water over time" },
+              { "id": "c", "text": "They turn the water into a solid after a few minutes" },
+              { "id": "d", "text": "They dissolve completely in water — they are soluble" }
+            ],
+            "correctId": "d",
+            "reason": "Sugar and salt are soluble — they dissolve completely in water, which is why shikanji tastes sweet and salty.",
+            "hint": "When something 'disappears' after being stirred in water, it has dissolved — the material is soluble."
+          },
+          {
+            "id": "q7",
+            "topic": "solubility",
+            "question": "After stirring sand in water for a long time, you notice it settles at the bottom. Sand is:",
+            "options": [
+              { "id": "a", "text": "Insoluble — it does not dissolve in water even after prolonged stirring" },
+              { "id": "b", "text": "Soluble — it dissolves slowly and settles only when cold" },
+              { "id": "c", "text": "Translucent — light passes through sand particles in water" },
+              { "id": "d", "text": "Lustrous — sand particles reflect light from below the water" }
+            ],
+            "correctId": "a",
+            "reason": "Sand is insoluble in water — it does not dissolve regardless of how long or hard you stir it.",
+            "hint": "Insoluble materials NEVER disappear in water. Settling at the bottom is the tell-tale sign."
+          },
+          {
+            "id": "q8",
+            "topic": "mass",
+            "question": "Three identical cups are half-filled — A with water, B with sand, C with pebbles. Cup C is heaviest. This shows different materials have different:",
+            "options": [
+              { "id": "a", "text": "Volumes — pebbles occupy more space than water in the same cup" },
+              { "id": "b", "text": "Lustre — pebbles reflect more light than sand or water" },
+              { "id": "c", "text": "Mass — pebbles contain more matter per unit volume" },
+              { "id": "d", "text": "Transparency — pebbles allow less light through than water" }
+            ],
+            "correctId": "c",
+            "reason": "Mass is the quantity of matter. The same volume of different materials can have very different masses — pebbles have the greatest mass here.",
+            "hint": "The property measured in grams or kilograms that tells us HOW MUCH matter is in an object."
+          },
+          {
+            "id": "q9",
+            "topic": "volume",
+            "question": "Madam Vidya pours water into two identical glass tumblers. One is half-filled, the other nearly full. What differs between them?",
+            "options": [
+              { "id": "a", "text": "Mass of the glass tumblers — one tumbler is physically heavier" },
+              { "id": "b", "text": "Lustre of the water — more water makes it appear shinier" },
+              { "id": "c", "text": "Solubility — more water increases the capacity to dissolve things" },
+              { "id": "d", "text": "Volume of water — each tumbler holds a different amount of water" }
+            ],
+            "correctId": "d",
+            "reason": "Volume is the space occupied by matter. The tumblers are identical — what differs is how much SPACE the water takes up inside each.",
+            "hint": "Volume = space occupied. The tumblers are the same; only the amount of water (space it fills) differs."
+          },
+          {
+            "id": "q10",
+            "topic": "guṇa",
+            "question": "Ayurveda uses 10 pairs of opposite guṇas to describe all matter. Which option lists a TRUE opposite pair from the Aṣhṭānga Hṛidaya?",
+            "options": [
+              { "id": "a", "text": "Guru (heavy) and Snigdha (unctuous) — they are opposites" },
+              { "id": "b", "text": "Mṛidu (soft) and Kaṭhina (hard) — they are opposites" },
+              { "id": "c", "text": "Hima (cold) and Manda (slow) — they are opposites" },
+              { "id": "d", "text": "Sūkṣhma (subtle) and Sthira (stable) — they are opposites" }
+            ],
+            "correctId": "b",
+            "reason": "Mṛidu (soft) and Kaṭhina (hard) are one of the 10 true opposite guṇa pairs — directly mirroring soft/hard from Chapter 6.",
+            "hint": "Look for two words that are direct opposites in meaning. Which pair is clearly one extreme vs the other?"
+          }
+        ]
+      }
+    },
+  
+    "schema": {
+      "additionalProps": {
+        "title":     { "type": "string", "default": "End-of-Chapter Quiz" },
+        "subtitle":  { "type": "string", "default": "Answer each question — read the reason on every correct answer." },
+        "showTimer": { "type": "boolean", "default": true },
+        "questions": {
+          "type": "array", "minItems": 2, "maxItems": 20,
+          "design_rule": "Spread correctId values across a, b, c, d — never use the same position for more than 3 consecutive questions.",
+          "items": {
+            "required": ["id", "topic", "question", "options", "correctId", "reason", "hint"],
+            "properties": {
+              "id":        { "type": "string" },
+              "topic":     { "type": "string", "description": "Used for colour-coding and weakest-topic detection. Recommended values: materials | lustre | transparency | solubility | mass | volume | guṇa" },
+              "question":  { "type": "string" },
+              "options":   { "type": "array", "minItems": 2, "maxItems": 4, "items": { "required": ["id","text"], "properties": { "id": {"type":"string"}, "text": {"type":"string"} } } },
+              "correctId": { "type": "string", "description": "Must match one of options[].id. Vary this across a/b/c/d throughout your question set." },
+              "reason":    { "type": "string", "description": "One-line explanation shown after correct tap. Keep ≤ 25 words." },
+              "hint":      { "type": "string", "description": "One-line guidance shown in summary for wrong answers. Keep ≤ 20 words." }
+            }
+          }
+        }
+      }
+    },
+  
+    "agent_readme": {
+      "correct_answer_rule": "ALWAYS distribute correctId across all four positions (a, b, c, d). Never cluster correct answers — students will pattern-match. The default 10 questions use: a, d, a, c, b, d, a, c, d, b.",
+      "no_scrollbar_rule":   "The component uses flexbox with no fixed height — it grows to fit content. Never set a restrictive height in the parent container.",
+      "responsiveness":      "All font-sizes use clamp(). All paddings are relative. The component works from 320px to 1200px+ width.",
+      "retry_policy":        "Students can retry wrong options freely per question. Only a correct tap locks the answer and enables the Next button.",
+      "examples": [
+        {
+          "name": "Default Chapter 6 — 10 questions (a/d/a/c/b/d/a/c/d/b)",
+          "parameters": {}
+        },
+        {
+          "name": "Short 4-question drill — all different correct positions",
+          "correct_positions": ["a", "c", "b", "d"],
+          "parameters": {
+            "additionalProps": {
+              "title": "Quick Check",
+              "showTimer": false,
+              "questions": [
+                {
+                  "id": "q1", "topic": "transparency",
+                  "question": "Which material allows you to see clearly through it?",
+                  "options": [
+                    { "id": "a", "text": "Clear glass" },
+                    { "id": "b", "text": "Wooden plank" },
+                    { "id": "c", "text": "Brick wall" },
+                    { "id": "d", "text": "Metal sheet" }
+                  ],
+                  "correctId": "a",
+                  "reason": "Clear glass is transparent — objects on the other side are seen with full clarity.",
+                  "hint": "Transparent = see clearly through. Which material does that?"
+                },
+                {
+                  "id": "q2", "topic": "solubility",
+                  "question": "Which material is insoluble in water?",
+                  "options": [
+                    { "id": "a", "text": "Sugar" },
+                    { "id": "b", "text": "Salt" },
+                    { "id": "c", "text": "Sand" },
+                    { "id": "d", "text": "Vinegar" }
+                  ],
+                  "correctId": "c",
+                  "reason": "Sand is insoluble — it never dissolves and remains separate even after prolonged stirring.",
+                  "hint": "Which of these does NOT disappear when stirred into water?"
+                },
+                {
+                  "id": "q3", "topic": "mass",
+                  "question": "Mass is measured in which unit?",
+                  "options": [
+                    { "id": "a", "text": "Litre (L)" },
+                    { "id": "b", "text": "Kilogram (kg)" },
+                    { "id": "c", "text": "Metre (m)" },
+                    { "id": "d", "text": "Celsius (°C)" }
+                  ],
+                  "correctId": "b",
+                  "reason": "Mass is measured in grams (g) and kilograms (kg) in the SI system.",
+                  "hint": "Think about weighing objects on a scale — what unit is shown?"
+                },
+                {
+                  "id": "q4", "topic": "volume",
+                  "question": "500 mL written on a water bottle refers to its:",
+                  "options": [
+                    { "id": "a", "text": "Mass — how heavy the water is" },
+                    { "id": "b", "text": "Temperature — how warm the water is" },
+                    { "id": "c", "text": "Lustre — how shiny the bottle is" },
+                    { "id": "d", "text": "Volume — how much space the water occupies" }
+                  ],
+                  "correctId": "d",
+                  "reason": "mL (millilitre) is a unit of volume — it measures the space the water occupies inside the bottle.",
+                  "hint": "mL and L are units of ___. What property do they measure?"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+  
+    "instructions_for_student": "Answer each of the ten questions. Tap an option — green means correct and you will see the reason. Red means try again! When you finish, see your score and which topic to revise."
+  }

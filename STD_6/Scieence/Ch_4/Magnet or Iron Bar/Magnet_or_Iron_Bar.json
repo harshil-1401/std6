@@ -1,0 +1,141 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Is it a Magnet or Iron?",
+    "instructions_for_student": "Drag each pole of the known magnet near the mystery bar's end. Observe attraction or repulsion to decide: is the mystery bar a magnet or just iron?",
+    "data": {
+      "toolName": "mystery_bar_tool",
+      "parameters": {
+        "width": 580,
+        "height": 720,
+        "themeColor": "#533086",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "title": "Is it a Magnet or Iron?",
+          "subtitle": "Test the mystery bar to find out",
+          "summaryRule": "Only repulsion proves something is a magnet.",
+          "completionMessage": "Investigation Complete! 🧲",
+          "rounds": [
+            {
+              "id": 1,
+              "mysteryLabel": "Mystery Bar A",
+              "mysteryEmoji": "🔩",
+              "isMagnet": false,
+              "conclusionLabel": "This is iron — not a magnet",
+              "conclusionDetail": "Both poles of the known magnet attracted the bar. No repulsion was observed, so it must be iron."
+            },
+            {
+              "id": 2,
+              "mysteryLabel": "Mystery Bar B",
+              "mysteryEmoji": "🧲",
+              "isMagnet": true,
+              "mysteryEndPole": "N",
+              "conclusionLabel": "This is a magnet — repulsion detected!",
+              "conclusionDetail": "One pole attracted and the other repelled the bar. Repulsion proves it is a magnet."
+            },
+            {
+              "id": 3,
+              "mysteryLabel": "Mystery Bar C",
+              "mysteryEmoji": "🔩",
+              "isMagnet": false,
+              "conclusionLabel": "This is iron — not a magnet",
+              "conclusionDetail": "Both poles attracted the bar. No repulsion means it cannot be identified as a magnet."
+            }
+          ]
+        }
+      }
+    },
+    "_schema_version": "2.1",
+    "_tool_meta": {
+      "component": "MysteryBarTool",
+      "file": "MysteryBarTool.tsx",
+      "subject": "Science",
+      "topic": "Magnets – Chapter 4 Exploring Magnets (Grade 6 NCERT)",
+      "activity_reference": "Activity 4.5: Let us experiment — A magnet can be identified by its property of repulsion",
+      "design_theme": {
+        "primary": "#533086",
+        "secondary": "#FC9145",
+        "accent_green": "#16a34a",
+        "accent_red": "#dc2626",
+        "font": "Poppins",
+        "palette_source": "Singularity Design System (fecu104.pdf / Singularity_tool_Design_1.pdf)",
+        "colors_used": ["#533086", "#FC9145", "#C1C1EA", "#FFF3E4", "#F5F5F5", "#4E4E4E", "#CACACA", "#EBEBEB", "#16a34a", "#dc2626"]
+      },
+      "no_external_dependencies": true,
+      "icons": "inline SVG only — no lucide-react or external icon libraries imported",
+      "interaction_model": "click-based sequential test per round (click N-pole test, then S-pole test, then reveal)",
+      "physics_logic": {
+        "iron_bar": "Both N and S poles of the known magnet attract iron — always 'attract' for both tests",
+        "magnet_bar": "The known magnet repels the end of the mystery bar that has the same pole; attracts the opposite pole",
+        "getResult_function": "knownPole === round.mysteryEndPole → 'repel'; otherwise → 'attract'"
+      },
+      "agent_readme": {
+        "description": "A 3-round sequential investigation tool. Each round shows a grey 'mystery' bar and a known labelled magnet. The student clicks to test each pole (N then S) of the known magnet against the mystery bar's end. Green attract arrows or red repel arrows appear. After both tests, a 'Reveal Conclusion' button appears. The conclusion card shows whether it was iron (both attracted) or a magnet (one repelled). Revealed bar shows its true pole markings. After all rounds a summary screen shows per-round results and the key rule.",
+        "additionalProps_schema": {
+          "title": { "type": "string", "description": "Main heading", "default": "Is it a Magnet or Iron?" },
+          "subtitle": { "type": "string", "description": "Instruction subheading", "default": "Test the mystery bar to find out" },
+          "summaryRule": { "type": "string", "description": "Key rule shown at the bottom of the summary screen", "default": "Only repulsion proves something is a magnet." },
+          "completionMessage": { "type": "string", "description": "Heading on the summary/score screen", "default": "Investigation Complete! 🧲" },
+          "rounds": {
+            "type": "array",
+            "description": "Array of investigation rounds. Minimum 1, maximum any.",
+            "items": {
+              "id": { "type": "number", "description": "Sequential round number (1-based)" },
+              "mysteryLabel": { "type": "string", "description": "Label shown for the mystery bar (e.g. 'Mystery Bar A')" },
+              "mysteryEmoji": { "type": "string", "description": "Emoji representing the mystery bar" },
+              "isMagnet": { "type": "boolean", "description": "true = mystery bar is a magnet; false = mystery bar is iron" },
+              "mysteryEndPole": {
+                "type": "string",
+                "enum": ["N", "S"],
+                "description": "Required only when isMagnet=true. The pole of the mystery bar at the tested end. The known magnet's same pole will repel this end."
+              },
+              "conclusionLabel": { "type": "string", "description": "Short conclusion shown in the conclusion card header" },
+              "conclusionDetail": { "type": "string", "description": "One-to-two sentence explanation shown in the conclusion card body" }
+            }
+          }
+        },
+        "customisation_examples": [
+          {
+            "_comment": "Single round quick demo — just the magnet case",
+            "additionalProps": {
+              "title": "Magnet Test",
+              "subtitle": "Can you detect this magnet?",
+              "rounds": [
+                {
+                  "id": 1,
+                  "mysteryLabel": "Mystery Object",
+                  "mysteryEmoji": "❓",
+                  "isMagnet": true,
+                  "mysteryEndPole": "S",
+                  "conclusionLabel": "It's a magnet!",
+                  "conclusionDetail": "The N-pole attracted the S-end and the S-pole repelled the S-end. Repulsion confirms a magnet."
+                }
+              ]
+            }
+          },
+          {
+            "_comment": "4-round extended version alternating iron and magnet",
+            "additionalProps": {
+              "title": "Magnet vs Iron — Extended Test",
+              "subtitle": "Identify all four mystery bars!",
+              "rounds": [
+                { "id":1, "mysteryLabel":"Bar Alpha", "mysteryEmoji":"🔩", "isMagnet":false, "conclusionLabel":"Iron — no repulsion", "conclusionDetail":"Both poles attracted. This is iron." },
+                { "id":2, "mysteryLabel":"Bar Beta",  "mysteryEmoji":"🧲", "isMagnet":true,  "mysteryEndPole":"S", "conclusionLabel":"Magnet — repulsion at S-end!", "conclusionDetail":"S-pole repelled; N-pole attracted. It's a magnet with S facing the known magnet." },
+                { "id":3, "mysteryLabel":"Bar Gamma", "mysteryEmoji":"🔩", "isMagnet":false, "conclusionLabel":"Iron — no repulsion", "conclusionDetail":"Both poles attracted. This is iron." },
+                { "id":4, "mysteryLabel":"Bar Delta", "mysteryEmoji":"🧲", "isMagnet":true,  "mysteryEndPole":"N", "conclusionLabel":"Magnet — repulsion at N-end!", "conclusionDetail":"N-pole repelled; S-pole attracted. Repulsion proves it's a magnet." }
+              ]
+            }
+          }
+        ],
+        "decision_tree": {
+          "standard_3_rounds": "Use the default rounds array — iron/magnet/iron sequence from NCERT Activity 4.5",
+          "single_round": "Reduce to 1 round for a quick demonstration",
+          "more_rounds": "Add more round objects — tool auto-adjusts progress dots and round count",
+          "change_mystery_pole": "Set mysteryEndPole to 'N' or 'S' to control which pole of the mystery magnet is at the tested end"
+        }
+      }
+    }
+  }

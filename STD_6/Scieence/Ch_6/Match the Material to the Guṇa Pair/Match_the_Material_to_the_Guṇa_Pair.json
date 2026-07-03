@@ -1,0 +1,189 @@
+{
+    "toolName": "guna_matcher",
+    "version": "1.0.0",
+    "description": "Bilingual Ayurveda Guṇa Matcher — students drag or tap materials onto Sanskrit/English guṇa-pair cards. Correct matches lock with reasoning; wrong matches return with a hint. A summary card shows all correspondences.",
+  
+    "parameters": {
+      "width": {
+        "type": "number",
+        "default": 960,
+        "description": "Max width of the tool container in pixels"
+      },
+      "themeColor": {
+        "type": "string",
+        "default": "#533086",
+        "description": "Primary brand color (deep purple per design system)"
+      },
+      "darkMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable dark mode (not yet themed — reserved for future)"
+      }
+    },
+  
+    "additionalProps": {
+      "description": "Override materials and guṇa pairs for custom lessons or curriculum variants.",
+      "schema": {
+        "materials": {
+          "type": "array",
+          "description": "List of material tiles shown in the top row.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id":           { "type": "string",  "description": "Unique identifier, e.g. 'iron'" },
+              "nameEn":       { "type": "string",  "description": "English name, e.g. 'Iron'" },
+              "nameSanskrit": { "type": "string",  "description": "Sanskrit word in Devanagari, e.g. 'लोह'" },
+              "nameHindi":    { "type": "string",  "description": "Display Hindi/Sanskrit below tile, e.g. 'लोहा'" },
+              "emoji":        { "type": "string",  "description": "Single emoji for visual identity, e.g. '⚙️'" },
+              "color":        { "type": "string",  "description": "Border/text accent color (hex)" },
+              "accentColor":  { "type": "string",  "description": "Lighter background tint on hover/select (hex)" }
+            },
+            "required": ["id", "nameEn", "nameHindi", "emoji", "color", "accentColor"]
+          },
+          "default": [
+            { "id": "iron",  "nameEn": "Iron",  "nameSanskrit": "लोह",   "nameHindi": "लोहा",  "emoji": "⚙️", "color": "#4E4E4E", "accentColor": "#CACACA" },
+            { "id": "cloth", "nameEn": "Cloth", "nameSanskrit": "वस्त्र","nameHindi": "कपड़ा", "emoji": "🧵", "color": "#533086", "accentColor": "#C1C1EA" },
+            { "id": "water", "nameEn": "Water", "nameSanskrit": "जल",    "nameHindi": "जल",    "emoji": "💧", "color": "#4A4DC9", "accentColor": "#C1C1EA" },
+            { "id": "honey", "nameEn": "Honey", "nameSanskrit": "मधु",   "nameHindi": "मधु",   "emoji": "🍯", "color": "#FC9145", "accentColor": "#FFF3E4" },
+            { "id": "wood",  "nameEn": "Wood",  "nameSanskrit": "काष्ठ", "nameHindi": "काष्ठ","emoji": "🪵", "color": "#7B4F2E", "accentColor": "#E8D5C0" }
+          ]
+        },
+  
+        "gunaPairs": {
+          "type": "array",
+          "description": "Guṇa-pair cards on which materials are dropped.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id":                { "type": "string", "description": "Unique ID, e.g. 'kathina_mrdu'" },
+              "sanskritA":         { "type": "string", "description": "First Devanagari term, e.g. 'कठिन'" },
+              "sanskritB":         { "type": "string", "description": "Second Devanagari term, e.g. 'मृदु'" },
+              "translitA":         { "type": "string", "description": "IAST transliteration of first term" },
+              "translitB":         { "type": "string", "description": "IAST transliteration of second term" },
+              "englishA":          { "type": "string", "description": "English gloss of first term" },
+              "englishB":          { "type": "string", "description": "English gloss of second term" },
+              "correctMaterialId": { "type": "string", "description": "Must match a material id above" },
+              "hint":              { "type": "string", "description": "Shown after a wrong attempt" },
+              "reasoning":         { "type": "string", "description": "Shown after a correct match" }
+            },
+            "required": ["id","sanskritA","sanskritB","translitA","translitB","englishA","englishB","correctMaterialId","hint","reasoning"]
+          },
+          "default": [
+            {
+              "id": "kathina_mrdu",
+              "sanskritA": "कठिन", "sanskritB": "मृदु",
+              "translitA": "kaṭhina", "translitB": "mṛdu",
+              "englishA": "Hard", "englishB": "Soft",
+              "correctMaterialId": "iron",
+              "hint": "Think of something you cannot scratch with a fingernail.",
+              "reasoning": "Iron exemplifies kaṭhina (hard) — it resists compression and cannot be easily scratched."
+            },
+            {
+              "id": "sthira_khala",
+              "sanskritA": "स्थिर", "sanskritB": "चल",
+              "translitA": "sthira", "translitB": "khāla",
+              "englishA": "Stable", "englishB": "Moving",
+              "correctMaterialId": "water",
+              "hint": "Which material flows and takes the shape of its container?",
+              "reasoning": "Water embodies khāla (moving) — it flows, ripples, and never holds a fixed form."
+            },
+            {
+              "id": "guru_laghu",
+              "sanskritA": "गुरु", "sanskritB": "लघु",
+              "translitA": "guru", "translitB": "laghu",
+              "englishA": "Heavy", "englishB": "Light",
+              "correctMaterialId": "cloth",
+              "hint": "Which material is airy, weighs very little, and can float in a breeze?",
+              "reasoning": "Cloth is laghu (light) — woven fibres trap air, making it featherlight compared to metals."
+            },
+            {
+              "id": "sandra_drava",
+              "sanskritA": "सान्द्र", "sanskritB": "द्रव",
+              "translitA": "sāndra", "translitB": "drava",
+              "englishA": "Dense", "englishB": "Fluid",
+              "correctMaterialId": "honey",
+              "hint": "Think of something liquid yet thick, slow-flowing and viscous.",
+              "reasoning": "Honey is sāndra (dense/viscous) — it flows but is thick, concentrated, and heavy for its volume."
+            },
+            {
+              "id": "mrdu_snigdha",
+              "sanskritA": "मृदु", "sanskritB": "स्निग्ध",
+              "translitA": "mṛdu", "translitB": "snigdha",
+              "englishA": "Soft", "englishB": "Smooth",
+              "correctMaterialId": "wood",
+              "hint": "Which material can be carved, is firm yet workable, and has a natural grain?",
+              "reasoning": "Wood is mṛdu (soft relative to iron) — it can be carved, sanded smooth, and shaped by hand."
+            }
+          ]
+        }
+      },
+  
+      "examples": {
+        "default_5_materials": {
+          "description": "Standard 5-material, 5-pair game matching the NCERT Chapter 6 guṇas",
+          "materials": [
+            { "id": "iron",  "nameEn": "Iron",  "nameHindi": "लोहा",  "emoji": "⚙️", "color": "#4E4E4E", "accentColor": "#CACACA" },
+            { "id": "cloth", "nameEn": "Cloth", "nameHindi": "कपड़ा", "emoji": "🧵", "color": "#533086", "accentColor": "#C1C1EA" },
+            { "id": "water", "nameEn": "Water", "nameHindi": "जल",    "emoji": "💧", "color": "#4A4DC9", "accentColor": "#C1C1EA" },
+            { "id": "honey", "nameEn": "Honey", "nameHindi": "मधु",   "emoji": "🍯", "color": "#FC9145", "accentColor": "#FFF3E4" },
+            { "id": "wood",  "nameEn": "Wood",  "nameHindi": "काष्ठ","emoji": "🪵", "color": "#7B4F2E", "accentColor": "#E8D5C0" }
+          ]
+        },
+        "extended_10_materials": {
+          "description": "Extended 10-material variant covering all 10 guṇa pairs from Aṣhtānga Hṛidaya",
+          "note": "Add 5 more materials (fire, stone, oil, feather, ice) and 5 more pairs (uṣhṇa/hima, tīkṣhṇa/manda, rukṣha/snigdha, sthūla/sūkṣhma, picchhila/viśhada)"
+        }
+      }
+    },
+  
+    "interactionModel": {
+      "drag": "HTML5 drag-and-drop — works on desktop. Material tile sets draggable=true; guṇa card has onDrop.",
+      "tap": "Mobile-first tap-to-select: tap a material to select it (highlighted), then tap a guṇa pair to place it.",
+      "feedback": {
+        "correct": "Card locks with a ✓ badge, confetti emoji burst, and a bilingual reasoning box.",
+        "wrong":   "Card shakes (shakeX animation), hint appears below the drop zone."
+      },
+      "summary": "When all pairs are matched, an All Done banner appears with 'View Summary' button that opens a modal listing every material → guṇa reasoning."
+    },
+  
+    "designTokens": {
+      "colors": {
+        "primary":   "#533086",
+        "secondary": "#7B4FC9",
+        "accent":    "#FC9145",
+        "accentLight": "#FFF3E4",
+        "purpleLight": "#C1C1EA",
+        "bg":        "#F0EFF8",
+        "surface":   "#FFFFFF",
+        "textDark":  "#1e1e2e",
+        "textMuted": "#7c6fa8"
+      },
+      "fonts": {
+        "body":      "Nunito (Google Fonts)",
+        "devanagari": "Tiro Devanagari Sanskrit (Google Fonts)"
+      },
+      "borderRadius": {
+        "tile":  "16px",
+        "card":  "18px",
+        "modal": "24px"
+      }
+    },
+  
+    "agentInstructions": {
+      "whenToUse": [
+        "Student is studying Ayurveda, guṇas, or ancient Indian classification of matter",
+        "Student is reading NCERT Science Grade 6 Chapter 6 (Materials Around Us)",
+        "Teacher wants an activity connecting Sanskrit vocabulary to physical properties",
+        "Student needs bilingual Sanskrit/English reinforcement of material properties"
+      ],
+      "quickCall": {
+        "frontend_action": "show_interactive_tool",
+        "title": "Ayurveda Guṇa Matcher",
+        "data": {
+          "toolName": "guna_matcher",
+          "parameters": {}
+        },
+        "instructions_for_student": "Drag each material (Iron, Water, Cloth, Honey, Wood) onto the guṇa pair that describes it best. Read the Sanskrit aloud as you go!"
+      }
+    }
+  }

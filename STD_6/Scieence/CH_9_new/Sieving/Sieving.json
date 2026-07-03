@@ -1,0 +1,92 @@
+{
+    "toolId": "sieve_matching_board",
+    "title": "Match the Sieve",
+    "subtype": "matching",
+    "conceptId": "M6.SEP.SIEVE",
+    "relatedConceptIds": ["M6.SEP.HANDPICKING", "M6.SEP.WINNOWING", "M6.SEP.FILTRATION"],
+    "module": "Separation of Substances",
+  
+    "placement": {
+      "beat": "Apply",
+      "where": "After introducing sieving, the student picks the correct sieve for each solid-solid mixture, one at a time. The agent points at the next mixture or the right hole-size with highlight() and reacts to the emitted events; it never picks for the student."
+    },
+  
+    "sharedState": { "fields": ["phase", "currentMixture", "picks", "solved", "total", "done"] },
+  
+    "agentControl": {
+      "postmessage": {
+        "in": "{type:'command', id, method, args}",
+        "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+      },
+      "windowMethods": [
+        "setParam(name,value)",
+        "play()",
+        "pause()",
+        "reset()",
+        "highlight(target)",
+        "getState()",
+        "start()",
+        "select(mixtureId)",
+        "next()",
+        "prev()",
+        "pickSieve(mixtureId,sieveId)"
+      ]
+    },
+  
+    "studentControls": [
+      { "control": "Tap 'Let's start'", "effect": "Moves from the intro/demo into the walkthrough of the mixtures." },
+      { "control": "Tap a sieve option", "effect": "Picks that sieve for the mixture on screen. The correct one plays the sifting animation and marks the mixture solved; a wrong one shows a targeted hint." },
+      { "control": "Tap a progress dot", "effect": "Jumps to that mixture (only ones already reached or solved)." },
+      { "control": "Tap 'Watch again'", "effect": "Replays the sifting animation for the solved mixture." },
+      { "control": "Tap 'Previous' / 'Next example' / 'Play again'", "effect": "Moves between mixtures, or restarts the whole activity." }
+    ],
+  
+    "answerKey": {
+      "mixtures": ["atta", "rice", "sand"],
+      "sieves": ["veryFine", "medium", "coarse", "none"],
+      "correct": { "atta": "veryFine", "rice": "medium", "sand": "coarse" },
+      "note": "'none' (the 'Sieving Won't Work' card) is a distractor: it is wrong for all three, because each mixture is a solid-solid mix that a sieve CAN separate."
+    },
+  
+    "highlightTargets": [
+      "atta", "rice", "sand",
+      "veryFine", "medium", "coarse", "none",
+      "card", "sim",
+      "startButton", "replayButton", "prevButton", "nextButton"
+    ],
+  
+    "props": {
+      "defaults": { "gradeLevel": 6 },
+      "additionalProps": {
+        "width": 800,
+        "height": 600,
+        "data": { "config": { "mixtures": "optional Mixture[] override", "options": "optional SieveOption[] override" } }
+      }
+    },
+  
+    "events": [
+      "ready",
+      "example_selected",
+      "answer_checked",
+      "answer_correct",
+      "answer_incorrect",
+      "completed",
+      "reset"
+    ],
+  
+    "eventDetail": {
+      "example_selected": "{ mixtureId }",
+      "answer_checked": "{ mixtureId, sieveId, correct }",
+      "answer_correct": "{ mixtureId, sieveId }",
+      "answer_incorrect": "{ mixtureId, sieveId, hint }",
+      "completed": "{ score, total }",
+      "reset": "{}"
+    },
+  
+    "scientificFacts": [
+      "Sieving separates a solid mixture whose pieces are different sizes.",
+      "The smaller pieces fall through the holes while the larger pieces stay on top.",
+      "The mesh has to match the mixture: holes small enough to trap the big pieces, but big enough to let the small pieces through.",
+      "A liquid mixture cannot be sieved - the liquid runs straight through, so you filter it instead."
+    ]
+  }

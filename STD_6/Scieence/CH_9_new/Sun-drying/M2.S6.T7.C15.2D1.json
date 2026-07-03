@@ -1,0 +1,94 @@
+{
+  "toolId": "M2.S6.T7.C15.2D1",
+
+  "title": "Sun-drying salt drops simulator",
+  "description": "The student places drops of salt water on dark paper, predicts what will remain, then dries them in the sun and watches the water evaporate to leave only a small white salt residue.",
+  "context": "Class 6 Science, Methods of Separation in Everyday Life (Activity 9.2). An on-screen version of the dark-paper drying activity: drops of salt solution left in the sun lose their water to the air, and the dissolved salt is left behind as a small white patch — showing evaporation separates a dissolved solid from a liquid.",
+  "teachingNotes": "Predict-then-reveal at the Observe beat: the student commits a prediction, then runs the drying and watches only a small salt residue remain. Re-run with more or less salt to show the residue is slightly bigger with more dissolved salt, yet always far smaller than the original water drop — because only the dissolved salt stays.",
+  "instructionsForStudent": "1) Tap the dark paper to place 5 to 8 drops of salt water. 2) Choose how much salt is dissolved. 3) Predict what stays behind after the water dries. 4) Press Start drying and watch the water evaporate while a small salt residue appears.",
+
+  "subtype": "image_reveal",
+  "conceptId": "M2.S6.T7.C15",
+  "relatedConceptIds": ["M2.S6.T7.C14", "M2.S6.T7.C16", "M2.S6.T8.C20"],
+  "module": "Separating solids from liquids",
+
+  "placement": {
+    "beat": "Observe",
+    "where": "replaces the hands-on dark-paper drying activity; run as a guided predict-then-reveal so the student sees the water evaporate and only a small salt residue remain"
+  },
+
+  "sharedState": { "fields": ["step", "stepLabel", "depth", "stepCount", "drops", "saltAmount", "dryProgress", "drying", "prediction", "operatorMode", "darkMode", "waterRemaining", "saltPatchesVisible", "correct"] },
+
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "next()",
+      "back()",
+      "addDrop(x,y)",
+      "setDryProgress(value)",
+      "setSalt(value)",
+      "commitPrediction(choice)"
+    ]
+  },
+
+  "studentControls": [
+    { "control": "Tap the dark paper (Step 1)", "effect": "adds a drop of salt water where you tap; place 5 to 8, then press Next" },
+    { "control": "Salt-amount selector (Step 2)", "effect": "choose A little, Some, or A lot — more salt leaves a slightly bigger residue" },
+    { "control": "Predict buttons (Step 3)", "effect": "lock a guess: salt patches stay, or nothing is left" },
+    { "control": "Start drying / Pause (Step 4)", "effect": "runs or pauses the sun drying; the water evaporates and the salt residue appears" },
+    { "control": "Next / Back", "effect": "move to the next step once the current one is done, or go back to change a choice" },
+    { "control": "Reset / Start over", "effect": "clears the paper back to Step 1 with no drops or residue" }
+  ],
+
+  "validIds": {
+    "predictions": ["salt", "nothing"],
+    "saltAmounts": [1, 2, 3],
+    "saltAmountsNote": "setSalt(level): 1 = a little, 2 = some, 3 = a lot dissolved salt.",
+    "steps": [0, 1, 2, 3, 4],
+    "stepLabels": ["Add drops", "Salt amount", "Predict", "Dry it", "Result"],
+    "highlightTargets": ["sun", "paper", "drops", "patches", "saltSlider", "predict", "dryButton", "next", "reset"],
+    "operatorModes": ["ai", "student"],
+    "operatorModesNote": "'ai' (Teacher) collapses to the lean demo view — dark paper + sun + read-out, wizard hidden, depth 'lean'; 'student' shows the full step-by-step wizard, depth 'full'. Default is 'student'.",
+    "addDropNote": "addDrop(x,y): x and y are percentages 0–100 of the paper area (not enumerated ids)."
+  },
+
+  "answerKey": { "correctPrediction": "salt" },
+
+  "props": {
+    "defaults": { "themeColor": "#4A4DC9", "darkMode": false, "operatorMode": "student", "showModeToggle": true },
+    "additionalProps": { "initialSaltAmount": 2, "presetDrops": [] }
+  },
+
+  "events": ["ready", "step_changed", "drop_added", "salt_changed", "prediction_made", "drying_started", "drying_paused", "drying_progress", "completed", "reset", "operator_mode_changed", "highlight"],
+
+  "scientificFacts": [
+    "Only the water evaporates; the dissolved salt cannot, so it is left behind as a solid.",
+    "The leftover salt is only a small residue — far smaller than the original drop of salt water.",
+    "More dissolved salt leaves a slightly bigger, brighter residue.",
+    "Evaporation can separate a solid that is dissolved in a liquid."
+  ],
+
+  "agentInstructions": {
+    "description": "<description>Shows that when drops of salt water dry in the sun, the water evaporates while the dissolved salt stays behind as a small white residue.</description>",
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS place a few drops with addDrop, set the amount with setSalt, then commitPrediction and play() to run the drying while the student watches the water leave and only a small salt residue appear. ALWAYS use highlight('patches') to point at the leftover salt and highlight('sun') for the heat source. ALWAYS ask what the student OBSERVED before revealing whether the prediction ('salt') was right. NEVER ask the student to tap or drive the tool in this mode, and NEVER call an action before the tool is shown.</teacher_tool_instruction>",
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS tap the dark paper to place 5 to 8 drops, then choose how much salt is dissolved and lock a prediction before drying. ALWAYS press Start drying and watch what happens to the water and what stays behind, and be ready to explain WHY only a small bit of salt is left.</student_tool_instruction>",
+    "teacherRealInstruction": "<teacher_real_instruction>A predict-then-reveal evaporation activity for the 'salt is left when salt water dries' idea (Activity 9.2). ALWAYS use it in place of the dark-paper drying demo when teaching that evaporation separates a dissolved solid from a liquid.</teacher_real_instruction>"
+  },
+
+  "sources": {
+    "learning_plan": "cbse_eng_sci6_ch9_v25 (uploaded learning plan JSON)",
+    "objective_ids": ["O11"],
+    "chapter_pdf": "fecu109.pdf (NCERT Curiosity, Grade 6 Science, Chapter 9)",
+    "pdf_section": "Activity 9.2 — Let us observe and create (drying a salt solution on dark paper), p.168"
+  }
+}

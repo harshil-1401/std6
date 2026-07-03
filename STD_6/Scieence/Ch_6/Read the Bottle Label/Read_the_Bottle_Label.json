@@ -1,0 +1,106 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Volume Matcher \u2014 Activity 6.8 Extension (NCERT Grade 6 Science Ch. 6)",
+    "instructions_for_student": "Drag each bottle to the tumbler that just fits its volume. On mobile, tap a bottle first then tap a tumbler. Read the reason after each correct match!",
+    "data": {
+      "toolName": "volume_matcher",
+      "parameters": {
+        "width": 600,
+        "height": 650,
+        "themeColor": "#4A4DC9",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "finalMessage": "Volume is the space a liquid takes up, measured in litres (L) and millilitres (mL). 1 L = 1000 mL. Always check the label on a bottle to know its volume! The SI unit for volume is the cubic metre (m\u00b3), where 1 m\u00b3 = 1000 L."
+        }
+      }
+    },
+    "agent_readme": {
+      "tool_name": "volume_matcher",
+      "description": "A three-to-three drag-and-match interactive tool for teaching volume units (mL and L) from NCERT Grade 6 Science Chapter 6.3.6 (Space and volume). Three labelled Indian drinking-water bottles (200 mL, 500 mL, 1 L) must be matched to three tumblers (small glass, medium mug, big jug) of the correct capacity. Correct matches lock with a one-line reason; wrong matches shake and return with a hint. A final card summarises the volume concept.",
+      "curriculum_link": "NCERT Grade 6 Science \u2014 Chapter 6.3.6: Space and Volume / Section 6.4: What is Matter?",
+      "key_concepts_taught": [
+        "Volume is the space occupied by matter (liquid in this case)",
+        "Units: litre (L) and millilitre (mL); 1 L = 1000 mL",
+        "200 mL = 1/5 litre (small glass)",
+        "500 mL = 1/2 litre (medium mug)",
+        "1 L = 1000 mL (big jug)",
+        "SI unit for volume: cubic metre (m\u00b3); 1 m\u00b3 = 1000 L"
+      ],
+      "interaction_modes": {
+        "drag_and_drop": "Desktop \u2014 drag a bottle card onto a tumbler drop zone",
+        "tap_to_select_then_tap": "Mobile / touch \u2014 tap a bottle (highlighted orange border), then tap target tumbler"
+      },
+      "match_data": [
+        {
+          "bottleId": "b200",
+          "label": "200 mL",
+          "correctTumblerId": "t_small",
+          "tumblerLabel": "Small Glass",
+          "reason": "200 mL is a small sip \u2014 it fills a small glass exactly. Remember: 1 L = 1000 mL, so 200 mL is just 1/5 of a litre.",
+          "hint": "The smallest bottle needs the smallest container! Which tumbler looks like a tiny drinking glass?"
+        },
+        {
+          "bottleId": "b500",
+          "label": "500 mL",
+          "correctTumblerId": "t_medium",
+          "tumblerLabel": "Medium Mug",
+          "reason": "500 mL = half a litre. It fills a medium mug perfectly \u2014 exactly halfway to 1 litre.",
+          "hint": "500 mL is half of 1 litre. Which tumbler is medium-sized \u2014 not tiny, not huge?"
+        },
+        {
+          "bottleId": "b1L",
+          "label": "1 L",
+          "correctTumblerId": "t_large",
+          "tumblerLabel": "Big Jug",
+          "reason": "1 L = 1000 mL. A big jug holds exactly 1 litre \u2014 the largest standard measure. 1 m\u00b3 = 1000 L!",
+          "hint": "One full litre is a lot of liquid. You need the biggest container of all three!"
+        }
+      ],
+      "additionalProps_schema": {
+        "finalMessage": {
+          "type": "string",
+          "description": "Text shown on the completion overlay summarising the volume concept. Defaults to the standard NCERT-aligned summary if omitted."
+        }
+      },
+      "examples": {
+        "default": {
+          "description": "Use built-in match data and default final message by omitting additionalProps",
+          "additionalProps": {}
+        },
+        "custom_final_message": {
+          "description": "Override only the completion message",
+          "additionalProps": {
+            "finalMessage": "Volume tells us how much space a liquid takes up. Bottles always display their volume in mL or L \u2014 read the label before you pour!"
+          }
+        }
+      },
+      "design_tokens": {
+        "font": "Poppins (Google Fonts)",
+        "primary": "#4A4DC9",
+        "accent": "#FF7212",
+        "grad_start": "#533086",
+        "grad_end": "#FC9145",
+        "primary_light": "#C1C1EA",
+        "accent_light": "#FFF3E4",
+        "bg": "#F5F5F5"
+      },
+      "scoring": {
+        "score_strip": "Live matched count + animated progress bar (e.g. '2 / 3 matched')",
+        "correct_match": "Tumbler locks with coloured fill + bottle badge; success reason shown in green banner",
+        "wrong_match": "Tumbler shakes, bottle returns to tray, hint shown in red banner, 1.6 s cooldown",
+        "completion": "Fixed full-screen overlay with 3 stars, score, volume fact card, unit badges, Try Again button"
+      },
+      "decision_tree": {
+        "student_asks_about_volume_units": "Use default tool \u2014 all three units (200 mL, 500 mL, 1 L) are covered",
+        "student_asks_what_mL_means": "Use default tool; the reason card for 200 mL explicitly defines the L\u2194mL relationship",
+        "student_asks_about_bottle_labels": "Use default tool; the completion card reinforces reading bottle labels",
+        "teacher_wants_custom_takeaway": "Override finalMessage in additionalProps",
+        "quick_warm_up_before_lesson": "Use default \u2014 3 matches complete in under 2 minutes"
+      }
+    }
+  }

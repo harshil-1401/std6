@@ -1,0 +1,175 @@
+{
+    "toolId": "M6.S1.T1.C1.2D1",
+    "title": "Magnetic or Non-Magnetic?",
+    "subtype": "sorter",
+    "conceptId": "M6.S1.T1.C1",
+    "relatedConceptIds": [],
+    "module": "Magnetic and Non-magnetic Materials",
+    "curriculum": "NCERT Grade 6 · Science · Magnetic and Non-magnetic Materials",
+    "description": "Interactive drag-the-magnet sorting game. One everyday object sits on the table at a time; the student drags (or taps) a single horseshoe magnet onto it to test it. Iron and steel objects leap up and cling to the poles; everything else only wobbles and stays put. Each tested object drops into a Magnetic or Non-magnetic tray, and once all objects are tested the game shows a two-column Magnetic vs Non-magnetic results table with a replay button.",
+  
+    "placement": {
+      "beat": "Apply",
+      "where": "Replaces the classroom bar-magnet demo. The student tests each everyday object with the magnet and sorts it; the agent guides with highlight() and reads the emitted events. In ai_operated mode the agent can demonstrate by calling testObject()."
+    },
+  
+    "sharedState": { "fields": ["operatorMode", "tested", "total", "current", "magnetic", "nonmagnetic", "done"] },
+  
+    "agentControl": {
+      "postmessage": {
+        "in": "{type:'command', id, method, args}",
+        "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+      },
+      "windowMethods": [
+        "setParam(name,value)", "play()", "pause()", "reset()",
+        "highlight(target)", "getState()", "setOperatorMode(mode)",
+        "testObject()"
+      ]
+    },
+  
+    "studentControls": [
+      { "control": "Drag the horseshoe magnet down onto the object", "effect": "tests the object; magnetic ones leap up and cling to the poles, non-magnetic ones only wobble" },
+      { "control": "Tap the object", "effect": "auto-moves the magnet onto it and tests it (mobile / accessibility friendly)" },
+      { "control": "Tap 'Play again' on the results screen", "effect": "reshuffles the objects and restarts the game" }
+    ],
+  
+    "answerKey": {
+      "objects": ["nail", "clip", "key", "spoon", "pin", "scissors", "bolt", "needle", "fork", "marble", "copper", "foil", "wood", "bell", "ruler", "eraser", "bottle", "pencil"],
+      "magnetic": ["nail", "clip", "key", "spoon", "pin", "scissors", "bolt", "needle", "fork"],
+      "nonMagnetic": ["marble", "copper", "foil", "wood", "bell", "ruler", "eraser", "bottle", "pencil"],
+      "highlightTargets": ["object", "magnet", "magneticTray", "nonMagneticTray"],
+      "operatorModes": ["ai", "student"],
+      "operatorModesNote": "ai = collapse to the focused demo view (draggable magnet + student hint hidden, 'watch' caption shown, agent drives via testObject()); student = full interactive controls. Default 'student'.",
+      "note": "The object being tested is always the current one; whether it clings is fixed by its 'magnetic' membership above — testObject() reveals the truth, the student cannot get a 'wrong' answer."
+    },
+  
+    "props": {
+      "defaults": { "themeColor": "#7C2FE0", "operatorMode": "student", "gradeLevel": 6, "muted": false },
+      "additionalProps": { "seed": 42 }
+    },
+  
+    "events": ["ready", "item_placed", "highlighted", "completed", "reset", "operator_mode_changed"],
+  
+    "eventDetails": {
+      "item_placed": "detail: { itemId, name, material, magnetic:boolean, tray:'magnetic'|'nonmagnetic' } — emitted each time an object is tested and sorted.",
+      "highlighted": "detail: { target } — emitted when the agent points at a named element.",
+      "completed": "detail: { total, magnetic:string[], nonmagnetic:string[] } — emitted when every object has been tested and the results table appears.",
+      "reset": "detail: { total } — emitted when the game restarts.",
+      "operator_mode_changed": "detail: { operatorMode:'ai'|'student' }."
+    },
+  
+    "scientificFacts": [
+      "A magnet attracts only some materials — these are called magnetic materials.",
+      "Iron, steel, nickel and cobalt are magnetic; they leap towards and cling to a magnet.",
+      "Materials like glass, wood, plastic, rubber, copper, aluminium and brass are non-magnetic — a magnet does not attract them.",
+      "Steel is mostly iron, which is why steel spoons, pins and scissors are attracted to a magnet."
+    ],
+  
+    "parameters": {
+      "gradeLevel": {
+        "type": "number",
+        "enum": [6, 7, 8],
+        "default": 6,
+        "description": "Tunes the celebration tier on the results screen: confetti amount, size of the 'Sorted!' heading, and replay wording (6 = 'Play again!', most playful; 7 = 'Play again'; 8 = 'Try again', most restrained). May also be supplied inside data.gradeLevel; the top-level prop wins."
+      },
+      "operatorMode": {
+        "type": "string",
+        "enum": ["ai", "student"],
+        "default": "student",
+        "description": "Host/platform-set. 'ai' collapses to the demo view (controls hidden, watch caption shown); 'student' shows the full interactive panel. Settable via prop, setParam('operatorMode', …) or setOperatorMode(mode)."
+      },
+      "muted": {
+        "type": "boolean",
+        "default": false,
+        "description": "Mutes the Web Audio cues. Also toggled by setParam('muted', boolean) and the in-header mute button."
+      },
+      "seed": {
+        "type": "number",
+        "default": 42,
+        "description": "Seeds the deterministic shuffle — the same seed reproduces the same test order. Supply via props.seed or additionalProps.seed; settable via setParam('seed', n) before reset()."
+      },
+      "data": {
+        "type": "object",
+        "default": null,
+        "description": "Tool configuration merged over the built-in defaults via {...DEFAULT_CONFIG, ...data}. See the 'data' schema below."
+      }
+    },
+  
+    "data": {
+      "description": "Configuration merged over the defaults. Pass only the fields you want to change.",
+      "schema": {
+        "title": { "type": "string", "default": "Magnetic or Non-Magnetic?", "description": "Main heading shown in the gradient header." },
+        "subtitle": { "type": "string", "default": "Test each object with the magnet — which ones cling?", "description": "Secondary line under the title." },
+        "instruction": { "type": "string", "default": "Drag the magnet down onto each object. Magnetic ones leap up and cling to the poles!", "description": "Instruction line shown above the play board (student mode). In ai mode a 'watch' caption is shown instead." },
+        "gradeLevel": { "type": "number", "enum": [6, 7, 8], "default": 6, "description": "Celebration tier. The top-level gradeLevel prop, if provided, overrides this." },
+        "objects": {
+          "type": "array",
+          "description": "The pool of objects the student tests. Reshuffled into a well-mixed order (no long magnetic/non-magnetic runs) at the start of every game. Whether an object clings is driven solely by its 'magnetic' flag.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "id": { "type": "string", "description": "Unique identifier within the list (also the arg id used by highlight/answerKey)." },
+              "name": { "type": "string", "description": "Display name shown under the object and in the trays/results table." },
+              "material": { "type": "string", "description": "Material label (informational), e.g. 'Iron', 'Glass', 'Brass (copper + zinc)'." },
+              "magnetic": { "type": "boolean", "description": "true = leaps up and clings; false = only wobbles and is sorted as non-magnetic." },
+              "iconKey": { "type": "string", "enum": ["nail", "clip", "key", "spoon", "pin", "scissors", "bolt", "needle", "fork", "marble", "copper", "foil", "wood", "bell", "ruler", "eraser", "bottle", "pencil"], "description": "Which built-in hand-drawn artwork to render. Unknown keys fall back to a plain gray circle." }
+            },
+            "required": ["id", "name", "material", "magnetic", "iconKey"]
+          },
+          "default": [
+            { "id": "nail", "name": "Iron Nail", "material": "Iron", "magnetic": true, "iconKey": "nail" },
+            { "id": "clip", "name": "Steel Paper Clip", "material": "Steel (iron)", "magnetic": true, "iconKey": "clip" },
+            { "id": "key", "name": "Iron Key", "material": "Iron", "magnetic": true, "iconKey": "key" },
+            { "id": "spoon", "name": "Steel Spoon", "material": "Steel (iron)", "magnetic": true, "iconKey": "spoon" },
+            { "id": "pin", "name": "Steel Safety Pin", "material": "Steel (iron)", "magnetic": true, "iconKey": "pin" },
+            { "id": "scissors", "name": "Steel Scissors", "material": "Steel (iron)", "magnetic": true, "iconKey": "scissors" },
+            { "id": "bolt", "name": "Iron Bolt", "material": "Iron", "magnetic": true, "iconKey": "bolt" },
+            { "id": "needle", "name": "Steel Needle", "material": "Steel (iron)", "magnetic": true, "iconKey": "needle" },
+            { "id": "fork", "name": "Steel Fork", "material": "Steel (iron)", "magnetic": true, "iconKey": "fork" },
+            { "id": "marble", "name": "Glass Marble", "material": "Glass", "magnetic": false, "iconKey": "marble" },
+            { "id": "copper", "name": "Copper Coin", "material": "Copper", "magnetic": false, "iconKey": "copper" },
+            { "id": "foil", "name": "Aluminium Foil", "material": "Aluminium", "magnetic": false, "iconKey": "foil" },
+            { "id": "wood", "name": "Wooden Block", "material": "Wood", "magnetic": false, "iconKey": "wood" },
+            { "id": "bell", "name": "Brass Bell", "material": "Brass (copper + zinc)", "magnetic": false, "iconKey": "bell" },
+            { "id": "ruler", "name": "Plastic Ruler", "material": "Plastic", "magnetic": false, "iconKey": "ruler" },
+            { "id": "eraser", "name": "Rubber Eraser", "material": "Rubber", "magnetic": false, "iconKey": "eraser" },
+            { "id": "bottle", "name": "Plastic Bottle", "material": "Plastic", "magnetic": false, "iconKey": "bottle" },
+            { "id": "pencil", "name": "Wooden Pencil", "material": "Wood", "magnetic": false, "iconKey": "pencil" }
+          ]
+        }
+      },
+      "examples": {
+        "quick_round": {
+          "title": "Will it stick?",
+          "instruction": "Drag the magnet onto each object to test it.",
+          "objects": [
+            { "id": "nail", "name": "Iron Nail", "material": "Iron", "magnetic": true, "iconKey": "nail" },
+            { "id": "key", "name": "Iron Key", "material": "Iron", "magnetic": true, "iconKey": "key" },
+            { "id": "clip", "name": "Steel Paper Clip", "material": "Steel", "magnetic": true, "iconKey": "clip" },
+            { "id": "marble", "name": "Glass Marble", "material": "Glass", "magnetic": false, "iconKey": "marble" },
+            { "id": "eraser", "name": "Rubber Eraser", "material": "Rubber", "magnetic": false, "iconKey": "eraser" },
+            { "id": "copper", "name": "Copper Coin", "material": "Copper", "magnetic": false, "iconKey": "copper" }
+          ]
+        },
+        "grade_8_restrained": {
+          "gradeLevel": 8,
+          "title": "Magnetic Materials Test",
+          "instruction": "Test each object with the magnet and record whether it is attracted."
+        }
+      }
+    },
+  
+    "iconKeys": {
+      "type": "string",
+      "description": "Built-in hand-drawn SVG artwork keys available for object.iconKey. No external images needed.",
+      "magnetic_examples": ["nail", "clip", "key", "spoon", "pin", "scissors", "bolt", "needle", "fork"],
+      "non_magnetic_examples": ["marble", "copper", "foil", "wood", "bell", "ruler", "eraser", "bottle", "pencil"],
+      "note": "iconKey only chooses the picture; the magnetic flag alone decides behaviour."
+    },
+  
+    "agentUsage": {
+      "ai_operated": "Set operatorMode 'ai' (controls hidden, 'watch' caption shown). Call testObject() to demonstrate testing the current object; narrate the item_placed event. Use highlight('object') / highlight('magneticTray') / highlight('nonMagneticTray') to point while explaining. reset() reshuffles and restarts.",
+      "student_operated": "Set operatorMode 'student' (default). The student drags or taps to test each object; watch the item_placed and completed events and coach. Use highlight(target) to nudge toward the magnet or a tray without doing the action.",
+      "files": { "component": "magnet_sort_game.tsx", "schema": "magnet_sort_game.json" }
+    }
+  }

@@ -1,0 +1,139 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Magnet Shape Matching",
+    "instructions_for_student": "Drag each name label to the correct magnet shape outline. After matching all three, read the fun fact about each shape.",
+    "data": {
+      "toolName": "magnet_matching_tool",
+      "parameters": {
+        "width": 800,
+        "height": 700,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "additionalProps": {
+          "title": "Magnet Shapes",
+          "subtitle": "Chapter 4 – Exploring Magnets",
+          "instructionText": "Drag each name label to the correct magnet shape outline. After matching all three, read the fun fact about each shape.",
+          "shapes": [
+            {
+              "id": "bar",
+              "label": "Bar Magnet",
+              "fact": "Bar magnets are the most common shape used in school laboratories.",
+              "hint": "Think of a straight rectangular block — like a ruler-shaped magnet."
+            },
+            {
+              "id": "u",
+              "label": "U-shaped Magnet",
+              "fact": "U-shaped (horseshoe) magnets concentrate both poles close together for a stronger pull.",
+              "hint": "Think of the letter U — it curves at the bottom with two arms pointing up."
+            },
+            {
+              "id": "ring",
+              "label": "Ring Magnet",
+              "fact": "Ring magnets have a hole in the centre and are used in speakers and electric motors.",
+              "hint": "Think of a doughnut or a washer — a circle with a hole through the middle."
+            }
+          ]
+        }
+      }
+    },
+    "schema": {
+      "description": "JSON schema for the Magnet Matching Tool — drag-and-label activity",
+      "additionalProps": {
+        "title": {
+          "type": "string",
+          "description": "Main heading shown in the header banner",
+          "default": "Magnet Shapes"
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Chapter or subject tag shown above the title",
+          "default": "Chapter 4 – Exploring Magnets"
+        },
+        "instructionText": {
+          "type": "string",
+          "description": "Student-facing instructions shown inside the header"
+        },
+        "shapes": {
+          "type": "array",
+          "description": "Array of shape definitions to match. Each item has an id, label, fact, and hint.",
+          "items": {
+            "id": {
+              "type": "string",
+              "enum": ["bar", "u", "ring"],
+              "description": "Shape identifier — controls which SVG outline is drawn"
+            },
+            "label": {
+              "type": "string",
+              "description": "Name of the magnet shape shown on the draggable label"
+            },
+            "fact": {
+              "type": "string",
+              "description": "One-line fun fact revealed after a correct match"
+            },
+            "hint": {
+              "type": "string",
+              "description": "Short hint shown when a label is dropped on the wrong shape"
+            }
+          }
+        }
+      }
+    },
+    "agent_readme": {
+      "quick_reference": {
+        "tool_name": "magnet_matching_tool",
+        "file": "MagnetMatchingTool.tsx",
+        "purpose": "Interactive drag-and-label activity for matching magnet shape SVG outlines to their names",
+        "key_features": [
+          "Three inline-SVG magnet shape outlines: bar, U-shaped, ring",
+          "Draggable name labels with grab-cursor and hover animations",
+          "Correct matches lock in amber/green with a one-line fun fact",
+          "Wrong drops bounce back the shape zone and the label with a hint",
+          "Progress bar tracks matched count",
+          "Summary screen on completion showing all shapes with labels and facts",
+          "Confetti animation on full completion",
+          "Two-column responsive layout — stacks on mobile",
+          "Zero external icon or UI library dependencies — all SVGs inline"
+        ]
+      },
+      "design_tokens": {
+        "primary_purple": "#533086",
+        "accent_blue": "#4A4DC9",
+        "amber_theme": "#f59e0b",
+        "orange_gradient": "#FC9145",
+        "font": "Poppins",
+        "correct_green": "#10b981",
+        "error_red": "#ef4444"
+      },
+      "shape_ids": {
+        "bar":  "Rectangular bar magnet — horizontal rectangle with N/S labels at each end",
+        "u":    "U-shaped / horseshoe magnet — two vertical arms joined by a curve at the bottom",
+        "ring": "Ring magnet — concentric circles (outer ring with centre hole), N/S at top/bottom"
+      },
+      "customisation_examples": [
+        {
+          "name": "Default — Chapter 4 three shapes",
+          "additionalProps": {
+            "title": "Magnet Shapes",
+            "subtitle": "Chapter 4 – Exploring Magnets"
+          }
+        },
+        {
+          "name": "Single shape quiz (only bar magnet)",
+          "additionalProps": {
+            "shapes": [
+              {
+                "id": "bar",
+                "label": "Bar Magnet",
+                "fact": "Bar magnets are the most common shape used in school laboratories.",
+                "hint": "Think of a straight rectangular block."
+              }
+            ]
+          }
+        }
+      ],
+      "error_handling": {
+        "unknown_shape_id": "The ShapeCard component falls through to null — only 'bar', 'u', 'ring' render SVGs",
+        "empty_shapes_array": "Falls back to DEFAULT_SHAPES defined inside the component"
+      }
+    }
+  }

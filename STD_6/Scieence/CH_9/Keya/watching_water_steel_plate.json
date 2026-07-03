@@ -1,0 +1,317 @@
+{
+  "toolName": "watching_water_steel_plate",
+  "exportName": "WatchingWaterSteelPlate",
+  "version": "1.0.1",
+  "displayName": "Watching Water Leave a Steel Plate",
+  "description": "Interactive simulation based on NCERT Class 6 Chapter 8 (Activity 8.2) — students predict, observe water evaporating from a steel plate, flip the plate to check its dry underside, and complete a 5-question quiz to confirm understanding of evaporation.",
+  "subject": "Science",
+  "grade": 6,
+  "chapter": "Chapter 8 — A Journey through States of Water",
+  "textbook": "Curiosity | Textbook of Science | Grade 6 (NCERT)",
+  "activity": "Activity 8.2: Let us investigate",
+  "concepts": [
+    "Evaporation",
+    "States of water",
+    "Water vapour",
+    "Solid, liquid, gas",
+    "Scientific inquiry — predict, observe, conclude"
+  ],
+  "changelog": {
+    "1.0.1": [
+      "Rewrote evaporation: stable wispy vapour particles (random props baked at creation, no per-frame jitter).",
+      "Vapour now emanates from the shrinking water pool, sways and fades as it rises.",
+      "Added a soft heat-haze band on the water surface during evaporation.",
+      "Frame-rate-independent, density-driven particle spawning.",
+      "Fixed flip-plate underside label overlap — '(no water)' is hidden when the 'DRY' label is shown."
+    ]
+  },
+  "parameters": {
+    "width": {
+      "type": "number",
+      "default": 800,
+      "description": "Component width in pixels"
+    },
+    "height": {
+      "type": "number",
+      "default": 620,
+      "description": "Component height in pixels"
+    },
+    "themeColor": {
+      "type": "string",
+      "default": "#4A4DC9",
+      "description": "Primary accent colour (hex)"
+    },
+    "animationSpeed": {
+      "type": "number",
+      "default": 1,
+      "description": "Animation speed multiplier — higher = faster evaporation animation"
+    },
+    "autoPlayDuration": {
+      "type": "number",
+      "default": 0,
+      "description": "Auto-advance delay in ms. 0 = manual navigation only (recommended for this tool)"
+    }
+  },
+  "additionalProps": {
+    "description": "Tool-specific dynamic content passed by the agent to customise the simulation",
+    "schema": {
+      "showPredictStep": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show or hide the Predict scene (Scene 1). Hide for assessment-only mode."
+      },
+      "showFlipStep": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show or hide the Flip Plate scene (Scene 3). Hide if you only need observe + quiz."
+      },
+      "startScene": {
+        "type": "string",
+        "enum": [
+          "predict",
+          "observe",
+          "flip",
+          "quiz",
+          "results"
+        ],
+        "default": "predict",
+        "description": "Which scene to open on. Defaults to 'predict' if showPredictStep is true, else 'observe'."
+      },
+      "waterColor": {
+        "type": "string",
+        "default": "#60B8E0",
+        "description": "Colour of the water pool on the plate (hex)"
+      },
+      "vapourColor": {
+        "type": "string",
+        "default": "#A8D4F0",
+        "description": "Colour of the rising vapour wisps and surface haze (hex)"
+      },
+      "evaporationSpeed": {
+        "type": "number",
+        "default": 14,
+        "description": "Seconds for water to fully evaporate at animationSpeed = 1. Lower = faster demo."
+      }
+    },
+    "examples": {
+      "default_full_flow": {
+        "showPredictStep": true,
+        "showFlipStep": true,
+        "evaporationSpeed": 14
+      },
+      "fast_demo_for_class": {
+        "showPredictStep": false,
+        "showFlipStep": true,
+        "evaporationSpeed": 6,
+        "animationSpeed": 2
+      },
+      "quiz_only": {
+        "showPredictStep": false,
+        "showFlipStep": false,
+        "startScene": "quiz"
+      },
+      "observe_and_quiz": {
+        "showPredictStep": false,
+        "showFlipStep": false,
+        "evaporationSpeed": 10
+      },
+      "slow_observation": {
+        "showPredictStep": true,
+        "showFlipStep": true,
+        "evaporationSpeed": 25,
+        "animationSpeed": 0.6
+      },
+      "custom_colours": {
+        "waterColor": "#4FC3F7",
+        "vapourColor": "#B3E5FC",
+        "evaporationSpeed": 12
+      }
+    }
+  },
+  "scenes": {
+    "predict": {
+      "order": 1,
+      "title": "Make Your Prediction",
+      "description": "Student selects where they think the water will go before watching the simulation. Prediction must be locked before play is enabled.",
+      "options": [
+        "It will seep through to the underside",
+        "It will evaporate into the air as vapour",
+        "It will stay on the plate forever"
+      ],
+      "correctOption": 1
+    },
+    "observe": {
+      "order": 2,
+      "title": "Observe the Simulation",
+      "description": "Animated steel plate with a water pool that shrinks over time. Wispy vapour rises from the pool, sways and fades. Water % counter shown. Play / Pause / Reset controls.",
+      "features": [
+        "Water pool shrinks via SVG animation",
+        "Wispy vapour particles rise, drift and fade (props baked at creation — no flicker)",
+        "Vapour emanates from the shrinking pool; spawn rate scales with remaining water",
+        "Soft heat-haze band on the water surface while evaporating",
+        "Real-time water % counter",
+        "Play / Pause / Reset / Replay controls",
+        "Next step button appears at 55% evaporation"
+      ]
+    },
+    "flip": {
+      "order": 3,
+      "title": "Check the Underside",
+      "description": "CSS 3D perspective flip (rotateX 180°) reveals the completely dry underside. Student answers where the water went — immediate feedback.",
+      "features": [
+        "CSS 3D plate flip animation (0.85s)",
+        "Front face: empty plate top",
+        "Back face: dry underside with single DRY label (no overlapping text)",
+        "Two-option question with colour-coded feedback"
+      ]
+    },
+    "quiz": {
+      "order": 4,
+      "title": "5-Question Quiz",
+      "description": "One question at a time with animated dot progress bar. Immediate explanation shown after each answer. Colour-coded correct/wrong feedback.",
+      "totalQuestions": 5,
+      "questions": [
+        {
+          "id": 1,
+          "topic": "What happened to the water?"
+        },
+        {
+          "id": 2,
+          "topic": "Why is the underside dry?"
+        },
+        {
+          "id": 3,
+          "topic": "Name the process — evaporation"
+        },
+        {
+          "id": 4,
+          "topic": "What do rising vapour particles represent?"
+        },
+        {
+          "id": 5,
+          "topic": "Did the water truly disappear?"
+        }
+      ]
+    },
+    "results": {
+      "order": 5,
+      "title": "Results & Concept Recap",
+      "description": "Conic-gradient score circle, per-question correct/wrong review bubbles, key concept summary card, Try Again and Watch Again buttons.",
+      "scoreMessages": {
+        "5": "Excellent! You understand evaporation perfectly!",
+        "3-4": "Good work! Review the key concept once more.",
+        "0-2": "Observe the simulation again carefully and retry!"
+      }
+    }
+  },
+  "designSystem": {
+    "font": "Poppins (Google Fonts)",
+    "colors": {
+      "primary": "#4A4DC9",
+      "gradientFrom": "#533086",
+      "gradientTo": "#FC9145",
+      "accent": "#FF7212",
+      "lightPurple": "#C1C1EA",
+      "lightOrange": "#FFF3E4",
+      "background": "#F5F5F5",
+      "surface": "#FFFFFF",
+      "text": "#1E1E2E",
+      "subText": "#6B6B80",
+      "border": "#E8E8F0",
+      "success": "#10B981",
+      "error": "#EF4444"
+    },
+    "animations": [
+      "wsp-fadeInUp — scene entry transitions",
+      "wsp-popIn — button and card appearances",
+      "wsp-pulse — play button glow",
+      "wsp-vapor — vapour wisp rises, sways and fades",
+      "wsp-haze — heat-haze band on the water surface",
+      "wsp-waterShimmer — water pool shimmer",
+      "wsp-ripple — water surface movement",
+      "wsp-scoreIn — score circle reveal",
+      "wsp-shake — wrong answer feedback",
+      "wsp-glow — play button breathing glow",
+      "wsp-float — idle floating effect"
+    ]
+  },
+  "agentQuickReference": {
+    "teachConcept": {
+      "description": "Full inquiry flow: predict → observe → flip → quiz",
+      "call": {
+        "toolName": "watching_water_steel_plate",
+        "parameters": {
+          "additionalProps": {
+            "showPredictStep": true,
+            "showFlipStep": true,
+            "evaporationSpeed": 14
+          }
+        }
+      }
+    },
+    "fastClassDemo": {
+      "description": "Skip prediction, speed up evaporation for classroom projection",
+      "call": {
+        "toolName": "watching_water_steel_plate",
+        "parameters": {
+          "animationSpeed": 2,
+          "additionalProps": {
+            "showPredictStep": false,
+            "showFlipStep": true,
+            "evaporationSpeed": 6
+          }
+        }
+      }
+    },
+    "quizOnly": {
+      "description": "Jump straight to the 5-question quiz for revision",
+      "call": {
+        "toolName": "watching_water_steel_plate",
+        "parameters": {
+          "additionalProps": {
+            "showPredictStep": false,
+            "showFlipStep": false,
+            "startScene": "quiz"
+          }
+        }
+      }
+    },
+    "slowObservation": {
+      "description": "Slow evaporation for detailed classroom observation",
+      "call": {
+        "toolName": "watching_water_steel_plate",
+        "parameters": {
+          "animationSpeed": 0.6,
+          "additionalProps": {
+            "showPredictStep": true,
+            "showFlipStep": true,
+            "evaporationSpeed": 25
+          }
+        }
+      }
+    }
+  },
+  "ncertAlignment": {
+    "chapter": 8,
+    "chapterTitle": "A Journey through States of Water",
+    "textbook": "Curiosity — Textbook of Science, Grade 6",
+    "activity": "Activity 8.2: Let us investigate",
+    "keyConceptTaught": "Water evaporates from a steel plate — it does not seep through metal. The dry underside is evidence. The process is evaporation.",
+    "learningObjectives": [
+      "Understand that water can change state from liquid to gas (water vapour)",
+      "Recognise that water does NOT seep through a solid metal surface",
+      "Identify evaporation as the process responsible for 'disappearing' water",
+      "Use the scientific inquiry method: predict → observe → conclude",
+      "Apply the concept to real-life examples (puddles, wet clothes, mopped floors)"
+    ],
+    "keywords": [
+      "Evaporation",
+      "Water vapour",
+      "Condensation",
+      "States of water",
+      "Solid",
+      "Liquid",
+      "Gas"
+    ]
+  }
+}

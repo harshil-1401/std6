@@ -1,0 +1,90 @@
+{
+  "toolName": "settle_or_dissolve_sorter",
+  "componentName": "SettleOrDissolveSorter",
+  "version": "1.0.0",
+  "title": "Soluble or Insoluble? Will it settle?",
+  "activity": "Topic M2.S4.T9 — Soluble vs insoluble substances in water (will it settle at the bottom or stay dissolved?)",
+  "description": "A tap-and-select Class 6 tool that builds the soluble/insoluble distinction through a glass of water. Eight everyday substances — salt, sand, tea leaves, sugar, chalk powder, lemon juice, chalk pieces, mud — are dropped one at a time into a glass of water on screen. For each, after watching the substance fall in and the water swirl, the student PREDICTS one of two outcomes: 'settles at the bottom' (the substance is insoluble) or 'stays dissolved' (the substance is soluble). The glass then animates the real result — a soluble substance disappears and the water takes on a faint, uniform tint, while an insoluble substance swirls as a cloud and then settles as a band at the bottom. A green tick confirms a correct prediction; a wrong prediction shows a one-line hint stating whether that substance dissolves in water and why it does (or does not) settle. It is a SINGLE guided flow (no separate quiz mode): the student walks all eight substances with Back/Next (advance gated on answering), and after the last one a gamified summary scorecard shows the score (count-up, stars, confetti), a per-substance right/wrong recap, and a 'Start over' button. No drag-drop anywhere — the student only taps one of the two outcome buttons.",
+  "toolType": "predict-then-reveal guided explorer (single flow, no quiz mode)",
+  "topic_id": "M2.S4.T9",
+  "tool_id": "M2.S4.T9.T2D1",
+  "subtype": "sorter",
+  "prodSafe": "No 'lucide-react' import — all icons are inline SVGs defined in the file, so the tool renders on every iframe-renderer version (an external icon name can never be undefined at runtime).",
+
+  "parameters": {
+    "width": 840,
+    "height": 600,
+    "gradeLevel": 6,
+    "themeColor": "#4A4DC9",
+    "darkMode": false,
+    "showNavigation": true,
+    "showStepIndicator": true,
+    "initialStep": 0,
+    "animationSpeed": 1,
+    "autoPlayDuration": 0,
+    "additionalProps": {
+      "showHints": true
+    }
+  },
+
+  "parameterSchema": {
+    "gradeLevel": { "type": "number", "enum": [6, 7, 8], "default": 6, "description": "Tier preset. 6 = heaviest gamification, story framing, biggest text, slowest/most dramatic settle animation, 70-particle confetti + 5 stars on the summary. 7 = moderate. 8 = light/formal. Authored for Class 6." },
+    "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Accent hint. The tool uses the Singularity palette: header purple, water blue, sediment brown, CTAs orange #FF7212." },
+    "showNavigation": { "type": "boolean", "default": true, "description": "Show Back/Next between substances (advance is gated on answering each card)." },
+    "autoPlayDuration": { "type": "number", "default": 0, "description": "Host auto-advance hint, in ms. Ignored — the tool calls setStopAutoNext(true) because every card needs interaction." }
+  },
+
+  "additionalPropsSchema": {
+    "substances": {
+      "type": "array",
+      "items": "string | object",
+      "default": ["salt", "sand", "tea_leaves", "sugar", "chalk_powder", "lemon_juice", "chalk_pieces", "mud"],
+      "description": "Which substance cards appear and in what order. Pass slugs from the built-in library (salt, sand, tea_leaves, sugar, chalk_powder, lemon_juice, chalk_pieces, mud), or full objects to add/override one: { slug, name, emoji, outcome: 'settles' | 'dissolves', color, solutionTint, hint }. 'settles' = insoluble; 'dissolves' = soluble. Use a subset to shorten the lesson or focus on specific substances."
+    },
+    "showHints": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the one-line dissolve/insoluble hint on a wrong answer (and the inline coaching captions)."
+    },
+    "feedbackMessage": {
+      "type": "string",
+      "default": "",
+      "description": "Optional one-line coaching message (reserved; the tool already supplies per-card prompts)."
+    }
+  },
+
+  "builtInSubstances": [
+    { "slug": "salt", "name": "Salt", "outcome": "dissolves", "soluble": true, "hint": "Salt dissolves in water — it spreads through and disappears, so it never settles." },
+    { "slug": "sand", "name": "Sand", "outcome": "settles", "soluble": false, "hint": "Sand is insoluble — it does not dissolve, so the heavier grains sink to the bottom." },
+    { "slug": "tea_leaves", "name": "Tea leaves", "outcome": "settles", "soluble": false, "hint": "Tea leaves are insoluble and heavier than water, so they settle at the bottom." },
+    { "slug": "sugar", "name": "Sugar", "outcome": "dissolves", "soluble": true, "hint": "Sugar dissolves in water — it disappears into the liquid, so nothing settles." },
+    { "slug": "chalk_powder", "name": "Chalk powder", "outcome": "settles", "soluble": false, "hint": "Chalk does not dissolve — the fine powder is insoluble and slowly settles down." },
+    { "slug": "lemon_juice", "name": "Lemon juice", "outcome": "dissolves", "soluble": true, "hint": "Lemon juice mixes completely with water (it is soluble/miscible), so nothing settles." },
+    { "slug": "chalk_pieces", "name": "Chalk pieces", "outcome": "settles", "soluble": false, "hint": "Chalk is insoluble — the solid pieces do not dissolve, so they sink to the bottom." },
+    { "slug": "mud", "name": "Mud", "outcome": "settles", "soluble": false, "hint": "Mud is insoluble — given time the heavier particles settle, leaving clearer water above." }
+  ],
+
+  "steps": [
+    { "id": "S1", "title": "Predict each substance", "type": "interactive", "description": "For each of the 8 substances: it drops into the glass and swirls; the student waits, then taps 'Settles at the bottom' or 'Stays dissolved'. Correct → green tick + confirmation; wrong → one-line hint on whether it dissolves. Back/Next move between substances (Next gated on answering)." },
+    { "id": "S2", "title": "Summary scorecard", "type": "result", "description": "After the last substance, a gamified summary: score count-up out of 8, 5 stars + confetti (≥60%), a per-substance right/wrong recap grid, tier encouragement, and a 'Start over' button." }
+  ],
+
+  "answerKey": {
+    "dissolves_soluble": ["salt", "sugar", "lemon_juice"],
+    "settles_insoluble": ["sand", "tea_leaves", "chalk_powder", "chalk_pieces", "mud"]
+  },
+
+  "interactionNotes": [
+    "Tap/click only — two outcome buttons ('Settles at the bottom' / 'Stays dissolved'). No drag-and-drop of cards (house rule; robust on mobile for young students).",
+    "The glass is a single responsive SVG side-view scene driven by t (0..1 drop+settle progress), the substance's outcome, and a revealed flag. Soluble → the water takes a faint uniform tint and nothing settles; insoluble → particles swirl as a cloud and then settle as a band at the bottom.",
+    "Predict-then-reveal: the outcome buttons unlock only after the substance has been dropped in and watched; the real result is animated after the student commits a guess.",
+    "Single guided flow — there is NO separate quiz/practice mode and no mode selector. After all 8 substances the student reaches one summary scorecard (score + per-substance recap + Start over).",
+    "Answer key: salt, sugar and lemon juice are SOLUBLE (stay dissolved); sand, tea leaves, chalk powder, chalk pieces and mud are INSOLUBLE (settle at the bottom).",
+    "Calls setStopAutoNext(true) and reports setStepDetails on every card change.",
+    "Responsive from 320px; touch targets 56px at Class 6; the glass scene caps at 320px wide and scales down with the container.",
+    "PROD-SAFE ICONS: no lucide-react dependency — icons are inline SVGs, so no 'X is not defined' error regardless of the renderer's injected icon allowlist."
+  ],
+
+  "objective_id": "M2.S4.T9.O1",
+  "instructions_for_student": "Drop each substance into the glass of water and wait. Decide whether it settles at the bottom (insoluble) or stays dissolved (soluble) — get a green tick when you're right!"
+}

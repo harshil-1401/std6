@@ -1,0 +1,112 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Mass Quiz \u2014 Activity 6.8 (NCERT Grade 6 Science Ch. 6)",
+    "instructions_for_student": "Answer each question. Read the reason on every correct pick. Wrong answers return with a hint tied to what you would see on a balance scale!",
+    "data": {
+      "toolName": "mass_quiz",
+      "parameters": {
+        "width": 560,
+        "height": 700,
+        "themeColor": "#4A4DC9",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "finalMessage": "Mass = the amount of matter in an object. More matter packed in the same space means more mass. A kilogram is a kilogram \u2014 no matter what material it is!",
+          "questions": [
+            {
+              "id": 1,
+              "text": "Three identical cups are each half-filled.",
+              "sub": "Cup A \u2192 water \u00b7 Cup B \u2192 sand \u00b7 Cup C \u2192 pebbles\nWhich cup is heaviest?",
+              "choices": [
+                { "id": "A", "label": "Cup A \u2014 Water" },
+                { "id": "B", "label": "Cup B \u2014 Sand" },
+                { "id": "C", "label": "Cup C \u2014 Pebbles" }
+              ],
+              "correctId": "C",
+              "reason": "Pebbles are denser than sand or water, so the same volume of pebbles has the most mass.",
+              "hint": "Look at the balance \u2014 pebbles tip the scale further than sand or water!"
+            },
+            {
+              "id": 2,
+              "text": "Half a cup of cotton wool vs. half a cup of water.",
+              "sub": "Which has more mass?",
+              "choices": [
+                { "id": "cotton", "label": "\uD83E\uDDA5 Cotton Wool" },
+                { "id": "water",  "label": "\uD83D\uDCA7 Water" }
+              ],
+              "correctId": "water",
+              "reason": "Water is much denser than cotton wool. The same volume of water has far more mass.",
+              "hint": "The balance tips down on the water side \u2014 water molecules are packed tightly together!"
+            },
+            {
+              "id": 3,
+              "text": "1 kilogram of iron vs. 1 kilogram of feathers.",
+              "sub": "Which has more mass?",
+              "choices": [
+                { "id": "iron",     "label": "\uD83E\uDEB6 Iron Block" },
+                { "id": "feathers", "label": "\uD83E\uDEB6 Feathers" },
+                { "id": "same",     "label": "\u2696\uFE0F They are the same" }
+              ],
+              "correctId": "same",
+              "reason": "1 kg is 1 kg! Mass is the amount of matter. The material and size do not change the stated mass.",
+              "hint": "The balance is perfectly level \u2014 both sides show exactly 1\u202f000\u202fg!"
+            }
+          ]
+        }
+      }
+    },
+    "agent_readme": {
+      "tool_name": "mass_quiz",
+      "description": "A three-question interactive quiz targeting the mass-vs-volume misconception from NCERT Grade 6 Science Chapter 6 (Activity 6.8). Each question displays an inline SVG scene (cups / balance scale / level balance) with labelled choices. Correct answers lock green with a one-line science reason; wrong answers shake, show a hint, then allow retry. A final summary reveals score, stars, and the key takeaway.",
+      "curriculum_link": "NCERT Grade 6 Science \u2014 Chapter 6.3.5: How heavy or light? / Activity 6.8",
+      "key_concepts_tested": [
+        "Density determines mass for equal volumes (Q1 \u2014 cups)",
+        "Same volume of denser material has more mass (Q2 \u2014 cotton vs water)",
+        "Stated mass is identical regardless of material (Q3 \u2014 iron vs feathers)"
+      ],
+      "interaction_flow": [
+        "Student reads question + views SVG illustration",
+        "Student clicks a choice button",
+        "Correct: button locks green, reason banner appears, Next button shown",
+        "Wrong: button shakes red for 2 s, hint appears, auto-resets for retry",
+        "After all 3 correct: Summary card with stars, score, key insight, Try Again"
+      ],
+      "additionalProps_schema": {
+        "finalMessage": {
+          "type": "string",
+          "description": "Text shown on completion card summarising the key learning. Defaults to mass = amount of matter."
+        },
+        "questions": {
+          "type": "array",
+          "description": "Override the built-in questions. Currently the scenes are hard-coded SVGs; this field is for metadata reference and future extensibility.",
+          "note": "Scene illustrations are generated from built-in SVG components (SceneCups, SceneBalance, SceneIronFeathers). To add custom questions with custom scenes, extend the TSX."
+        }
+      },
+      "examples": {
+        "default_3_questions": {
+          "description": "Use built-in questions by omitting additionalProps entirely",
+          "additionalProps": {}
+        },
+        "custom_final_message": {
+          "description": "Override only the completion message",
+          "additionalProps": {
+            "finalMessage": "Remember: mass measures how much matter is in an object \u2014 not how big it looks!"
+          }
+        }
+      },
+      "design_tokens": {
+        "font": "Poppins (Google Fonts)",
+        "primary": "#4A4DC9",
+        "accent": "#FF7212",
+        "grad_start": "#533086",
+        "grad_end": "#FC9145",
+        "primary_light": "#C1C1EA",
+        "accent_light": "#FFF3E4",
+        "bg": "#F5F5F5"
+      }
+    }
+  }

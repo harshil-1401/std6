@@ -1,0 +1,79 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Label the Magnet Poles",
+    "instructions_for_student": "Drag the N and S labels to the correct ends of each magnet. Use the iron filing dot clusters as clues for where the poles are.",
+    "data": {
+      "toolName": "magnet_pole_labelling_tool",
+      "parameters": {
+        "width": 800,
+        "height": 700,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "additionalProps": {
+          "title": "Label the Magnet Poles",
+          "subtitle": "Chapter 4 – Exploring Magnets",
+          "instructionText": "Drag the N and S labels to the correct ends of each magnet. Use the iron filing dot clusters as clues for where the poles are."
+        }
+      }
+    },
+    "schema": {
+      "description": "JSON schema for the Magnet Pole Labelling Tool",
+      "additionalProps": {
+        "title": {
+          "type": "string",
+          "description": "Main heading shown in the header",
+          "default": "Label the Magnet Poles"
+        },
+        "subtitle": {
+          "type": "string",
+          "description": "Chapter / subject tag shown above the title",
+          "default": "Chapter 4 – Exploring Magnets"
+        },
+        "instructionText": {
+          "type": "string",
+          "description": "Student-facing instruction shown inside the header banner"
+        }
+      },
+      "static_data_note": "Magnet shapes (bar, U-shaped, ring) and pole slots are hardcoded in the component. The tool always shows all three magnets with 6 slots (2 per magnet). Only the text content is configurable via additionalProps."
+    },
+    "agent_readme": {
+      "quick_reference": {
+        "tool_name": "magnet_pole_labelling_tool",
+        "file": "MagnetPoleLabellingTool.tsx",
+        "purpose": "Interactive drag-and-label tool for identifying North and South poles on three magnet shapes",
+        "key_features": [
+          "Three inline-SVG magnet diagrams: bar magnet (horizontal rectangle), U-shaped magnet (horseshoe), ring magnet (concentric circles)",
+          "Iron filing dot clusters rendered as SVG ellipses at each pole region as visual hints",
+          "6 draggable N/S token pills — 2 per magnet",
+          "Touch drag: floating ghost element follows the finger; hit-tests slot rects on touchmove",
+          "Mouse drag: standard HTML5 drag-and-drop events",
+          "Correct placement locks the slot green with the label",
+          "Wrong placement shakes the slot and bounces the token back with a hint",
+          "Progress bar tracks 6 labels",
+          "Completion screen: key science fact + summary of all 3 magnet pole positions",
+          "Confetti on perfect completion",
+          "Fully responsive grid — cards stack to single column on small screens"
+        ]
+      },
+      "correct_answers": {
+        "bar_magnet":    { "left_end": "N", "right_end": "S" },
+        "u_magnet":      { "left_arm_top": "N", "right_arm_top": "S" },
+        "ring_magnet":   { "top_face": "N", "bottom_face": "S" }
+      },
+      "science_notes": [
+        "N is always placed at the left/top for each magnet — this is conventional; agents should not change the slot ordering",
+        "Iron filing clusters appear at BOTH poles of every magnet regardless of shape",
+        "The completion screen reinforces the key NCERT concept: poles always exist in pairs"
+      ],
+      "design_tokens": {
+        "primary_purple":  "#533086",
+        "accent_blue":     "#4A4DC9",
+        "amber_theme":     "#f59e0b",
+        "orange_gradient": "#FC9145",
+        "font":            "Poppins",
+        "north_red":       "#ef4444",
+        "south_blue":      "#3b82f6",
+        "correct_green":   "#10b981"
+      }
+    }
+  }

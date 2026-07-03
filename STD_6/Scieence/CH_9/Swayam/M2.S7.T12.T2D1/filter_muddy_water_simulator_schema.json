@@ -1,0 +1,131 @@
+{
+  "toolName": "filter_muddy_water_simulator",
+  "componentName": "FilterMuddyWaterSimulator",
+  "version": "1.0.0",
+  "title": "Filter the Muddy Water",
+  "activity": "Topic M2.S7.T12 — Filtering muddy water with filter paper (residue, filtrate, filtration)",
+  "description": "A tap-and-select Class 6 guided experiment on filtration. In Explore (learn) mode the student folds a round filter paper into a cone (3 taps: half → quarter → open into the funnel), predicts whether the mud will pass through, then presses 'Pour' to tip muddy water into the cone and watch the mud build up as a dark band on the paper (the RESIDUE) while clear water drips down into the conical flask (the FILTRATE). A pore selector compares 'filter paper (fine pores)' vs 'loose cloth (coarse pores)': fine pores give clear filtrate, coarse cloth lets fine mud through so the filtrate stays cloudy — teaching that the choice of filter depends on particle size. The wrap states the rule (residue/filtrate names; filtration separates an INSOLUBLE solid from a liquid; finer pores → clearer filtrate). Quiz (practice) mode is a gamified round on the two names, what filtration separates, pore size, and everyday filters (cotton/charcoal/sand, tea bags), with a result popup (score count-up, stars, confetti) and a wrong-answer concept review. No drag-drop of cards anywhere — only taps and one pore selector.",
+  "toolType": "hybrid (guided experiment + gamified quiz)",
+  "topic_id": "M2.S7.T12",
+  "tool_id": "M2.S7.T12.T2D1",
+  "subtype": "simulation",
+  "prodSafe": "No 'lucide-react' import — all icons are inline SVGs defined in the file, so the tool renders on every iframe-renderer version (an external icon name can never be undefined at runtime).",
+
+  "parameters": {
+    "width": 840,
+    "height": 600,
+    "gradeLevel": 6,
+    "themeColor": "#4A4DC9",
+    "darkMode": false,
+    "initialMode": "learn",
+    "enabledModes": ["learn", "practice"],
+    "showModeSelector": true,
+    "showNavigation": true,
+    "showPlayPause": false,
+    "showStepIndicator": true,
+    "initialStep": 0,
+    "filterSteps": [],
+    "animationSpeed": 1,
+    "autoPlayDuration": 0,
+    "additionalProps": {
+      "pore": "paper",
+      "showHints": true,
+      "feedbackMessage": "Press “Pour” to start filtering. Watch where the mud and clear water end up.",
+      "predictionPrompt": "Will the mud pass THROUGH the filter paper, or be held back?"
+    }
+  },
+
+  "parameterSchema": {
+    "gradeLevel": { "type": "number", "enum": [6, 7, 8], "default": 6, "description": "Tier preset. 6 = heaviest gamification, story framing, biggest text, slowest/most dramatic pour, 70-particle confetti + 5 stars. 7 = moderate. 8 = light/formal. Authored for Class 6." },
+    "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Accent hint. The tool uses the Singularity palette: header purple, residue brown, filtrate teal, CTAs orange #FF7212." },
+    "initialMode": { "type": "string", "enum": ["learn", "practice"], "default": "learn", "description": "Which mode opens first." },
+    "enabledModes": { "type": "array", "items": "learn | practice", "default": ["learn", "practice"], "description": "Modes shown in the selector (Explore / Quiz)." },
+    "showModeSelector": { "type": "boolean", "default": true, "description": "Show the Explore/Quiz toggle in the header." },
+    "showNavigation": { "type": "boolean", "default": true, "description": "Show Back/Next in Explore. Auto-hidden when filterSteps freezes one screen." },
+    "showPlayPause": { "type": "boolean", "default": false, "description": "Reserved; this interactive tool advances via Next/Back and in-stage taps, not host autoplay." },
+    "filterSteps": { "type": "array", "items": "string", "default": [], "description": "Freeze the Explore flow on ONE screen and hide the nav. Single-element array of S1..S4: S1=Fold the paper, S2=Predict, S3=Pour & filter, S4=Name the parts (wrap). Empty = full free-running flow." },
+    "autoPlayDuration": { "type": "number", "default": 0, "description": "Host auto-advance hint, in ms. Ignored — the tool calls setStopAutoNext(true) because every screen needs interaction." }
+  },
+
+  "additionalPropsSchema": {
+    "pore": {
+      "type": "string",
+      "enum": ["paper", "cloth"],
+      "default": "paper",
+      "description": "Starting filter material. 'paper' = fine pores → clear filtrate; 'cloth' = coarse pores → cloudy filtrate (some fine mud slips through). The student can switch between them on the Pour screen to compare."
+    },
+    "showHints": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the small inline coaching hints / scene captions."
+    },
+    "feedbackMessage": {
+      "type": "string",
+      "default": "Press “Pour” to start filtering. Watch where the mud and clear water end up.",
+      "description": "One-line coaching message shown under the apparatus before pouring."
+    },
+    "predictionPrompt": {
+      "type": "string",
+      "default": "Will the mud pass THROUGH the filter paper, or be held back?",
+      "description": "Question shown on the Predict screen (S2)."
+    },
+    "liquidLabel": {
+      "type": "string",
+      "default": "muddy water",
+      "description": "Name of the mixture being filtered. Re-theme for other insoluble-solid-in-liquid cases (e.g. 'tea with leaves', 'sandy water')."
+    },
+    "residueLabel": {
+      "type": "string",
+      "default": "mud",
+      "description": "Name of the solid trapped on the paper (the residue), e.g. 'mud', 'sand', 'tea leaves'."
+    },
+    "filtrateLabel": {
+      "type": "string",
+      "default": "clear water",
+      "description": "Name of the liquid that passes through (the filtrate)."
+    },
+    "muddyColor": {
+      "type": "string",
+      "default": "#9C7B52",
+      "description": "Hex colour of the unfiltered (muddy) liquid and the pour stream."
+    },
+    "residueColor": {
+      "type": "string",
+      "default": "#8B5E34",
+      "description": "Hex colour of the trapped solid (residue) and the cloudiness tint when pores are coarse."
+    }
+  },
+
+  "modes": [
+    { "id": "learn", "label": "Explore", "description": "Fold the filter paper into a cone → predict whether mud passes → pour & watch mud stay (residue) while clear water drips into the flask (filtrate); compare filter paper vs loose cloth; then the rule wrap." },
+    { "id": "practice", "label": "Quiz", "description": "Gamified 4-question round on residue vs filtrate, what filtration separates (insoluble solid from liquid), pore size → clarity, and everyday filters (cotton/charcoal/sand) → result popup → wrong-answer concept review → play again with a fresh shuffle." }
+  ],
+
+  "steps": {
+    "learn": [
+      { "id": "S1", "title": "Fold the filter paper", "type": "interactive", "description": "Tap 'Fold' three times to fold the round filter paper (half → quarter) then open it into a cone seated in the funnel. Gate: cone is ready." },
+      { "id": "S2", "title": "Predict the result", "type": "interactive", "description": "Student predicts whether the mud will pass through the paper or be held back (tap-select). Gate: a prediction is made." },
+      { "id": "S3", "title": "Pour & filter", "type": "interactive", "description": "Press 'Pour' to tip muddy water into the cone; mud builds up as residue on the paper while clear filtrate drips into the flask. A pore selector toggles filter paper (clear) vs loose cloth (cloudy). Gate: pour completes." },
+      { "id": "S4", "title": "Name the parts", "type": "interactive", "description": "The labelled result: residue on the paper, filtrate in the flask. Closes with the filtration rule and a 'Take the Quiz' CTA." }
+    ],
+    "practice": [
+      { "id": 10, "title": "Quiz round", "type": "quiz", "description": "4 randomized questions: name the residue; name the filtrate; what filtration separates (insoluble solid from liquid); finer pores → clearer filtrate; everyday filters (cotton/charcoal/sand vs a dissolved solution). Silent play." },
+      { "id": 11, "title": "Result", "type": "result", "description": "Score count-up, 5 stars, 70-particle confetti, tier encouragement, CTAs." },
+      { "id": 12, "title": "Review", "type": "review", "description": "Wrong-answer cards with concept explanations; prev/next; play again." }
+    ]
+  },
+
+  "interactionNotes": [
+    "Tap/click + ONE pore selector — no drag-and-drop of cards (house rule; robust on mobile for young students).",
+    "The apparatus is a single responsive SVG side-view scene: tripod stand → glass funnel with a folded filter-paper cone → conical flask. Driven by foldStage (0..3), poured (0..1), residue (0..1), filtrate (0..1), clarity (0..1).",
+    "Pour animation is physically honest: only liquid drips through the stem; mud accumulates as a brown cap on the paper. Coarse cloth (clarity ~0.55) tints the filtrate cloudy; fine paper (clarity 1) leaves it clear.",
+    "Predict-then-reveal: residue and filtrate are hidden on the Predict screen until the student commits a guess, then pouring reveals where each ends up.",
+    "filterSteps S1..S4 freezes Explore on a single screen and hides Back/Next, for embedding one moment at a time alongside the lesson.",
+    "Calls setStopAutoNext(true) and reports setStepDetails on every step/phase change.",
+    "Responsive from 320px; touch targets 56px at Class 6; scene caps at 520px wide and scales down with the container.",
+    "PROD-SAFE ICONS: no lucide-react dependency — icons are inline SVGs, so no 'X is not defined' error regardless of the renderer's injected icon allowlist."
+  ],
+
+  "objective_id": "M2.S7.T12.O19",
+  "instructions_for_student": "Fold the filter paper into a cone, predict whether the mud will pass through, then pour the muddy water and watch where the mud and the clear water end up."
+}

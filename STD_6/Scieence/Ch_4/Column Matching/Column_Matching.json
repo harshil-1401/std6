@@ -1,0 +1,177 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Exploring Magnets — Pole Matching Activity",
+    "instructions_for_student": "Step 1: Fill each blank cell with the correct pole letter (N or S) using the dropdown. Step 2: Drag a line from each row in Column I to either Attraction or Repulsion in Column II. Use the rule: unlike poles attract, like poles repel.",
+    "data": {
+      "toolName": "matching_tool",
+      "parameters": {
+        "additionalProps": {
+          "matchingData": {
+            "title": "Poles — Match & Fill",
+            "subtitle": "Step 1: Fill the blanks (N or S). Step 2: Draw lines from Column I to Column II.",
+            "rows": [
+              {
+                "id": "r1",
+                "left": "N",
+                "right": "N",
+                "leftBlank": false,
+                "rightBlank": false,
+                "correctLeft": "N",
+                "correctRight": "N",
+                "outcome": "Repulsion"
+              },
+              {
+                "id": "r2",
+                "left": "N",
+                "right": "",
+                "leftBlank": false,
+                "rightBlank": true,
+                "correctLeft": "N",
+                "correctRight": "S",
+                "outcome": "Attraction"
+              },
+              {
+                "id": "r3",
+                "left": "S",
+                "right": "N",
+                "leftBlank": false,
+                "rightBlank": false,
+                "correctLeft": "S",
+                "correctRight": "N",
+                "outcome": "Attraction"
+              },
+              {
+                "id": "r4",
+                "left": "",
+                "right": "S",
+                "leftBlank": true,
+                "rightBlank": false,
+                "correctLeft": "S",
+                "correctRight": "S",
+                "outcome": "Repulsion"
+              }
+            ],
+            "outcomes": ["Attraction", "Repulsion"]
+          }
+        }
+      }
+    },
+    "schema": {
+      "description": "Configuration schema for MatchingTool — a two-phase interactive activity. Phase 1: fill blank pole letters from a dropdown. Phase 2: draw lines from pole pairs to Attraction/Repulsion. Themed with Poppins and the Singularity design system (#533086, #FC9145, #4A4DC9).",
+      "parameters": {
+        "additionalProps": {
+          "type": "object",
+          "properties": {
+            "matchingData": {
+              "type": "object",
+              "properties": {
+                "title": { "type": "string", "description": "Heading shown at top of tool." },
+                "subtitle": { "type": "string", "description": "Instruction text shown below heading." },
+                "rows": {
+                  "type": "array",
+                  "description": "Each row is one Column I entry with two pole chips and an outcome.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": { "type": "string", "description": "Unique row identifier." },
+                      "left": { "type": "string", "description": "Left pole value ('N', 'S', or '' if blank)." },
+                      "right": { "type": "string", "description": "Right pole value ('N', 'S', or '' if blank)." },
+                      "leftBlank": { "type": "boolean", "description": "true = left pole is a fill-in blank." },
+                      "rightBlank": { "type": "boolean", "description": "true = right pole is a fill-in blank." },
+                      "correctLeft": { "type": "string", "description": "Correct answer for left pole (used for validation)." },
+                      "correctRight": { "type": "string", "description": "Correct answer for right pole (used for validation)." },
+                      "outcome": { "type": "string", "enum": ["Attraction","Repulsion"], "description": "The correct Column II match for this row." }
+                    },
+                    "required": ["id","left","right","leftBlank","rightBlank","correctLeft","correctRight","outcome"]
+                  }
+                },
+                "outcomes": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "description": "Column II labels. Default: ['Attraction','Repulsion']."
+                }
+              },
+              "required": ["title","subtitle","rows","outcomes"]
+            }
+          }
+        }
+      }
+    },
+    "agent_readme": {
+      "overview": "MatchingTool is a two-phase drag-and-match activity. Phase 1 asks students to fill blank pole cells via a dropdown (N or S). Wrong fills bounce back immediately with a hint. Phase 2 asks students to drag lines from each completed row to the correct outcome column. Correct lines lock green; incorrect lines bounce back with the unlike-poles rule as a hint. A completion modal shows the full matched table.",
+      "design_system": {
+        "font": "Poppins (Google Fonts)",
+        "colors": {
+          "primary": "#533086",
+          "secondary": "#4A4DC9",
+          "accent": "#FC9145",
+          "light_purple": "#C1C1EA",
+          "correct": "#10b981",
+          "incorrect": "#ef4444",
+          "north_pole": "#4A4DC9",
+          "south_pole": "#ef4444"
+        },
+        "no_external_deps": "Uses only React + lucide-react. No react-dom, no portals."
+      },
+      "mechanics": {
+        "fill_phase": "Students click a blank chip to open a mini dropdown (N/S). Wrong answer triggers shake animation and clears after 700ms. Correct answer locks the chip green.",
+        "match_phase": "Once all blanks in a row are correctly filled, a pulsing dot appears on the right edge. Students drag from this dot to an outcome. Correct match: green SVG cubic-bezier line locks. Wrong match: dashed red line bounces back after 800ms.",
+        "hint": "Both wrong fills and wrong matches show a floating orange hint bubble for 3 seconds: 'Unlike poles attract, like poles repel.'",
+        "completion": "When all rows are correctly matched, a modal shows the full N/S table with Attraction/Repulsion labels and a Try Again button."
+      },
+      "tool_call_examples": [
+        {
+          "description": "Default Chapter 4 table (4 rows, 2 blanks)",
+          "call": { "toolName": "matching_tool", "parameters": {} }
+        },
+        {
+          "description": "All four rows pre-filled, no blanks — pure matching exercise",
+          "call": {
+            "toolName": "matching_tool",
+            "parameters": {
+              "additionalProps": {
+                "matchingData": {
+                  "title": "Poles — Match Only",
+                  "subtitle": "Draw a line from each pole pair to Attraction or Repulsion.",
+                  "rows": [
+                    { "id":"r1","left":"N","right":"N","leftBlank":false,"rightBlank":false,"correctLeft":"N","correctRight":"N","outcome":"Repulsion" },
+                    { "id":"r2","left":"N","right":"S","leftBlank":false,"rightBlank":false,"correctLeft":"N","correctRight":"S","outcome":"Attraction" },
+                    { "id":"r3","left":"S","right":"N","leftBlank":false,"rightBlank":false,"correctLeft":"S","correctRight":"N","outcome":"Attraction" },
+                    { "id":"r4","left":"S","right":"S","leftBlank":false,"rightBlank":false,"correctLeft":"S","correctRight":"S","outcome":"Repulsion" }
+                  ],
+                  "outcomes": ["Attraction","Repulsion"]
+                }
+              }
+            }
+          }
+        },
+        {
+          "description": "All four blanks — fill-only challenge, then match",
+          "call": {
+            "toolName": "matching_tool",
+            "parameters": {
+              "additionalProps": {
+                "matchingData": {
+                  "title": "Fill & Match — Full Challenge",
+                  "subtitle": "Fill all four blanks first, then draw the lines.",
+                  "rows": [
+                    { "id":"r1","left":"","right":"","leftBlank":true,"rightBlank":true,"correctLeft":"N","correctRight":"N","outcome":"Repulsion" },
+                    { "id":"r2","left":"N","right":"","leftBlank":false,"rightBlank":true,"correctLeft":"N","correctRight":"S","outcome":"Attraction" },
+                    { "id":"r3","left":"","right":"N","leftBlank":true,"rightBlank":false,"correctLeft":"S","correctRight":"N","outcome":"Attraction" },
+                    { "id":"r4","left":"","right":"","leftBlank":true,"rightBlank":true,"correctLeft":"S","correctRight":"S","outcome":"Repulsion" }
+                  ],
+                  "outcomes": ["Attraction","Repulsion"]
+                }
+              }
+            }
+          }
+        }
+      ],
+      "decision_tree": {
+        "standard_exercise": "Use default parameters — 4 rows, 2 blanks (r2 right, r4 left).",
+        "no_blanks": "Set all leftBlank and rightBlank to false — pure drag-to-match.",
+        "all_blanks": "Set all leftBlank and rightBlank to true — maximum challenge.",
+        "different_topic": "Replace rows with any left/right label pairs (not just pole letters) and update outcomes."
+      }
+    }
+  }

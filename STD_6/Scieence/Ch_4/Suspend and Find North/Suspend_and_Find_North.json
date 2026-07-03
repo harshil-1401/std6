@@ -1,0 +1,84 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Magnet Compass Explorer",
+    "data": {
+      "toolName": "magnet_compass_tool",
+      "parameters": {
+        "width": 800,
+        "height": 720,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "animationSpeed": 1,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "title": "🧲 Magnet Explorer",
+          "subtitle": "Discover the North-Seeking Pole!",
+          "showHint": true,
+          "compassSize": 120,
+          "magnetColor": {
+            "northHalf": "#ef4444",
+            "southHalf": "#1d4ed8"
+          },
+          "northPoleLabel": "North-seeking pole",
+          "southPoleLabel": "South-seeking pole",
+          "feedbackMessages": {
+            "correct": "🌍 The red (N) end is the North-seeking pole because it always points toward geographic North. This happens because the Earth itself behaves like a giant magnet! Its geographic North is near Earth's magnetic South — so opposite poles attract, pulling the magnet's North-seeking pole toward geographic North.",
+            "incorrect": "💡 Remember: The end that points toward geographic North (toward the 'N' on the compass rose) is the North-seeking pole. The compass rose shows you the direction!"
+          },
+          "hintText": "🌍 The Earth acts like a giant magnet! The end of a magnet that points toward geographic North is called the North-seeking pole. The red (N) end of our magnet is pointing toward geographic North on the compass rose. So... 🤔"
+        }
+      }
+    },
+    "instructions_for_student": "Drag the magnet to the thread hanging from the wooden stand. Watch it swing and settle along the north–south direction. Then label each end: the end pointing to the compass rose 'N' is the North-seeking pole, and the end pointing to 'S' is the South-seeking pole. Press 'Check My Answer!' to see if you are correct!",
+    "learning_objectives": [
+      "Understand that a freely suspended magnet always rests along the north–south direction",
+      "Identify the North-seeking pole and South-seeking pole of a bar magnet",
+      "Understand that the Earth itself behaves like a giant magnet",
+      "Connect the concept of magnetic compass to direction finding"
+    ],
+    "chapter_reference": {
+      "textbook": "Curiosity — Textbook of Science",
+      "grade": 6,
+      "chapter": 4,
+      "chapter_title": "Exploring Magnets",
+      "section": "4.3 Finding Directions",
+      "activity": "Activity 4.3: Let us experiment"
+    },
+    "theme": {
+      "primary": "#f59e0b",
+      "primaryDark": "#b45309",
+      "primaryLight": "#fef3c7",
+      "purple": "#533086",
+      "purpleLight": "#C1C1EA",
+      "orange": "#FC9145",
+      "font_heading": "Fredoka One",
+      "font_body": "Nunito"
+    },
+    "agent_notes": {
+      "tool_description": "Interactive drag-and-drop simulation where Grade 6 students suspend a bar magnet from a thread, observe it settling along north–south, and label the poles using dropdowns. Feedback explains the Earth-as-magnet principle.",
+      "phases": [
+        "idle — magnet rests on table; student drags it",
+        "dragging — magnet follows cursor/touch",
+        "swinging — magnet swings with CSS animation after release near thread",
+        "settled — magnet rests horizontally; compass rose is animated; label UI appears",
+        "labeling — student selects labels from dropdowns",
+        "feedback — correctness panel with explanation and star reward"
+      ],
+      "correct_answer": {
+        "northLabel": "North-seeking pole",
+        "southLabel": "South-seeking pole"
+      },
+      "customisation_via_additionalProps": {
+        "showHint": "boolean — toggles the hint button (default true)",
+        "title": "string — header title text",
+        "subtitle": "string — subtitle below header",
+        "compassSize": "number — diameter of compass rose in px (default 120)",
+        "magnetColor.northHalf": "CSS color string for N half of magnet",
+        "magnetColor.southHalf": "CSS color string for S half of magnet"
+      }
+    }
+  }

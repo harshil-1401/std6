@@ -1,0 +1,246 @@
+{
+    "toolName": "torch_material_viewer",
+    "version": "1.0.0",
+    "description": "Interactive torch-and-material stage that teaches transparent, translucent, and opaque materials. A torch on the left shines light to the right. A 3-position slider in the middle swaps between clear glass, butter paper, and a wooden board. A friend silhouette on the right shows the resulting view: clear, fuzzy, or blacked out. A live caption names the classification, and a 3-card rule strip keeps the definitions visible.",
+    "category": "physical_science",
+    "gradeLevel": "6",
+    "ncertChapter": "Curiosity Class 6, Chapter 6: Materials Around Us, Section 6.3.3",
+    "learningObjectives": [
+      "Identify materials as transparent, translucent, or opaque",
+      "Predict what a viewer can see through different materials",
+      "Connect everyday objects (glass, butter paper, wood) to their optical classification"
+    ],
+    "parameters": {
+      "width": {
+        "type": "number",
+        "default": 900,
+        "description": "Component max width in pixels (responsive — will shrink to container)"
+      },
+      "height": {
+        "type": "number",
+        "default": 640,
+        "description": "Minimum component height in pixels (auto on mobile)"
+      },
+      "initialMode": {
+        "type": "string",
+        "enum": ["learn", "practice", "real_world", "hands_on"],
+        "default": "learn",
+        "description": "Starting mode of the tool"
+      },
+      "showModeSelector": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show or hide the mode-selector tab bar"
+      },
+      "enabledModes": {
+        "type": "array",
+        "items": { "type": "string", "enum": ["learn", "practice", "real_world", "hands_on"] },
+        "default": ["learn", "practice", "real_world", "hands_on"],
+        "description": "Which modes are visible in the selector"
+      },
+      "showNavigation": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show prev/next/reset buttons"
+      },
+      "showPlayPause": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show the play/pause auto-advance button"
+      },
+      "showStepIndicator": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show the step-progress dots"
+      },
+      "initialStep": {
+        "type": "number",
+        "default": 1,
+        "description": "Step ID to start on"
+      },
+      "filterSteps": {
+        "type": "array",
+        "items": { "type": "number" },
+        "description": "Only show these step IDs (filters within current mode)"
+      },
+      "animationSpeed": {
+        "type": "number",
+        "default": 1,
+        "description": "Animation speed multiplier (1 = normal, 2 = 2x faster)"
+      },
+      "autoPlayDuration": {
+        "type": "number",
+        "default": 9000,
+        "description": "Auto-advance delay in ms. Set to 0 to disable auto-advance."
+      },
+      "themeColor": {
+        "type": "string",
+        "default": "#4A4DC9",
+        "description": "Primary brand color (purple from design system)"
+      },
+      "darkMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Dark mode toggle (light mode follows design PDF tokens)"
+      }
+    },
+    "additionalProps": {
+      "initialMaterial": {
+        "type": "string",
+        "enum": ["transparent", "translucent", "opaque"],
+        "default": "transparent",
+        "description": "Which material to display first when the tool loads"
+      },
+      "availableMaterials": {
+        "type": "array",
+        "items": { "type": "string", "enum": ["transparent", "translucent", "opaque"] },
+        "default": ["transparent", "translucent", "opaque"],
+        "description": "Restrict the slider to a subset of materials (e.g. only show 2 for a comparison question)"
+      },
+      "showRuleCard": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show the bottom 3-card rule strip with definitions"
+      },
+      "showLightBeam": {
+        "type": "boolean",
+        "default": true,
+        "description": "Render the animated light cone from the torch"
+      },
+      "showCaption": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show the live classification caption (transparent / translucent / opaque)"
+      },
+      "autoCycle": {
+        "type": "boolean",
+        "default": false,
+        "description": "Automatically cycle through available materials on a timer (good for hands-off demos)"
+      },
+      "cycleInterval": {
+        "type": "number",
+        "default": 2500,
+        "description": "Milliseconds between auto-cycle material swaps (only when autoCycle is true)"
+      },
+      "studentName": {
+        "type": "string",
+        "description": "Optional student name for personalized captions (not used in default copy)"
+      },
+      "examples": [
+        {
+          "name": "Default — full lesson",
+          "props": {
+            "additionalProps": {
+              "initialMaterial": "transparent"
+            }
+          }
+        },
+        {
+          "name": "Compare only translucent vs opaque",
+          "props": {
+            "initialMode": "practice",
+            "additionalProps": {
+              "availableMaterials": ["translucent", "opaque"],
+              "initialMaterial": "translucent"
+            }
+          }
+        },
+        {
+          "name": "Auto-demo (kiosk mode)",
+          "props": {
+            "showModeSelector": false,
+            "showNavigation": false,
+            "additionalProps": {
+              "autoCycle": true,
+              "cycleInterval": 3000,
+              "showRuleCard": true
+            }
+          }
+        },
+        {
+          "name": "Direct answer — what does opaque mean?",
+          "props": {
+            "showModeSelector": false,
+            "showNavigation": false,
+            "showStepIndicator": false,
+            "autoPlayDuration": 0,
+            "filterSteps": [4],
+            "additionalProps": {
+              "initialMaterial": "opaque",
+              "availableMaterials": ["opaque"],
+              "showRuleCard": false
+            }
+          }
+        }
+      ]
+    },
+    "modes": {
+      "learn": {
+        "label": "Learn",
+        "description": "Guided walkthrough: torch intro, then transparent, translucent, opaque in sequence"
+      },
+      "practice": {
+        "label": "Practice",
+        "description": "Free interaction with the slider; user predicts before checking caption"
+      },
+      "real_world": {
+        "label": "Real World",
+        "description": "Connect classifications to everyday objects (windows, frosted glass, walls)"
+      },
+      "hands_on": {
+        "label": "Hands On",
+        "description": "Self-paced exploration with full slider control"
+      }
+    },
+    "steps": {
+      "1": { "title": "Meet the Torch", "mode": "learn", "type": "intro" },
+      "2": { "title": "Transparent — Clear Glass", "mode": "learn", "type": "explanation", "targetMaterial": "transparent" },
+      "3": { "title": "Translucent — Butter Paper", "mode": "learn", "type": "explanation", "targetMaterial": "translucent" },
+      "4": { "title": "Opaque — Wooden Board", "mode": "learn", "type": "explanation", "targetMaterial": "opaque" },
+      "5": { "title": "Try It Yourself", "mode": "hands_on", "type": "hands_on" },
+      "6": { "title": "Real World", "mode": "real_world", "type": "real_world" }
+    },
+    "theme": {
+      "primary": "#4A4DC9",
+      "primaryDeep": "#533086",
+      "accent": "#FF7212",
+      "accentSoft": "#FC9145",
+      "lightPurple": "#C1C1EA",
+      "lightOrange": "#FFF3E4",
+      "bg": "#F5F5F5",
+      "fontFamily": "Poppins",
+      "source": "Singularity_tool_Design_1.pdf"
+    },
+    "responsive": {
+      "mobile": "< 640px — stacked vertical layout, smaller controls, single-column rule card",
+      "tablet": "640px – 900px — compact horizontal stage",
+      "desktop": "≥ 900px — full horizontal stage with all elements visible"
+    },
+    "agentGuidance": {
+      "whenToUse": [
+        "Student asks what transparent / translucent / opaque mean",
+        "Class 6 science lesson on materials and how light passes through them",
+        "Student needs to classify an everyday object (window, butter paper, door)",
+        "Comparison question between two material types"
+      ],
+      "commonCalls": {
+        "introduce_concept": {
+          "instructions_for_student": "Slide the switch to change the material. Watch what the friend sees and read the label.",
+          "props": { "initialMode": "learn", "additionalProps": { "initialMaterial": "transparent" } }
+        },
+        "show_one_material_only": {
+          "instructions_for_student": "Butter paper is translucent — some light gets through but the image is fuzzy.",
+          "props": {
+            "showModeSelector": false,
+            "filterSteps": [3],
+            "autoPlayDuration": 0,
+            "additionalProps": { "initialMaterial": "translucent", "availableMaterials": ["translucent"] }
+          }
+        },
+        "free_exploration": {
+          "instructions_for_student": "Try all three materials. What changes about your view?",
+          "props": { "initialMode": "hands_on" }
+        }
+      }
+    }
+  }

@@ -1,0 +1,149 @@
+{
+  "toolId": "M1.S2.T2.C5.2D1",
+  "title": "Group the Objects (by material)",
+  "subtype": "sorter",
+  "conceptId": "M1.S2.T2.C5",
+  "relatedConceptIds": [
+    "M1.S2.T2"
+  ],
+  "module": "M1",
+  "placement": {
+    "beat": "Apply",
+    "where": "replaces NCERT Class 6 Science Chapter 6 'Materials Around Us', Activity 6.2 'Let us group' — students classify 12 everyday objects by the material they are made of"
+  },
+  "sharedState": {
+    "fields": [
+      "placed",
+      "placedCount",
+      "total",
+      "firstTry",
+      "finished",
+      "operatorMode"
+    ]
+  },
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": [
+        "{type:'ready', toolId}",
+        "{type:'state', state}",
+        "{type:'event', name, detail}",
+        "{type:'response', id, result}"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "placeCard(objId | objId[])",
+      "sort(objId | objId[])",
+      "select(objId)"
+    ]
+  },
+  "studentControls": [
+    {
+      "control": "Tap an object in the tray, then tap a material bin (Metal / Wood / Plastic / Clay)",
+      "effect": "if the bin matches the object's material it locks in with a pop and a sound; the score and progress advance"
+    },
+    {
+      "control": "Tap a wrong material bin",
+      "effect": "the bin shakes and flashes red, a wrong sound plays, a mistake is recorded for that object, and the object is NOT placed"
+    },
+    {
+      "control": "Tap an already-placed object inside a bin",
+      "effect": "returns it to the tray so it can be re-sorted"
+    },
+    {
+      "control": "Reset / Play again button",
+      "effect": "clears all placements and mistakes and reshuffles the objects into a fresh order"
+    },
+    {
+      "control": "Mute / unmute button (top-right)",
+      "effect": "toggles the tap/correct/wrong/completion sound cues"
+    }
+  ],
+  "answerKey": {
+    "rule": "Classify each object by the MATERIAL it is made of. A bin only accepts an object whose material matches it.",
+    "groups": {
+      "metal": ["key", "coin", "bolt"],
+      "wood": ["pencil", "board", "bat"],
+      "plastic": ["bottle", "bucket", "cup"],
+      "clay": ["diya", "pot", "brick"]
+    },
+    "objects": {
+      "key": "metal",
+      "coin": "metal",
+      "bolt": "metal",
+      "pencil": "wood",
+      "board": "wood",
+      "bat": "wood",
+      "bottle": "plastic",
+      "bucket": "plastic",
+      "cup": "plastic",
+      "diya": "clay",
+      "pot": "clay",
+      "brick": "clay"
+    },
+    "objectLabels": {
+      "key": "Key",
+      "coin": "Coin",
+      "bolt": "Iron bolt",
+      "pencil": "Pencil",
+      "board": "Wooden board",
+      "bat": "Cricket bat",
+      "bottle": "Plastic bottle",
+      "bucket": "Bucket",
+      "cup": "Plastic cup",
+      "diya": "Clay lamp (diya)",
+      "pot": "Clay pot",
+      "brick": "Brick"
+    },
+    "binLabels": {
+      "metal": "Metal",
+      "wood": "Wood",
+      "plastic": "Plastic",
+      "clay": "Clay"
+    },
+    "total": 12,
+    "scoring": "First-try score = number of objects placed in the correct bin without any wrong attempt (out of 12). Because a wrong bin never accepts an object, the final board is always fully correct.",
+    "stars": {
+      "3": ">= 90% on first try",
+      "2": "60-89% on first try",
+      "1": "< 60% on first try"
+    },
+    "operatorModes": ["ai", "student"],
+    "operatorModeNote": "ai = focused demo: bins and read-out stay visible, the object tray + action bar are hidden and student input is inert (the agent drives via placeCard()/highlight()); student = full interactive controls. Default student.",
+    "agentNote": "placeCard accepts a single object id (placeCard('key')) OR an array (placeCard(['key','coin','bolt'])) — each object is routed to its correct material bin, so several can be credited at once. sort() and tap() are aliases."
+  },
+  "props": {
+    "defaults": {
+      "width": 0,
+      "height": 0,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false
+    },
+    "additionalProps": {
+      "seed": "optional number to fix the shuffle order (defaults to a fresh random order each play)"
+    }
+  },
+  "events": [
+    "ready",
+    "item_placed",
+    "answer_incorrect",
+    "completed",
+    "reset",
+    "operator_mode_changed"
+  ],
+  "scientificFacts": [
+    "Objects can be grouped (classified) by a shared property — here, the material they are made of.",
+    "Metals such as iron and brass are hard and shiny; wood is light and does not shine; plastic is light, bendy and never rusts; clay is shaped and then baked hard (a brick is baked clay).",
+    "Sorting things into groups by a common property is called classification, and it helps us study and compare materials.",
+    "The same object set can be grouped by other properties too, such as whether they float or sink, or are transparent or opaque."
+  ]
+}

@@ -1,0 +1,99 @@
+{
+    "componentName": "HardnessActivityRecorder",
+    "componentFile": "hardness_activity_recorder.tsx",
+    "chapter": "Chapter 6 — Materials Around Us",
+    "section": "6.3.2 Which materials are hard? · Activity 6.5: Let us observe",
+    "grade": "Grade 6 — Curiosity Science (NCERT)",
+    "audience": "11-12 year old students, Indian classroom context",
+    "learningObjective": "Understand that hardness is a relative property. Sponge (soft), Rubber Eraser (medium), Iron Nail (hard). Students scratch each object virtually, record observations, and synthesise a ranking with a reason.",
+    "studentFriendlinessFeatures": {
+      "language": "Simple, warm, encouraging — Brilliant work, Whoa, Great job",
+      "steps": "Numbered step-by-step journey: Scratch then Record then Rank. Nothing unlocks until the prior step is done.",
+      "feedback": "Immediate animated feedback on every scratch. Fun facts appear after each scratch.",
+      "cheer": "CheerBanner appears after all scratched, after table filled, after submit.",
+      "celebration": "Confetti plus trophy plus result card with encouraging language on submit.",
+      "textbookLink": "Direct quote from NCERT page 107 shown at the bottom."
+    },
+    "props": {
+      "width": 920,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "additionalProps": {
+        "enableSynthesis": true,
+        "teacherName": "Madam Vidya",
+        "objects": [
+          {
+            "id": "sponge",
+            "name": "Sponge",
+            "emoji": "🧽",
+            "material": "Foam",
+            "trueHardness": "soft",
+            "indentDepth": 90,
+            "scratchFeedback": "Whoa! Your finger sinks right in! The sponge squishes super easily. It is very, very soft!",
+            "funFact": "Fun fact: Sponges have millions of tiny air pockets inside — that is why they squish so easily!",
+            "surfaceBg": "linear-gradient(135deg, #FEF3C7, #FDE68A)",
+            "surfaceRing": "#F59E0B",
+            "particleColor": "#FCD34D"
+          },
+          {
+            "id": "eraser",
+            "name": "Rubber Eraser",
+            "emoji": "🟧",
+            "material": "Rubber",
+            "trueHardness": "medium",
+            "indentDepth": 45,
+            "scratchFeedback": "It pushes back a little! The eraser bends and dents, but not as much as the sponge. It is soft-ish!",
+            "funFact": "Fun fact: Rubber comes from rubber trees! It stretches and bounces back — but iron cannot do that at all!",
+            "surfaceBg": "linear-gradient(135deg, #FED7AA, #FDBA74)",
+            "surfaceRing": "#F97316",
+            "particleColor": "#FB923C"
+          },
+          {
+            "id": "nail",
+            "name": "Iron Nail",
+            "emoji": "📌",
+            "material": "Iron (Metal)",
+            "trueHardness": "hard",
+            "indentDepth": 5,
+            "scratchFeedback": "It will not budge at all! The iron nail is rock-solid. You cannot dent it with your thumb. Very hard!",
+            "funFact": "Fun fact: Iron is used for bridges and tall buildings because it is so hard and strong!",
+            "surfaceBg": "linear-gradient(135deg, #E2E8F0, #CBD5E1)",
+            "surfaceRing": "#64748B",
+            "particleColor": "#94A3B8"
+          }
+        ]
+      }
+    },
+    "designSystem": {
+      "fontFamily": "Poppins",
+      "primaryColor": "#4A4DC9",
+      "secondaryColor": "#FF7212",
+      "accentPurple": "#533086",
+      "accentAmber": "#FC9145",
+      "lightPurple": "#C1C1EA",
+      "lightOrange": "#FFF3E4"
+    },
+    "responsive": {
+      "mobile": { "breakpoint": "< 620px", "cards": "1-column stack", "table": "3-col plus notes below" },
+      "tablet": { "breakpoint": "620-860px", "cards": "3-column grid", "table": "4-col" },
+      "desktop": { "breakpoint": ">= 860px", "cards": "3-column grid", "table": "4-col inline notes" }
+    },
+    "activityFlow": [
+      "Student reads the How It Works card — 3 steps explained simply",
+      "Student taps Tap to Scratch on each object card",
+      "2.3-second animation: emoji shakes, thumb wiggle icon, scratch particles burst out",
+      "Indent bar animates from 0 to calibrated depth (sponge=90%, eraser=45%, nail=5%)",
+      "Green feedback callout plus fun fact appear after each scratch",
+      "CheerBanner appears when all 3 are scratched",
+      "Table rows unlock — student picks Hard or Soft and types observation note",
+      "CheerBanner appears when table is complete",
+      "Synthesis section unlocks — student reorders ranking with up/down arrows",
+      "Student types a reason (min 15 chars)",
+      "Submit: confetti, trophy, per-item correct/incorrect ticks, result card with learning summary"
+    ],
+    "correctAnswers": {
+      "rankingOrder": ["sponge", "eraser", "nail"],
+      "decisions": { "sponge": "soft", "eraser": "soft", "nail": "hard" },
+      "keyInsight": "Hardness is relative — rubber is harder than sponge but softer than iron (NCERT p.107)"
+    }
+  }

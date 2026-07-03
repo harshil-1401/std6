@@ -1,0 +1,132 @@
+{
+  "toolId": "M1.S2.T3.C9.2D1",
+  "title": "Fill the tumbler",
+  "subtype": "simulation",
+  "conceptId": "M1.S2.T3.C9",
+  "relatedConceptIds": [
+    "M1.S2.T3.C10"
+  ],
+  "module": "M1",
+  "placement": {
+    "beat": "Apply",
+    "where": "replaces the 'liquids take the shape of their container' demonstration; students pour water into different tumblers and watch the water rise to take each container's exact shape, while discovering which materials can hold water"
+  },
+  "sharedState": {
+    "fields": [
+      "tested",
+      "holdsWater",
+      "leaks",
+      "total",
+      "done",
+      "finished",
+      "phase",
+      "operatorMode"
+    ]
+  },
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": [
+        "{type:'ready', toolId}",
+        "{type:'state', state}",
+        "{type:'event', name, detail}",
+        "{type:'response', id, result}"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "pour(idOrArray) — THE do-verb: pour water into container(s) to test if each holds water; id is 'glass'|'steel'|'plastic'|'clay'|'cloth'|'paper' or an array (extras queue).",
+      "select(idOrArray)",
+      "fill(idOrArray) — alias of pour: pour water into container(s) to test if each holds water; id is 'glass'|'steel'|'plastic'|'clay'|'cloth'|'paper' or an array (extras queue).",
+      "tap(idOrArray)"
+    ]
+  },
+  "studentControls": [
+    {
+      "control": "Tap a tumbler tile (glass, steel, plastic, clay, cloth, paper)",
+      "effect": "the jug tilts and pours; for a waterproof tumbler the water RISES and fills the exact silhouette of that container (proving the water takes the container's shape), then locks it green with ✓ and a one-line reason; an absorbent tumbler shakes red, leaks, and is marked ✗"
+    },
+    {
+      "control": "Mute / unmute button (header)",
+      "effect": "toggles the pour/correct/wrong/completion Web Audio cues"
+    },
+    {
+      "control": "Reset / Play again button",
+      "effect": "clears all filled tumblers, the score and the celebration, and returns the bench to its starting state"
+    }
+  ],
+  "answerKey": {
+    "holdsWater": [
+      "glass",
+      "steel",
+      "plastic",
+      "clay"
+    ],
+    "leaks": [
+      "cloth",
+      "paper"
+    ],
+    "total": 6,
+    "rule": "A liquid has no fixed shape of its own — it takes the shape of whatever container holds it. Hard, sealed, non-absorbent tumblers (glass cup, steel can, plastic bottle, clay pot) hold the water so it takes their shape; absorbent or soft materials (cloth bag, paper cone) soak it up and let it leak through.",
+    "reasons": {
+      "glass": "Hard, smooth and non-absorbent — the water settles and takes the shape of the cup.",
+      "steel": "Solid metal walls with no gaps — water fills the can and takes its straight-sided shape.",
+      "plastic": "Waterproof walls — the water takes the bottle's curved shape and stays inside.",
+      "clay": "A baked, sealed vessel — water fills the round pot and takes its rounded shape.",
+      "cloth": "Cloth fibres absorb water and let it seep through — it cannot keep a water shape.",
+      "paper": "Paper softens when wet — water soaks through and tears it apart."
+    },
+    "properties": {
+      "glass": "Non-absorbent",
+      "steel": "Impermeable metal",
+      "plastic": "Waterproof",
+      "clay": "Hard and sealed",
+      "cloth": "Absorbent",
+      "paper": "Weakens when wet"
+    },
+    "operatorModes": [
+      "ai",
+      "student"
+    ],
+    "operatorModeNote": "ai = focused DEMO: the pouring bench (jug + water-fill phenomenon), the outcome read-out and the result lists stay visible, but the tumbler tray / action bar is hidden and student taps are inert (the agent drives via pour()/highlight()); a 👩‍🏫 watch caption + chip show. student = full interactive controls. Default student."
+  },
+  "props": {
+    "defaults": {
+      "width": 0,
+      "height": 0,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false,
+      "animationSpeed": 1
+    },
+    "additionalProps": {
+      "primaryColor": "#4A4DC9",
+      "secondaryColor": "#FF7212",
+      "instructionText": "Pour water into each tumbler and watch the water take the shape of its container!",
+      "successMessage": "Brilliant! You filled every tumbler!"
+    }
+  },
+  "events": [
+    "ready",
+    "pour_started",
+    "answer_correct",
+    "answer_incorrect",
+    "item_placed",
+    "completed",
+    "reset",
+    "operator_mode_changed"
+  ],
+  "scientificFacts": [
+    "A liquid has no shape of its own — it takes the shape of whatever container it is poured into.",
+    "Water fills a container from the bottom up and its top surface stays flat and level.",
+    "Hard, sealed, non-absorbent materials such as glass, steel, plastic and baked clay can hold water.",
+    "Soft or absorbent materials such as cloth and paper soak up water and let it leak through, so they cannot hold a liquid's shape."
+  ]
+}

@@ -1,0 +1,108 @@
+{
+    "toolName": "melting_ice_cube_tool",
+    "version": "1.1.0",
+    "description": "PREDICT -> OBSERVE -> EXPLAIN -> RECAP thinking tool for NCERT Class 6 Science Chapter 8 (A Journey through States of Water). A learner predicts what happens to an ice cube, then scrubs or plays a 0-10 minute melt animation (a chunky cube floats and shrinks in a wide cup while a shallow pool grows), sees the concept reveal (solid -> liquid = melting), and compares the result with their prediction. A Practice mode adds a multiple-choice quiz whose answer positions are shuffled (no positional pattern). Fully responsive (stacks on small screens). Styled with the Singularity design system (Poppins, indigo #4A4DC9, pill buttons).",
+    "subject": "Science",
+    "grade": 6,
+    "board": "CBSE / NCERT",
+    "chapter": "8 - A Journey through States of Water",
+    "concepts": ["states of water", "solid", "liquid", "melting", "same substance"],
+    "output": {
+      "format": "single-file React/TSX component",
+      "styling": "CSS-in-JS only (no Tailwind / external CSS)",
+      "dependencies": ["react", "lucide-react"],
+      "default_export": "MeltingIceCubeTool"
+    },
+    "parameters": {
+      "width": { "type": "number", "default": 880, "description": "Max width of the tool in px (it is fluid up to this)" },
+      "height": { "type": "number", "default": 600, "description": "Reference height; layout is responsive and height is auto" },
+      "initialMode": { "type": "string", "enum": ["learn", "practice"], "default": "learn" },
+      "showModeSelector": { "type": "boolean", "default": true },
+      "enabledModes": { "type": "array", "items": { "enum": ["learn", "practice"] }, "default": ["learn", "practice"] },
+      "showNavigation": { "type": "boolean", "default": true },
+      "showPlayPause": { "type": "boolean", "default": true },
+      "showStepIndicator": { "type": "boolean", "default": true },
+      "initialStep": { "type": "number", "description": "Step id to open on (1=Predict, 2=Observe, 3=Explain, 4=Recap)" },
+      "filterSteps": { "type": "array", "items": { "type": "number" }, "description": "Restrict to these step ids" },
+      "animationSpeed": { "type": "number", "default": 1, "description": "Multiplier; 2 = melt twice as fast" },
+      "autoPlayDuration": { "type": "number", "default": 0, "description": "Auto-advance is disabled for this interactive tool" },
+      "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Singularity primary indigo" },
+      "darkMode": { "type": "boolean", "default": false }
+    },
+    "additionalProps": {
+      "totalMinutes": { "type": "number", "default": 10, "description": "Simulated minutes from full ice to fully melted" },
+      "meltDurationMs": { "type": "number", "default": 16000, "description": "Real-time ms for one full auto-melt (divided by animationSpeed)" },
+      "startMinute": { "type": "number", "default": 0, "description": "Initial elapsed minute" },
+      "showPrediction": { "type": "boolean", "default": true, "description": "Lock the experiment until the learner makes a prediction" },
+      "predictionOptions": {
+        "type": "array",
+        "description": "Override the predict-scene choices; exactly one should have correct:true",
+        "items": { "id": "string", "label": "string", "correct": "boolean" },
+        "default": [
+          { "id": "same", "label": "Ice stays the same", "correct": false },
+          { "id": "water", "label": "Ice turns into water", "correct": true },
+          { "id": "gone", "label": "Ice disappears completely", "correct": false }
+        ]
+      },
+      "teacherPrompts": {
+        "type": "object",
+        "description": "Bilingual (Gujarati/English) teacher prompt per scene",
+        "properties": { "predict": "string", "observe": "string", "explain": "string", "recap": "string" },
+        "default": {
+          "predict": "Socho! Cup ne table par mukshu to ice nu shu thashe? (Predict before you observe)",
+          "observe": "Dhyaan thi juo - ice motu thay chhe ke nanu? Pani kya thi aavyu?",
+          "explain": "Ice gayab nathi thayu... ae pani ma convert thayu. Aa process ne 'melting' kahevay.",
+          "recap": "Tamari prediction sachi hati ke nahi? Compare karo!"
+        }
+      },
+      "conceptLines": {
+        "type": "array",
+        "items": { "type": "string" },
+        "description": "Lines revealed one-by-one in the Explain scene",
+        "default": [
+          "Ice is water in the SOLID state.",
+          "Water is the same substance in the LIQUID state.",
+          "On warming, solid -> liquid. This process is called MELTING.",
+          "Nothing was added or lost - it is the same water!"
+        ]
+      },
+      "quiz": {
+        "type": "array",
+        "description": "Practice-mode questions. Option order is automatically shuffled at runtime so the correct answer has no positional pattern; answerIndex refers to the order as written here.",
+        "items": { "question": "string", "options": ["string"], "answerIndex": "number", "explanation": "string" },
+        "default": [
+          { "question": "When ice changes into water, this process is called...", "options": ["Evaporation", "Freezing", "Melting", "Condensation"], "answerIndex": 2, "explanation": "Solid to liquid is melting. Liquid to solid is freezing." },
+          { "question": "Ice and water are...", "options": ["Two different substances", "The same substance in different states", "Not related at all"], "answerIndex": 1, "explanation": "Ice and water are the same substance - just solid and liquid states." },
+          { "question": "To turn water back into ice, we should...", "options": ["Heat it", "Cool it in a freezer", "Add salt"], "answerIndex": 1, "explanation": "Cooling liquid water in a freezer makes it freeze into ice." },
+          { "question": "What makes an ice cube melt when left on a table?", "options": ["It loses heat to the room", "It gains heat from the warm room", "Nothing - it melts on its own"], "answerIndex": 1, "explanation": "The warm surroundings supply heat to the ice, so it melts into water." },
+          { "question": "Which property is TRUE for ice (solid state)?", "options": ["It flows and takes the shape of the container", "It keeps its own fixed shape", "It spreads to fill all space"], "answerIndex": 1, "explanation": "A solid keeps its shape. A liquid takes the container's shape; a gas fills all space." },
+          { "question": "A puddle of water dries up in the sun. The water has...", "options": ["Frozen", "Melted", "Evaporated into water vapour", "Condensed"], "answerIndex": 2, "explanation": "Liquid water turning into vapour is evaporation - it speeds up in sunlight." },
+          { "question": "As the ice cube melts, what happens to the amount of water in the cup?", "options": ["It decreases", "It increases", "It stays exactly zero"], "answerIndex": 1, "explanation": "The melting ice turns into liquid water, so the water level rises." }
+        ]
+      }
+    },
+    "modes": {
+      "learn": "Guided 4-scene flow: Predict -> Observe -> Explain -> Recap",
+      "practice": "Multiple-choice quick check with shuffled answers, instant feedback, and scoring (no animation/stage shown)"
+    },
+    "steps": {
+      "1": { "title": "Predict", "type": "predict", "mode": "learn" },
+      "2": { "title": "Observe", "type": "observe", "mode": "learn" },
+      "3": { "title": "Explain", "type": "explain", "mode": "learn" },
+      "4": { "title": "Recap", "type": "recap", "mode": "learn" },
+      "10": { "title": "Quick Check", "type": "practice", "mode": "practice" }
+    },
+    "example_tool_call": {
+      "frontend_action": "show_interactive_tool",
+      "title": "Melting Ice Cube",
+      "data": {
+        "toolName": "melting_ice_cube_tool",
+        "parameters": {
+          "initialMode": "learn",
+          "themeColor": "#4A4DC9",
+          "additionalProps": { "totalMinutes": 10 }
+        }
+      },
+      "instructions_for_student": "First predict what will happen, then watch the ice melt!"
+    }
+  }

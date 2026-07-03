@@ -1,0 +1,196 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Table 6.2 — Bounce Recorder",
+    "instructions_for_student": "Fill each row with your bounce reading from the simulation. Type the height the ball reached (in cm) after being dropped from the listed height. The bar chart on the right updates live as you type. Once all three rows are filled, write your inference at the bottom: Which material bounces best for sports balls, and why?",
+  
+    "data": {
+      "toolName": "bounce_recorder_tool",
+      "parameters": {
+        "width": 820,
+        "height": 640,
+        "darkMode": false,
+        "themeColor": "#4A4DC9",
+  
+        "additionalProps": {
+          "dropHeightDefault": 100,
+          "rows": [
+            {
+              "material": "Rubber",
+              "emoji": "🔴",
+              "dropHeight": 100
+            },
+            {
+              "material": "Plastic",
+              "emoji": "🟡",
+              "dropHeight": 100
+            },
+            {
+              "material": "Clay",
+              "emoji": "🟤",
+              "dropHeight": 100
+            }
+          ]
+        }
+      }
+    },
+  
+    "schema": {
+      "toolName": "bounce_recorder_tool",
+      "description": "Interactive Grade 6 science table for recording and comparing bounce heights of different materials. Includes a live bar chart and an inference prompt.",
+      "version": "1.0.0",
+      "subject": "Science — Materials Around Us",
+      "grade": 6,
+      "chapter": "Chapter 6 — Activity 6.4",
+      "textbook": "Curiosity | Textbook of Science | Grade 6 (NCERT, Reprint 2026-27)",
+  
+      "parameters": {
+        "width": {
+          "type": "number",
+          "default": 820,
+          "description": "Container width in px. Recommended range: 360–1200."
+        },
+        "height": {
+          "type": "number",
+          "default": 640,
+          "description": "Approximate container height in px. Layout is responsive."
+        },
+        "darkMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Toggle dark theme (reserved for future use; currently light-only)."
+        },
+        "themeColor": {
+          "type": "string",
+          "default": "#4A4DC9",
+          "description": "Primary accent color (hex). Aligns with the design system.",
+          "examples": ["#4A4DC9", "#533086", "#FC9145"]
+        },
+  
+        "additionalProps": {
+          "type": "object",
+          "description": "Dynamic content block for agent-customisable data.",
+          "properties": {
+            "dropHeightDefault": {
+              "type": "number",
+              "default": 100,
+              "description": "Default drop height (cm) applied to all rows if not overridden per row."
+            },
+            "rows": {
+              "type": "array",
+              "description": "List of material rows to display in the table. Defaults to Rubber / Plastic / Clay if omitted.",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "material": {
+                    "type": "string",
+                    "description": "Display name of the material.",
+                    "examples": ["Rubber", "Plastic", "Clay", "Steel", "Wood"]
+                  },
+                  "emoji": {
+                    "type": "string",
+                    "description": "Single emoji used as the ball icon in the table.",
+                    "examples": ["🔴", "🟡", "🟤", "⚪", "🔵"]
+                  },
+                  "dropHeight": {
+                    "type": "number",
+                    "description": "Height (cm) from which the ball is dropped. Shown as a sub-label.",
+                    "default": 100
+                  }
+                },
+                "required": ["material"]
+              },
+              "minItems": 1,
+              "maxItems": 6
+            }
+          }
+        }
+      },
+  
+      "additionalProps_examples": [
+        {
+          "scenario": "Default — three standard materials, 100 cm drop",
+          "additionalProps": {
+            "dropHeightDefault": 100,
+            "rows": [
+              { "material": "Rubber",  "emoji": "🔴", "dropHeight": 100 },
+              { "material": "Plastic", "emoji": "🟡", "dropHeight": 100 },
+              { "material": "Clay",    "emoji": "🟤", "dropHeight": 100 }
+            ]
+          }
+        },
+        {
+          "scenario": "Extended experiment — five materials, 80 cm drop",
+          "additionalProps": {
+            "dropHeightDefault": 80,
+            "rows": [
+              { "material": "Rubber",  "emoji": "🔴", "dropHeight": 80 },
+              { "material": "Plastic", "emoji": "🟡", "dropHeight": 80 },
+              { "material": "Clay",    "emoji": "🟤", "dropHeight": 80 },
+              { "material": "Steel",   "emoji": "⚪", "dropHeight": 80 },
+              { "material": "Wood",    "emoji": "🟫", "dropHeight": 80 }
+            ]
+          }
+        },
+        {
+          "scenario": "Varied drop heights for controlled variable experiment",
+          "additionalProps": {
+            "rows": [
+              { "material": "Rubber",  "emoji": "🔴", "dropHeight": 50  },
+              { "material": "Rubber",  "emoji": "🔴", "dropHeight": 100 },
+              { "material": "Rubber",  "emoji": "🔴", "dropHeight": 150 }
+            ]
+          }
+        },
+        {
+          "scenario": "Minimal — two materials only",
+          "additionalProps": {
+            "dropHeightDefault": 100,
+            "rows": [
+              { "material": "Tennis ball (rubber)", "emoji": "🎾", "dropHeight": 100 },
+              { "material": "Cricket ball",         "emoji": "🏏", "dropHeight": 100 }
+            ]
+          }
+        }
+      ]
+    },
+  
+    "agent_readme": {
+      "quick_reference": {
+        "trigger": "Student is doing Activity 6.4 (bounce experiment) from Chapter 6 of NCERT Grade 6 Science",
+        "tool": "bounce_recorder_tool",
+        "key_props": [
+          "additionalProps.rows — list of material rows",
+          "additionalProps.dropHeightDefault — shared drop height",
+          "width — responsive layout"
+        ]
+      },
+  
+      "decision_tree": {
+        "three_standard_materials": "Use default rows (Rubber, Plastic, Clay) at 100 cm",
+        "custom_materials": "Override rows[] array with material names, emojis, dropHeight",
+        "varied_heights": "Set different dropHeight per row to explore controlled-variable experiments",
+        "sports_ball_comparison": "Use Tennis ball (rubber) vs Cricket ball rows"
+      },
+  
+      "ui_features": [
+        "Live bar chart updates as student types bounce heights",
+        "Auto-detects bouncy (yes/no) based on value > 5 cm threshold",
+        "Trophy badge highlights best-bouncing material after all rows filled",
+        "Inference text area unlocks once all rows are complete",
+        "Inferred rule row appended automatically after submission",
+        "Animated ball icon next to each row",
+        "Progress bar tracks completion",
+        "Reset button clears all entries"
+      ],
+  
+      "design_system": {
+        "primary": "#4A4DC9",
+        "secondary": "#533086",
+        "accent": "#FC9145",
+        "highlight_light": "#C1C1EA",
+        "highlight_warm": "#FFF3E4",
+        "font_heading": "Baloo 2",
+        "font_body": "Nunito"
+      }
+    }
+  }

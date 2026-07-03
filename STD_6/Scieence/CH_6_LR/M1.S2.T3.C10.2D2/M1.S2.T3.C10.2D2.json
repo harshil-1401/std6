@@ -1,0 +1,141 @@
+{
+  "toolId": "M1.S2.T3.C10.2D2",
+  "title": "Drop test for bounce",
+  "subtype": "image_reveal/simulation",
+  "conceptId": "M1.S2.T3.C10",
+  "relatedConceptIds": [],
+  "module": "M1",
+  "placement": {
+    "beat": "Apply",
+    "where": "replaces the 'drop the balls and record the bounce' activity; students drop balls made of different materials from the same height to discover which materials are elastic and bounce"
+  },
+  "sharedState": {
+    "fields": [
+      "selectedId",
+      "tested",
+      "records",
+      "total",
+      "running",
+      "finished",
+      "bestBouncer",
+      "operatorMode"
+    ]
+  },
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": [
+        "{type:'ready', toolId}",
+        "{type:'state', state}",
+        "{type:'event', name, detail}",
+        "{type:'response', id, result}"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "select(id|[ids])",
+      "drop(id|[ids]) — THE do-verb: drop ball(s) and run the full bounce animation; id is 'tennis'|'exercise'|'cricket' or an array. No-op while a drop is already running.",
+      "reveal(id|[ids])"
+    ]
+  },
+  "studentControls": [
+    {
+      "control": "Tap a material swatch (tennis, exercise/foam, cricket) to select that ball",
+      "effect": "selects the ball and highlights it on the drop stage"
+    },
+    {
+      "control": "Drop the <ball> button",
+      "effect": "releases the selected ball from the fixed height, animates the fall + bounce + squash, draws a peak guide line and records the measured bounce height and level in the table"
+    },
+    {
+      "control": "Drop all together button",
+      "effect": "releases all three balls side by side at once so their bounce heights can be compared directly"
+    },
+    {
+      "control": "Reset button",
+      "effect": "clears all measured records and returns every ball to the release height"
+    },
+    {
+      "control": "Mute / unmute button (top-right)",
+      "effect": "toggles the drop/bounce/correct/completion sound cues"
+    }
+  ],
+  "answerKey": {
+    "rule": "All balls are the same size but made of different materials. The more elastic (springy) the material, the higher the ball bounces. The material an object is made of decides how it behaves.",
+    "dropHeightCm": 100,
+    "balls": {
+      "tennis": {
+        "name": "Tennis ball",
+        "material": "Rubber + felt",
+        "bounceFactor": 0.62,
+        "bounceHeightCm": 62,
+        "level": "High",
+        "bounces": true,
+        "reason": "Springy rubber stores energy on impact and pushes the ball back up — the most elastic, so it bounces highest."
+      },
+      "exercise": {
+        "name": "Hand exercise ball",
+        "material": "Soft foam",
+        "bounceFactor": 0.30,
+        "bounceHeightCm": 30,
+        "level": "Medium",
+        "bounces": true,
+        "reason": "Soft foam squashes a lot and absorbs some energy, giving a gentle, medium bounce."
+      },
+      "cricket": {
+        "name": "Cricket ball",
+        "material": "Cork + leather",
+        "bounceFactor": 0.18,
+        "bounceHeightCm": 18,
+        "level": "Low",
+        "bounces": false,
+        "reason": "Hard, dense cork barely deforms, so almost no energy returns — the least elastic, hardly bounces."
+      }
+    },
+    "bestBouncer": "tennis",
+    "bounceOrderHighToLow": ["tennis", "exercise", "cricket"],
+    "elasticMaterials": ["tennis", "exercise"],
+    "nonBouncingMaterial": "cricket",
+    "total": 3,
+    "stars": {
+      "3": "all 3 balls dropped/tested",
+      "2": "2 balls tested",
+      "1": "1 ball tested"
+    },
+    "operatorModes": ["ai", "student"],
+    "operatorModeNote": "ai = focused DEMO: the drop arena (phenomenon) AND the bounce-height read-out / results table stay visible, while the material swatches and Drop/Reset control bar are hidden and student inputs are inert (the agent drives via select()/drop()/reveal()/highlight()). student = full interactive controls. Default student."
+  },
+  "props": {
+    "defaults": {
+      "width": 0,
+      "height": 0,
+      "themeColor": "#533086",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false
+    },
+    "additionalProps": {}
+  },
+  "events": [
+    "ready",
+    "selected",
+    "dropped",
+    "measured",
+    "revealed",
+    "completed",
+    "reset",
+    "operator_mode_changed"
+  ],
+  "scientificFacts": [
+    "Objects of the same size made of different materials can behave very differently — for example, they bounce by different amounts.",
+    "An elastic material like rubber springs back to its shape after being squashed, so a rubber ball bounces high.",
+    "A hard, stiff material like cork barely changes shape on impact, so it bounces very little.",
+    "The material an object is made of decides many of its properties, including how much it bounces."
+  ]
+}

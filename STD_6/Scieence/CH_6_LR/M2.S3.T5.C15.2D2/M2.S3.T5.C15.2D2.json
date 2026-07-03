@@ -1,0 +1,144 @@
+{
+  "toolId": "M2.S3.T5.C15.2D2",
+  "title": "Press & Scratch Test",
+  "subtype": "simulation",
+  "conceptId": "M2.S3.T5.C15",
+  "relatedConceptIds": [],
+  "module": "M2",
+  "placement": {
+    "beat": "Apply",
+    "where": "Chapter 6 'Materials Around Us' · 6.3.2 Which materials are hard? (Activity 6.5). Students press and scratch each object to test it, then record whether it is hard or soft."
+  },
+  "sharedState": {
+    "fields": [
+      "tested",
+      "pressed",
+      "scratched",
+      "decisions",
+      "recorded",
+      "total",
+      "wrongTaps",
+      "finished",
+      "operatorMode"
+    ]
+  },
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": [
+        "{type:'ready', toolId}",
+        "{type:'state', state}",
+        "{type:'event', name, detail}",
+        "{type:'response', id, result}"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "press(id|array) — press object(s) to test softness/squishiness (soft ones visibly squish); id is 'mattress'|'sweater'|'soft_toy'|'steel_tumbler'|'wooden_table'|'brick' or an array.",
+      "scratch(id|array) — scratch object(s) to test hardness (soft ones get a mark); id is 'mattress'|'sweater'|'soft_toy'|'steel_tumbler'|'wooden_table'|'brick' or an array.",
+      "select(id|array)",
+      "tap(id|array)"
+    ]
+  },
+  "studentControls": [
+    {
+      "control": "Press an object (tap the object emoji)",
+      "effect": "the object squishes (soft) or keeps its shape (hard); the orange squish-meter fills to its softness; its material and a HARD/SOFT tag reveal"
+    },
+    {
+      "control": "Scratch an object (the 'scratch' button under each object)",
+      "effect": "a soft object picks up a visible red scratch mark; a hard object resists; reveals its material/tag"
+    },
+    {
+      "control": "Record Hard / Soft per object in the table",
+      "effect": "a correct tap locks in with a green glow and ✓; a wrong tap shakes the row, increments retries, and gives a hint"
+    },
+    {
+      "control": "Reset / Test again button",
+      "effect": "clears all presses, scratches and recorded decisions and reshuffles the table order"
+    },
+    {
+      "control": "Mute / unmute button (top-right)",
+      "effect": "toggles the press/scratch/correct/wrong/completion sound cues"
+    }
+  ],
+  "answerKey": {
+    "objects": {
+      "mattress": "soft",
+      "sweater": "soft",
+      "soft_toy": "soft",
+      "steel_tumbler": "hard",
+      "wooden_table": "hard",
+      "brick": "hard"
+    },
+    "materials": {
+      "mattress": "Foam",
+      "sweater": "Wool",
+      "soft_toy": "Cotton",
+      "steel_tumbler": "Steel",
+      "wooden_table": "Wood",
+      "brick": "Baked clay"
+    },
+    "validArgIds": [
+      "mattress",
+      "sweater",
+      "soft_toy",
+      "steel_tumbler",
+      "wooden_table",
+      "brick"
+    ],
+    "soft": [
+      "mattress",
+      "sweater",
+      "soft_toy"
+    ],
+    "hard": [
+      "steel_tumbler",
+      "wooden_table",
+      "brick"
+    ],
+    "total": 6,
+    "rule": "An object keeps its shape when pressed if it is hard, and changes shape if it is soft. A scratch test agrees: a softer surface is marked more easily. Whether an object is hard or soft is decided by the material it is made of (NCERT Class 6, Chapter 6, p.107).",
+    "verbNotes": "press(id|array) and scratch(id|array) run the physical test; select(id|array) / tap(id|array) records the table decision. select accepts a bare id (uses the correct hardness) or {id, choice:'hard'|'soft'}. All 'do' verbs accept a single id OR an array to credit several objects at once.",
+    "operatorModes": [
+      "ai",
+      "student"
+    ],
+    "operatorModeNote": "ai = focused demo: the press/scratch phenomenon and the read-out stay visible, but the per-object scratch buttons, the Record Hard/Soft taps and the bottom action bar go inert (the agent drives via press()/scratch()/select()/highlight()); a '👩‍🏫 watch' caption + chip show. student = full interactive controls. Default student."
+  },
+  "props": {
+    "defaults": {
+      "width": 860,
+      "height": 0,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false
+    },
+    "additionalProps": {
+      "seed": 7
+    }
+  },
+  "events": [
+    "ready",
+    "pressed",
+    "scratched",
+    "answer_correct",
+    "answer_incorrect",
+    "completed",
+    "reset",
+    "operator_mode_changed"
+  ],
+  "scientificFacts": [
+    "Objects are made of materials, and the material decides whether an object is hard or soft.",
+    "A hard object (steel, wood, baked clay) keeps its shape when you press it.",
+    "A soft object (foam, wool, cotton) changes its shape easily when pressed and is scratched more easily.",
+    "Hardness is a property of the material, not of the object's size or weight."
+  ]
+}

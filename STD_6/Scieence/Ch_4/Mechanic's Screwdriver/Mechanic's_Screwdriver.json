@@ -1,0 +1,84 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Fix the Mechanic's Problem!",
+    "data": {
+      "toolName": "magnetise_screwdriver_tool",
+      "parameters": {
+        "width": 720,
+        "height": 680,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "animationSpeed": 1,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "title": "🔧 Fix the Mechanic's Problem!",
+          "subtitle": "Help the mechanic keep screws on the screwdriver.",
+          "showHint": true,
+          "mechanicName": "Mechanic"
+        }
+      }
+    },
+    "instructions_for_student": "Watch the mechanic's screws falling off the screwdriver. Then choose the best solution from the three cards. If you pick 'Magnetise the screwdriver tip', watch the screwdriver being magnetised by stroking it with a bar magnet — then the screw sticks to the tip all by itself!",
+    "learning_objectives": [
+      "Understand that steel is a magnetic material and can be attracted to magnets",
+      "Apply the magnetising-by-stroking method (Activity 4.4) to a real-life problem",
+      "Understand that magnetising a screwdriver tip makes screws stick to it",
+      "Reinforce the concept that magnetic force can hold objects without glue or mechanical grip"
+    ],
+    "correct_answer": {
+      "card_id": "magnetise",
+      "label": "Magnetise the screwdriver tip",
+      "explanation": "Steel is a magnetic material. Stroking the screwdriver tip with a bar magnet 30–40 times (same direction each time) magnetises the tip — just like in Activity 4.4. Screws then stick to the tip on their own."
+    },
+    "wrong_answers": [
+      {
+        "card_id": "glue",
+        "label": "Use glue on the screw",
+        "hint": "Glue would permanently attach the screw and make it impossible to remove later — not useful for a mechanic!"
+      },
+      {
+        "card_id": "bigger",
+        "label": "Use a bigger screwdriver",
+        "hint": "A bigger screwdriver doesn't solve the problem — screws will still fall off unless there's a magnetic attraction."
+      }
+    ],
+    "chapter_reference": {
+      "textbook": "Curiosity — Textbook of Science",
+      "grade": 6,
+      "chapter": 4,
+      "chapter_title": "Exploring Magnets",
+      "section": "4.1 Magnetic and Non-magnetic Materials + 4.4 Constructing a Compass",
+      "activity": "Activity 4.4 — Making an iron needle a magnet (stroking method)",
+      "exercise_question": "Q9 — Mechanic's screwdriver problem"
+    },
+    "theme": {
+      "primary": "#f59e0b",
+      "primaryDark": "#b45309",
+      "primaryLight": "#fef3c7",
+      "purple": "#533086",
+      "purpleLight": "#C1C1EA",
+      "orange": "#FC9145",
+      "font_heading": "Fredoka One",
+      "font_body": "Nunito"
+    },
+    "agent_notes": {
+      "tool_description": "Problem-solving tool where Grade 6 students see a mechanic's screw falling off and must choose the correct solution from 3 cards. Correct answer triggers a stroke-by-stroke magnetising animation (35 strokes counted on screen) ending with the screw sticking to the magnetised screwdriver tip.",
+      "phases": [
+        "problem — 2.2s auto-intro showing falling screw animation",
+        "choosing — 3 solution cards appear with slide-in animation",
+        "wrong — shake animation + hint text about magnetic materials + Try Again button",
+        "correct_anim — stroke counter 1→35 with bar magnet animation, then screw sticks",
+        "success — celebration panel with key learning, chapter reference, stars"
+      ],
+      "customisation_via_additionalProps": {
+        "title": "string — header title",
+        "subtitle": "string — subtitle below header",
+        "showHint": "boolean — show/hide the hint button (default true)",
+        "mechanicName": "string — name label for the mechanic character"
+      }
+    }
+  }

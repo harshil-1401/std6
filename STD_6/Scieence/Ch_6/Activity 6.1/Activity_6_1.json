@@ -1,0 +1,176 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Activity 6.1 — Identify Materials",
+    "data": {
+      "toolName": "activity_61_table",
+      "parameters": {
+        "width": 1100,
+        "height": 700,
+        "themeColor": "#4A4DC9",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "animationSpeed": 1,
+        "additionalProps": {
+          "title": "Activity 6.1: Let us Identify",
+          "tableTitle": "Table 6.1: Identify Materials",
+          "tiles": [
+            {
+              "id": "water_bottle",
+              "label": "Water Bottle",
+              "emoji": "🍼",
+              "suggestedMaterials": ["plastic", "metal"]
+            },
+            {
+              "id": "eraser",
+              "label": "Eraser",
+              "emoji": "🧹",
+              "suggestedMaterials": ["rubber"]
+            },
+            {
+              "id": "schoolbag",
+              "label": "School Bag",
+              "emoji": "🎒",
+              "suggestedMaterials": ["cloth", "metal"]
+            },
+            {
+              "id": "matka",
+              "label": "Matka (Clay Pot)",
+              "emoji": "🏺",
+              "suggestedMaterials": ["clay"]
+            },
+            {
+              "id": "pen",
+              "label": "Pen",
+              "emoji": "🖊️",
+              "suggestedMaterials": ["plastic", "metal", "ink"]
+            },
+            {
+              "id": "notebook",
+              "label": "Notebook",
+              "emoji": "📓",
+              "suggestedMaterials": ["paper"]
+            },
+            {
+              "id": "handkerchief",
+              "label": "Handkerchief",
+              "emoji": "🧣",
+              "suggestedMaterials": ["cloth"]
+            },
+            {
+              "id": "steel_tumbler",
+              "label": "Steel Tumbler",
+              "emoji": "🥤",
+              "suggestedMaterials": ["metal", "steel"]
+            },
+            {
+              "id": "clay_diya",
+              "label": "Clay Diya",
+              "emoji": "🪔",
+              "suggestedMaterials": ["clay", "terracotta"]
+            },
+            {
+              "id": "window_pane",
+              "label": "Window Pane",
+              "emoji": "🪟",
+              "suggestedMaterials": ["glass", "wood", "metal"]
+            },
+            {
+              "id": "newspaper",
+              "label": "Newspaper",
+              "emoji": "📰",
+              "suggestedMaterials": ["paper"]
+            },
+            {
+              "id": "plastic_chair",
+              "label": "Plastic Chair",
+              "emoji": "🪑",
+              "suggestedMaterials": ["plastic"]
+            },
+            {
+              "id": "chalk",
+              "label": "Chalk",
+              "emoji": "🪨",
+              "suggestedMaterials": ["calcium carbonate", "mineral"]
+            },
+            {
+              "id": "wooden_ruler",
+              "label": "Wooden Ruler",
+              "emoji": "📏",
+              "suggestedMaterials": ["wood"]
+            },
+            {
+              "id": "metal_key",
+              "label": "Metal Key",
+              "emoji": "🔑",
+              "suggestedMaterials": ["metal"]
+            }
+          ]
+        }
+      }
+    },
+    "instructions_for_student": "Drag each object tile from the left panel into the 'I observe' column of the table. Then type or select the material(s) it is made of in the right column. Objects with multiple materials — like a pen (plastic + metal + ink) or a school bag (cloth + metal) — can have more than one material chip. Use the orange suggestion buttons as hints. Fill all 15 rows to complete the activity!",
+    "agent_readme": {
+      "tool_name": "activity_61_table",
+      "description": "Interactive drag-and-fill recreation of NCERT Class 6 Science Activity 6.1. Students drag object tiles from a tray panel into a two-column table, then enter material names as chips. Supports multi-material entries, suggestion hints, tap-to-place on mobile, and a completion banner.",
+      "additionalProps_schema": {
+        "title": {
+          "type": "string",
+          "description": "Page heading shown above the activity",
+          "default": "Activity 6.1: Let us Identify"
+        },
+        "tableTitle": {
+          "type": "string",
+          "description": "Title shown inside the table header bar",
+          "default": "Table 6.1: Identify Materials"
+        },
+        "tiles": {
+          "type": "array",
+          "description": "List of object tiles shown in the tray. One tile per table row.",
+          "item_schema": {
+            "id": "string — unique identifier (no spaces, use underscore)",
+            "label": "string — display name on the tile",
+            "emoji": "string — emoji representing the object",
+            "suggestedMaterials": "string[] — hint chips shown when tile is placed (orange suggestion buttons)"
+          }
+        }
+      },
+      "interaction_modes": {
+        "desktop": "Drag tile from tray → drop onto empty row in table → type material in input field → press Enter or click + to add chip",
+        "mobile": "Tap tile to select (orange highlight) → tap empty row to place → type material or tap suggestion chips"
+      },
+      "color_system": {
+        "primary_purple": "#4A4DC9",
+        "primary_orange": "#FC9145",
+        "deep_purple": "#533086",
+        "light_purple": "#C1C1EA",
+        "light_orange": "#FFF3E4",
+        "font": "Poppins"
+      },
+      "tool_call_examples": [
+        {
+          "scenario": "Default — all 15 NCERT objects from chapter 6",
+          "parameters": {
+            "additionalProps": {
+              "title": "Activity 6.1: Let us Identify"
+            }
+          }
+        },
+        {
+          "scenario": "Custom subset — kitchen objects only",
+          "parameters": {
+            "additionalProps": {
+              "title": "Kitchen Objects Activity",
+              "tableTitle": "Table: Kitchen Materials",
+              "tiles": [
+                { "id": "pot",     "label": "Cooking Pot",    "emoji": "🍲", "suggestedMaterials": ["metal", "steel"] },
+                { "id": "plate",   "label": "Steel Plate",    "emoji": "🍽️", "suggestedMaterials": ["metal", "steel"] },
+                { "id": "glass",   "label": "Glass Tumbler",  "emoji": "🥛", "suggestedMaterials": ["glass"] },
+                { "id": "mat",     "label": "Table Mat",      "emoji": "🪣", "suggestedMaterials": ["cloth", "plastic"] }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  }

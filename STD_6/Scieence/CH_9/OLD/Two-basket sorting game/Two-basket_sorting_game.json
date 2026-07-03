@@ -1,0 +1,155 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Activity 9.6 — Separation Methods Sorter",
+    "data": {
+      "toolName": "separation_methods_sorter",
+      "parameters": {
+        "width": 900,
+        "height": 650,
+        "showNavigation": true,
+        "showStepIndicator": true,
+        "animationSpeed": 1,
+        "themeColor": "#4A4DC9",
+        "darkMode": false,
+        "additionalProps": {
+          "initialStep": 0,
+          "cards": [
+            { "id": 1, "text": "Separating small stones from pulses", "emoji": "🪨", "correctBasket": "remove", "method": "Handpicking" },
+            { "id": 2, "text": "Churning curd to obtain butter", "emoji": "🧈", "correctBasket": "separate", "method": "Churning" },
+            { "id": 3, "text": "Taking out green chillies from cooked dalia or poha", "emoji": "🌶️", "correctBasket": "remove", "method": "Handpicking" },
+            { "id": 4, "text": "Taking out seeds from watermelon", "emoji": "🍉", "correctBasket": "remove", "method": "Handpicking" },
+            { "id": 5, "text": "Sorting sawdust and iron nails from building material", "emoji": "🔩", "correctBasket": "separate", "method": "Magnetic Separation" },
+            { "id": 6, "text": "Picking marigold flowers from a heap to make a garland", "emoji": "🌼", "correctBasket": "separate", "method": "Handpicking" },
+            { "id": 7, "text": "Separating pebbles from sand", "emoji": "🏖️", "correctBasket": "separate", "method": "Sieving" },
+            { "id": 8, "text": "Separating coconut pieces from rice flour", "emoji": "🥥", "correctBasket": "separate", "method": "Sieving" },
+            { "id": 9, "text": "Separating oil from water", "emoji": "🫙", "correctBasket": "separate", "method": "Decantation" },
+            { "id": 10, "text": "Separating salt from salt solution", "emoji": "🧂", "correctBasket": "separate", "method": "Evaporation" }
+          ],
+          "baskets": {
+            "remove": {
+              "label": "Remove unwanted component",
+              "description": "One component is unwanted and should be removed",
+              "icon": "🗑️"
+            },
+            "separate": {
+              "label": "Separate two useful components",
+              "description": "Both components are useful and need to be separated",
+              "icon": "🧺"
+            }
+          }
+        }
+      }
+    },
+    "schema": {
+      "toolName": "separation_methods_sorter",
+      "version": "1.0.0",
+      "description": "Interactive 5-step drag-and-drop activity for NCERT Grade 6 Science Chapter 9 (Methods of Separation in Everyday Life). Students sort 10 real-life scenarios into two baskets based on the purpose of separation.",
+      "curriculum": {
+        "grade": 6,
+        "subject": "Science",
+        "textbook": "Curiosity",
+        "chapter": 9,
+        "chapterTitle": "Methods of Separation in Everyday Life",
+        "activity": "Activity 9.6 — Let us play",
+        "board": "NCERT/CBSE"
+      },
+      "steps": [
+        {
+          "id": 0,
+          "name": "Introduction",
+          "description": "Shows all 10 separation scenario cards and the two basket types with clear labels"
+        },
+        {
+          "id": 1,
+          "name": "Prediction",
+          "description": "Students tap each card to register that they've considered its placement before sorting"
+        },
+        {
+          "id": 2,
+          "name": "Sort Cards 1–5",
+          "description": "Drag-and-drop or tap-to-select first 5 cards into baskets. Instant correct/wrong feedback per card."
+        },
+        {
+          "id": 3,
+          "name": "Sort Cards 6–10",
+          "description": "Drag-and-drop or tap-to-select second 5 cards. Same feedback mechanism."
+        },
+        {
+          "id": 4,
+          "name": "Summary & Score",
+          "description": "Final score out of 10, method revealed per card, key conceptual insight shown"
+        }
+      ],
+      "correctAnswers": {
+        "remove_basket": [1, 3, 4],
+        "separate_basket": [2, 5, 6, 7, 8, 9, 10]
+      },
+      "parameters": {
+        "width": { "type": "number", "default": 900, "description": "Component width in px" },
+        "height": { "type": "number", "default": 650, "description": "Component min-height in px" },
+        "showNavigation": { "type": "boolean", "default": true, "description": "Show prev/next nav buttons" },
+        "showStepIndicator": { "type": "boolean", "default": true, "description": "Show step dot indicator in header" },
+        "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Primary brand color (Singularity blue)" },
+        "darkMode": { "type": "boolean", "default": false, "description": "Toggle dark theme" },
+        "animationSpeed": { "type": "number", "default": 1, "description": "Animation speed multiplier" },
+        "additionalProps": {
+          "type": "object",
+          "description": "Tool-specific data",
+          "properties": {
+            "initialStep": { "type": "number", "default": 0, "description": "Override starting step (0–4)" },
+            "cards": {
+              "type": "array",
+              "description": "Override or extend the 10 scenario cards",
+              "items": {
+                "id": "number",
+                "text": "string",
+                "emoji": "string",
+                "correctBasket": "'remove' | 'separate'",
+                "method": "string"
+              }
+            }
+          }
+        }
+      },
+      "agent_examples": [
+        {
+          "title": "Default full activity",
+          "description": "Launch the full 5-step activity with all defaults",
+          "parameters": {
+            "additionalProps": {}
+          }
+        },
+        {
+          "title": "Dark mode version",
+          "description": "Same tool in dark mode for night use",
+          "parameters": {
+            "darkMode": true,
+            "additionalProps": {}
+          }
+        },
+        {
+          "title": "Jump to sorting step",
+          "description": "Skip introduction, start directly at first sort",
+          "parameters": {
+            "additionalProps": { "initialStep": 2 }
+          }
+        },
+        {
+          "title": "Compact mobile view",
+          "description": "Narrower width for mobile screens",
+          "parameters": {
+            "width": 420,
+            "height": 700,
+            "additionalProps": {}
+          }
+        }
+      ]
+    },
+    "instructions_for_student": "In Activity 9.6, you need to decide WHY we separate substances — is it to remove something unwanted, or to get two useful things apart? Drag each card into the correct basket and find out your score at the end!",
+    "learning_outcomes": [
+      "Distinguish between the two purposes of separation: removing unwanted components vs. separating two useful components",
+      "Apply this understanding to 10 real-life scenarios from the NCERT textbook",
+      "Reinforce knowledge of separation methods: handpicking, churning, magnetic separation, sieving, decantation, evaporation"
+    ]
+  }
+  

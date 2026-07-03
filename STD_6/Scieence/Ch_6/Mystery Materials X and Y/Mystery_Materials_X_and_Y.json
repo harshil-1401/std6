@@ -1,0 +1,449 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "title": "DecisionTreeTool Configuration",
+    "description": "Schema and example configurations for the binary decision tree material identifier (NCERT Grade 6 – Chapter 6: Materials Around Us)",
+    "toolName": "decision_tree_tool",
+  
+    "props": {
+      "width": {
+        "type": "number",
+        "default": 760,
+        "description": "Max pixel width of the tool container"
+      },
+      "height": {
+        "type": "number",
+        "default": null,
+        "description": "Height is fluid (100dvh). Pass a fixed number only for iframe embeds."
+      },
+      "themeColor": {
+        "type": "string",
+        "default": "#533086",
+        "description": "Override the primary gradient start colour"
+      },
+      "darkMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Not yet used; reserved for future dark-mode toggle"
+      },
+      "additionalProps": {
+        "type": "object",
+        "description": "Dynamic agent-provided content; see additionalProps schema below",
+        "properties": {
+          "materialX": { "$ref": "#/definitions/MaterialOverride" },
+          "materialY": { "$ref": "#/definitions/MaterialOverride" }
+        }
+      }
+    },
+  
+    "definitions": {
+      "MaterialOverride": {
+        "type": "object",
+        "description": "Partial override for one mystery material. Unset keys fall back to the default.",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Display name shown after reveal, e.g. 'Common Salt (NaCl)'"
+          },
+          "emoji": {
+            "type": "string",
+            "description": "Single emoji representing the material, e.g. '🧂'"
+          },
+          "description": {
+            "type": "string",
+            "description": "One-sentence fact shown inside the tile after reveal"
+          },
+          "color": {
+            "type": "string",
+            "description": "Hex accent colour for this tile (unused in current design but kept for future use)"
+          },
+          "properties": {
+            "type": "object",
+            "description": "The four answerable properties that drive the decision tree",
+            "required": ["hardness", "solubility", "lustre", "mass"],
+            "properties": {
+              "hardness": {
+                "type": "string",
+                "enum": ["hard", "soft"],
+                "description": "Can the material be scratched / compressed easily?"
+              },
+              "solubility": {
+                "type": "string",
+                "enum": ["soluble", "insoluble"],
+                "description": "Does the material dissolve in water?"
+              },
+              "lustre": {
+                "type": "string",
+                "enum": ["lustrous", "non-lustrous"],
+                "description": "Does the material have a shiny metallic surface?"
+              },
+              "mass": {
+                "type": "string",
+                "enum": ["heavy", "light"],
+                "description": "Is the material noticeably heavy relative to its size?"
+              }
+            }
+          }
+        }
+      }
+    },
+  
+    "questions": [
+      {
+        "id": "hardness",
+        "label": "Is it Hard or Soft?",
+        "icon": "🪨",
+        "property": "hardness",
+        "options": [
+          { "label": "Hard",  "value": "hard",  "icon": "💎" },
+          { "label": "Soft",  "value": "soft",  "icon": "🧸" }
+        ]
+      },
+      {
+        "id": "solubility",
+        "label": "Does it dissolve in water?",
+        "icon": "💧",
+        "property": "solubility",
+        "options": [
+          { "label": "Soluble",   "value": "soluble",   "icon": "✨" },
+          { "label": "Insoluble", "value": "insoluble", "icon": "🚫" }
+        ]
+      },
+      {
+        "id": "lustre",
+        "label": "Does it shine / have lustre?",
+        "icon": "✨",
+        "property": "lustre",
+        "options": [
+          { "label": "Lustrous",     "value": "lustrous",     "icon": "⭐" },
+          { "label": "Non-lustrous", "value": "non-lustrous", "icon": "🪨" }
+        ]
+      },
+      {
+        "id": "mass",
+        "label": "Is it Heavy or Light?",
+        "icon": "⚖️",
+        "property": "mass",
+        "options": [
+          { "label": "Heavy", "value": "heavy", "icon": "🏋️" },
+          { "label": "Light", "value": "light", "icon": "🪶" }
+        ]
+      }
+    ],
+  
+    "defaultMaterials": {
+      "X": {
+        "name": "Salt (NaCl)",
+        "emoji": "🧂",
+        "description": "Salt is a hard crystalline material that dissolves easily in water. It has no metallic shine and is relatively lightweight.",
+        "color": "#4A4DC9",
+        "properties": {
+          "hardness":   "hard",
+          "solubility": "soluble",
+          "lustre":     "non-lustrous",
+          "mass":       "light"
+        }
+      },
+      "Y": {
+        "name": "Iron Nail",
+        "emoji": "🔩",
+        "description": "An iron nail is hard and heavy. It does not dissolve in water and has a shiny metallic lustre.",
+        "color": "#533086",
+        "properties": {
+          "hardness":   "hard",
+          "solubility": "insoluble",
+          "lustre":     "lustrous",
+          "mass":       "heavy"
+        }
+      }
+    },
+  
+    "agentExamples": [
+      {
+        "_comment": "Example 1 – Default (salt vs iron nail)",
+        "frontend_action": "show_interactive_tool",
+        "title": "Identify the Mystery Materials",
+        "instructions_for_student": "Pick property questions one by one. After four questions per tile, the tool will reveal X and Y!",
+        "data": {
+          "toolName": "decision_tree_tool",
+          "parameters": {}
+        }
+      },
+      {
+        "_comment": "Example 2 – Sugar vs Copper Wire",
+        "frontend_action": "show_interactive_tool",
+        "title": "Sugar or Copper? You Decide!",
+        "instructions_for_student": "Answer 4 property questions for Mystery X and then Mystery Y to reveal both materials!",
+        "data": {
+          "toolName": "decision_tree_tool",
+          "parameters": {
+            "additionalProps": {
+              "materialX": {
+                "name": "Sugar",
+                "emoji": "🍬",
+                "description": "Sugar is a soft white crystal that dissolves quickly in water. It has no metallic shine and feels light.",
+                "properties": {
+                  "hardness":   "soft",
+                  "solubility": "soluble",
+                  "lustre":     "non-lustrous",
+                  "mass":       "light"
+                }
+              },
+              "materialY": {
+                "name": "Copper Wire",
+                "emoji": "🔶",
+                "description": "Copper is a hard, heavy metal. It does not dissolve in water and has a bright reddish-orange metallic lustre.",
+                "properties": {
+                  "hardness":   "hard",
+                  "solubility": "insoluble",
+                  "lustre":     "lustrous",
+                  "mass":       "heavy"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "_comment": "Example 3 – Chalk vs Aluminium Foil",
+        "frontend_action": "show_interactive_tool",
+        "title": "Chalk vs Aluminium Foil",
+        "instructions_for_student": "Use the four property questions to figure out what X and Y are!",
+        "data": {
+          "toolName": "decision_tree_tool",
+          "parameters": {
+            "additionalProps": {
+              "materialX": {
+                "name": "Chalk",
+                "emoji": "🖍️",
+                "description": "Chalk is a soft white material. It does not dissolve in water, has no lustre, and is light.",
+                "properties": {
+                  "hardness":   "soft",
+                  "solubility": "insoluble",
+                  "lustre":     "non-lustrous",
+                  "mass":       "light"
+                }
+              },
+              "materialY": {
+                "name": "Aluminium Foil",
+                "emoji": "🪙",
+                "description": "Aluminium foil is a thin, soft metal sheet. It does not dissolve in water but has a bright metallic lustre and is very light.",
+                "properties": {
+                  "hardness":   "soft",
+                  "solubility": "insoluble",
+                  "lustre":     "lustrous",
+                  "mass":       "light"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "_comment": "Example 4 – Wood vs Gold",
+        "frontend_action": "show_interactive_tool",
+        "title": "Wood or Gold?",
+        "instructions_for_student": "Can you tell wood from gold using only 4 properties?",
+        "data": {
+          "toolName": "decision_tree_tool",
+          "parameters": {
+            "additionalProps": {
+              "materialX": {
+                "name": "Wood",
+                "emoji": "🪵",
+                "description": "Wood is a hard, non-lustrous, insoluble, and light material used in furniture and buildings.",
+                "properties": {
+                  "hardness":   "hard",
+                  "solubility": "insoluble",
+                  "lustre":     "non-lustrous",
+                  "mass":       "light"
+                }
+              },
+              "materialY": {
+                "name": "Gold",
+                "emoji": "🥇",
+                "description": "Gold is a hard, lustrous metal. It does not dissolve in water and is heavy.",
+                "properties": {
+                  "hardness":   "hard",
+                  "solubility": "insoluble",
+                  "lustre":     "lustrous",
+                  "mass":       "heavy"
+                }
+              }
+            }
+          }
+        }
+      },
+      {
+        "_comment": "Example 5 – Rubber Eraser vs Steel Key",
+        "frontend_action": "show_interactive_tool",
+        "title": "Eraser vs Steel Key",
+        "instructions_for_student": "Use the property questions to classify these everyday objects!",
+        "data": {
+          "toolName": "decision_tree_tool",
+          "parameters": {
+            "additionalProps": {
+              "materialX": {
+                "name": "Rubber Eraser",
+                "emoji": "🧹",
+                "description": "A rubber eraser is soft, light, non-lustrous, and does not dissolve in water.",
+                "properties": {
+                  "hardness":   "soft",
+                  "solubility": "insoluble",
+                  "lustre":     "non-lustrous",
+                  "mass":       "light"
+                }
+              },
+              "materialY": {
+                "name": "Steel Key",
+                "emoji": "🗝️",
+                "description": "A steel key is hard, heavy, lustrous, and does not dissolve in water.",
+                "properties": {
+                  "hardness":   "hard",
+                  "solubility": "insoluble",
+                  "lustre":     "lustrous",
+                  "mass":       "heavy"
+                }
+              }
+            }
+          }
+        }
+      }
+    ],
+  
+    "designTokens": {
+      "_source": "Singularity_tool_Design_1.pdf",
+      "font": "Poppins",
+      "colors": {
+        "primaryBlue":  "#4A4DC9",
+        "primaryOrange":"#FF7212",
+        "gradStart":    "#533086",
+        "gradEnd":      "#FC9145",
+        "dark":         "#4E4E4E",
+        "mid":          "#CACACA",
+        "light":        "#EBEBEB",
+        "lightest":     "#F5F5F5",
+        "accentPurple": "#C1C1EA",
+        "accentPeach":  "#FFF3E4",
+        "white":        "#FFFFFF"
+      },
+      "buttonStates": ["Enabled", "Disabled", "Hover", "Pressed"],
+      "buttonVariants": ["Contained", "Outlined", "Texted"]
+    },
+  
+    "decisionTree": {
+      "_comment": "Logical decision tree used to identify materials; driven by the four property questions in order",
+      "root": {
+        "property": "hardness",
+        "branches": {
+          "hard": {
+            "property": "solubility",
+            "branches": {
+              "soluble": {
+                "property": "lustre",
+                "branches": {
+                  "lustrous": {
+                    "property": "mass",
+                    "branches": {
+                      "heavy": "Possibly: Gold, Iron, Brass",
+                      "light": "Possibly: Zinc, Aluminium"
+                    }
+                  },
+                  "non-lustrous": {
+                    "property": "mass",
+                    "branches": {
+                      "heavy": "Possibly: Stone salt",
+                      "light": "Possibly: Common Salt, Glucose"
+                    }
+                  }
+                }
+              },
+              "insoluble": {
+                "property": "lustre",
+                "branches": {
+                  "lustrous": {
+                    "property": "mass",
+                    "branches": {
+                      "heavy": "Possibly: Iron, Steel, Copper",
+                      "light": "Possibly: Aluminium Foil"
+                    }
+                  },
+                  "non-lustrous": {
+                    "property": "mass",
+                    "branches": {
+                      "heavy": "Possibly: Stone, Brick",
+                      "light": "Possibly: Wood, Chalk"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "soft": {
+            "property": "solubility",
+            "branches": {
+              "soluble": {
+                "property": "lustre",
+                "branches": {
+                  "lustrous": {
+                    "property": "mass",
+                    "branches": {
+                      "heavy": "Possibly: Tin (soft form)",
+                      "light": "Possibly: Wax (light form)"
+                    }
+                  },
+                  "non-lustrous": {
+                    "property": "mass",
+                    "branches": {
+                      "heavy": "Possibly: Heavy sugar crystals",
+                      "light": "Possibly: Sugar, Powdered salt"
+                    }
+                  }
+                }
+              },
+              "insoluble": {
+                "property": "lustre",
+                "branches": {
+                  "lustrous": {
+                    "property": "mass",
+                    "branches": {
+                      "heavy": "Possibly: Lead sheet",
+                      "light": "Possibly: Aluminium Foil (crumpled)"
+                    }
+                  },
+                  "non-lustrous": {
+                    "property": "mass",
+                    "branches": {
+                      "heavy": "Possibly: Clay, Mud",
+                      "light": "Possibly: Rubber, Sponge, Cotton, Paper"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+  
+    "agentReadme": {
+      "quickReference": {
+        "commonSalt":       { "hardness": "hard", "solubility": "soluble",   "lustre": "non-lustrous", "mass": "light"  },
+        "iron":             { "hardness": "hard", "solubility": "insoluble",  "lustre": "lustrous",     "mass": "heavy"  },
+        "sugar":            { "hardness": "soft", "solubility": "soluble",    "lustre": "non-lustrous", "mass": "light"  },
+        "copper":           { "hardness": "hard", "solubility": "insoluble",  "lustre": "lustrous",     "mass": "heavy"  },
+        "wood":             { "hardness": "hard", "solubility": "insoluble",  "lustre": "non-lustrous", "mass": "light"  },
+        "chalk":            { "hardness": "soft", "solubility": "insoluble",  "lustre": "non-lustrous", "mass": "light"  },
+        "aluminium":        { "hardness": "soft", "solubility": "insoluble",  "lustre": "lustrous",     "mass": "light"  },
+        "rubber":           { "hardness": "soft", "solubility": "insoluble",  "lustre": "non-lustrous", "mass": "light"  },
+        "gold":             { "hardness": "hard", "solubility": "insoluble",  "lustre": "lustrous",     "mass": "heavy"  },
+        "steel":            { "hardness": "hard", "solubility": "insoluble",  "lustre": "lustrous",     "mass": "heavy"  }
+      },
+      "tips": [
+        "Always supply BOTH materialX and materialY to avoid fallback defaults.",
+        "The four property keys (hardness, solubility, lustre, mass) are REQUIRED inside properties.",
+        "Use descriptive description strings — they appear on the reveal panel.",
+        "Emoji pairs that are visually distinct improve student engagement.",
+        "For simple demos, leave additionalProps empty — defaults to Salt vs Iron Nail."
+      ]
+    }
+  }

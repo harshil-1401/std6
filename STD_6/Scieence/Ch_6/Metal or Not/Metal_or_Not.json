@@ -1,0 +1,147 @@
+{
+    "componentName": "MetalCoatingQuiz",
+    "componentFile": "metal_coating_quiz.tsx",
+    "chapter": "Chapter 6 — Materials Around Us",
+    "section": "6.3.1 Observe and identify appearance of materials",
+    "grade": "Grade 6 — Curiosity, Science (NCERT)",
+    "learningObjective": "Distinguish between genuine metals and non-metals that only appear metallic due to coatings (paint, lacquer, foil, wax, polish). Understand the scratch-test rule: only a metal is metal all the way through.",
+    "coatingRule": "A coating (paint, lacquer, foil, wax) can make any material look lustrous. The scratch test reveals the truth — only a metal is metal all the way through.",
+  
+    "props": {
+      "width": 860,
+      "animationSpeed": 1,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "additionalProps": {
+        "enableTimer": true,
+        "shuffleSeed": 77,
+        "items": [
+          {
+            "id": "q1",
+            "name": "Brass Utensil",
+            "emoji": "🥣",
+            "description": "A shiny brass bowl used in the kitchen — it clangs when tapped.",
+            "isMetal": true,
+            "correctReason": "✅ Brass IS a metal (an alloy of copper + zinc). Its shine is natural lustre, not a coating.",
+            "wrongHint": "💡 Brass is a real metal — an alloy of copper and zinc. The shine is genuine lustre!",
+            "coatingTrick": false
+          },
+          {
+            "id": "q2",
+            "name": "Silver-Painted Plastic Bangle",
+            "emoji": "💿",
+            "description": "Looks exactly like a silver bangle — shiny, smooth, cool to touch.",
+            "isMetal": false,
+            "correctReason": "✅ NOT a metal! Scratch the surface and you find plastic underneath. The silver look is just paint.",
+            "wrongHint": "💡 Looks metallic, but 'all that glitters is not gold'! Scratch it — you'll find plastic under the silver paint.",
+            "coatingTrick": true
+          },
+          {
+            "id": "q3",
+            "name": "Chocolate Foil Wrapper",
+            "emoji": "🍫",
+            "description": "The shiny wrapper from a chocolate bar — thin, crinkly, reflective.",
+            "isMetal": false,
+            "correctReason": "✅ NOT a metal! The outer shiny layer is metallic foil, but scratch it and you reach paper or plastic underneath.",
+            "wrongHint": "💡 The top layer looks metallic, but most chocolate wrappers are paper or plastic with a thin foil coating — not a solid metal!",
+            "coatingTrick": true
+          },
+          {
+            "id": "q4",
+            "name": "Copper Wire",
+            "emoji": "🔌",
+            "description": "A reddish-brown wire found inside electrical cables — flexible and shiny when cut.",
+            "isMetal": true,
+            "correctReason": "✅ Copper IS a metal — it conducts electricity because of its metallic properties. Real lustre on freshly cut surface.",
+            "wrongHint": "💡 Copper is a genuine metal! Its reddish lustre and excellent electrical conduction are classic metal properties.",
+            "coatingTrick": false
+          },
+          {
+            "id": "q5",
+            "name": "Polished Plastic Tumbler",
+            "emoji": "🥤",
+            "description": "A very shiny tumbler — looks almost metallic, feels lighter than it looks.",
+            "isMetal": false,
+            "correctReason": "✅ NOT a metal! Polishing gives plastic a shiny appearance, but scratch the surface — it's plastic all the way through.",
+            "wrongHint": "💡 Polishing makes plastic look metallic! But coating does not change what's inside. Scratch test → plastic.",
+            "coatingTrick": true
+          },
+          {
+            "id": "q6",
+            "name": "Steel Key",
+            "emoji": "🗝️",
+            "description": "A house key — heavy, hard, makes a ringing sound when dropped.",
+            "isMetal": true,
+            "correctReason": "✅ Steel IS a metal (iron + carbon alloy). Sonorous, hard, and lustrous — classic metal properties.",
+            "wrongHint": "💡 A steel key is a real metal! Its weight, hardness, and ringing sound are all metal properties.",
+            "coatingTrick": false
+          },
+          {
+            "id": "q7",
+            "name": "Gold-Coloured Paper Crown",
+            "emoji": "👑",
+            "description": "A shiny gold party crown — it sparkles just like real gold jewellery.",
+            "isMetal": false,
+            "correctReason": "✅ NOT a metal! It's paper coated with gold-coloured foil or paint. Fold it — paper creases, metal bends.",
+            "wrongHint": "💡 Gold colour ≠ gold metal! This is paper with a gold coating. Fold it firmly — paper folds, true metal would deform differently.",
+            "coatingTrick": true
+          },
+          {
+            "id": "q8",
+            "name": "Lacquered Wooden Box",
+            "emoji": "📦",
+            "description": "A beautifully finished wooden box — its lacquered surface shines like polished metal.",
+            "isMetal": false,
+            "correctReason": "✅ NOT a metal! Lacquer (varnish coating) creates the shine. The core is wood — scratch it and you see the grain.",
+            "wrongHint": "💡 Lacquer is a shiny coating applied to wood. It looks lustrous, but the material underneath is wood — not metal!",
+            "coatingTrick": true
+          }
+        ]
+      }
+    },
+  
+    "designSystem": {
+      "fontFamily": "Poppins",
+      "primaryColor": "#4A4DC9",
+      "secondaryColor": "#FF7212",
+      "accentPurple": "#533086",
+      "accentAmber": "#FC9145",
+      "lightPurple": "#C1C1EA",
+      "lightOrange": "#FFF3E4",
+      "darkText": "#4E4E4E",
+      "borderGrey": "#CACACA",
+      "bgGrey": "#EBEBEB",
+      "bgLight": "#F5F5F5"
+    },
+  
+    "responsive": {
+      "mobile":  { "breakpoint": "< 600px",  "layout": "single-column, stacked buttons, smaller emoji" },
+      "tablet":  { "breakpoint": "600–900px","layout": "single-column, side-by-side buttons" },
+      "desktop": { "breakpoint": "≥ 900px",  "layout": "centred card, side-by-side buttons, full animations" }
+    },
+  
+    "quizStructure": {
+      "totalItems": 8,
+      "metalItems": 3,
+      "nonMetalCoatingItems": 5,
+      "interaction": "Click Metal or Not Metal button on each screen",
+      "wrongBehavior": "shake animation + amber hint banner + Try Again button (question stays)",
+      "correctBehavior": "green lock + correct reason banner + Next Item / See Results button",
+      "progressTracking": "8-dot progress bar in header (amber=current, green=correct, red=wrong)",
+      "summary": "Trophy, stats grid (correct/wrong/time), per-item review list, Coating Rule callout, Try Again"
+    },
+  
+    "studentInstructions": "Decide if each item is metal or not. A coating can trick you — read the reason after each answer.",
+    "errorAlertKey": "Age alone does not decide shine; tarnish vs freshly cut. Also: coatings (paint, lacquer, foil, wax, polish) can make ANY material look metallic — scratch the surface to find the truth.",
+  
+    "itemSummary": [
+      { "id": "q1", "name": "Brass Utensil",              "isMetal": true,  "coatingTrick": false, "category": "Real metal alloy" },
+      { "id": "q2", "name": "Silver-Painted Plastic Bangle","isMetal": false, "coatingTrick": true,  "category": "Paint coating on plastic" },
+      { "id": "q3", "name": "Chocolate Foil Wrapper",      "isMetal": false, "coatingTrick": true,  "category": "Thin foil coating on paper/plastic" },
+      { "id": "q4", "name": "Copper Wire",                 "isMetal": true,  "coatingTrick": false, "category": "Real metal" },
+      { "id": "q5", "name": "Polished Plastic Tumbler",    "isMetal": false, "coatingTrick": true,  "category": "Polish coating on plastic" },
+      { "id": "q6", "name": "Steel Key",                   "isMetal": true,  "coatingTrick": false, "category": "Real metal alloy" },
+      { "id": "q7", "name": "Gold-Coloured Paper Crown",   "isMetal": false, "coatingTrick": true,  "category": "Gold-coloured coating on paper" },
+      { "id": "q8", "name": "Lacquered Wooden Box",        "isMetal": false, "coatingTrick": true,  "category": "Lacquer coating on wood" }
+    ]
+  }

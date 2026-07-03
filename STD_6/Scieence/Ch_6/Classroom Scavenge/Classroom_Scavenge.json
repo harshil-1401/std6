@@ -1,0 +1,251 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Classroom Materials Hunt",
+    "data": {
+      "toolName": "classroom_tagger",
+      "parameters": {
+        "width": 1100,
+        "height": 700,
+        "themeColor": "#4A4DC9",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showStepIndicator": false,
+        "animationSpeed": 1,
+        "additionalProps": {
+          "title": "Classroom Materials Hunt",
+          "objects": [
+            {
+              "id": "notebook",
+              "label": "Notebook",
+              "correctMaterial": "paper",
+              "hint": "It can be torn and written on. Trees made me!",
+              "x": 18,
+              "y": 30,
+              "emoji": "📓",
+              "color": "#4A4DC9"
+            },
+            {
+              "id": "pen",
+              "label": "Pen",
+              "correctMaterial": "plastic",
+              "hint": "Lightweight and moulded into shape. Not metal!",
+              "x": 30,
+              "y": 55,
+              "emoji": "🖊️",
+              "color": "#FC9145"
+            },
+            {
+              "id": "bag",
+              "label": "School Bag",
+              "correctMaterial": "cloth",
+              "hint": "Woven fibres make me flexible and soft.",
+              "x": 10,
+              "y": 68,
+              "emoji": "🎒",
+              "color": "#533086"
+            },
+            {
+              "id": "bottle",
+              "label": "Water Bottle",
+              "correctMaterial": "plastic",
+              "hint": "See-through and light — moulded from polymers.",
+              "x": 72,
+              "y": 60,
+              "emoji": "🍼",
+              "color": "#FC9145"
+            },
+            {
+              "id": "chalk",
+              "label": "Chalk",
+              "correctMaterial": "mineral",
+              "hint": "Made of calcium carbonate — a soft rock mineral.",
+              "x": 55,
+              "y": 25,
+              "emoji": "🪨",
+              "color": "#CACACA"
+            },
+            {
+              "id": "duster",
+              "label": "Duster",
+              "correctMaterial": "cloth",
+              "hint": "Soft fibre that wipes the board clean.",
+              "x": 65,
+              "y": 30,
+              "emoji": "🧹",
+              "color": "#533086"
+            },
+            {
+              "id": "table",
+              "label": "Table",
+              "correctMaterial": "wood",
+              "hint": "Cut from trees, smooth and sturdy.",
+              "x": 42,
+              "y": 72,
+              "emoji": "🪵",
+              "color": "#8B5E3C"
+            },
+            {
+              "id": "chair",
+              "label": "Chair",
+              "correctMaterial": "wood",
+              "hint": "Same as the table — grown in forests!",
+              "x": 28,
+              "y": 78,
+              "emoji": "🪑",
+              "color": "#8B5E3C"
+            },
+            {
+              "id": "fan",
+              "label": "Fan Grille",
+              "correctMaterial": "metal",
+              "hint": "Shiny, hard, and conducts electricity.",
+              "x": 80,
+              "y": 15,
+              "emoji": "⚙️",
+              "color": "#4E4E4E"
+            },
+            {
+              "id": "tile",
+              "label": "Floor Tile",
+              "correctMaterial": "mineral",
+              "hint": "Baked clay or stone — hard and cold underfoot.",
+              "x": 50,
+              "y": 88,
+              "emoji": "🏗️",
+              "color": "#CACACA"
+            }
+          ],
+          "materials": [
+            {
+              "id": "paper",
+              "label": "Paper",
+              "emoji": "📄",
+              "color": "#4A4DC9"
+            },
+            {
+              "id": "plastic",
+              "label": "Plastic",
+              "emoji": "🧪",
+              "color": "#FC9145"
+            },
+            {
+              "id": "metal",
+              "label": "Metal",
+              "emoji": "⚙️",
+              "color": "#4E4E4E"
+            },
+            {
+              "id": "wood",
+              "label": "Wood",
+              "emoji": "🌲",
+              "color": "#8B5E3C"
+            },
+            {
+              "id": "cloth",
+              "label": "Cloth",
+              "emoji": "🧵",
+              "color": "#533086"
+            },
+            {
+              "id": "mineral",
+              "label": "Mineral",
+              "emoji": "🪨",
+              "color": "#CACACA"
+            }
+          ]
+        }
+      }
+    },
+    "instructions_for_student": "Tap each highlighted object in the classroom scene and pick the one material it is mostly made of. If you are not sure, read the hint and try again. Tag all 10 objects to complete the hunt!",
+    "agent_readme": {
+      "tool_name": "classroom_tagger",
+      "description": "Interactive tap-to-tag classroom scavenger hunt. Student taps objects, picks their material from a 6-option palette, gets green tick on correct or a contextual hint on wrong answer. Summary strip tracks tagged count and distinct materials discovered.",
+      "additionalProps_schema": {
+        "title": {
+          "type": "string",
+          "description": "Heading shown above the scene",
+          "default": "Classroom Materials Hunt"
+        },
+        "objects": {
+          "type": "array",
+          "description": "List of classroom objects to tag",
+          "item_schema": {
+            "id": "string — unique identifier",
+            "label": "string — display name",
+            "correctMaterial": "string — must match one of the material ids",
+            "hint": "string — one-line clue shown on wrong answer",
+            "x": "number — horizontal position in scene (0–100 percent)",
+            "y": "number — vertical position in scene (0–100 percent)",
+            "emoji": "string — emoji icon for the object",
+            "color": "string — hex colour for the object chip"
+          }
+        },
+        "materials": {
+          "type": "array",
+          "description": "Palette of 6 material choices",
+          "item_schema": {
+            "id": "string — unique key (matches correctMaterial in objects)",
+            "label": "string — display name",
+            "emoji": "string — emoji icon",
+            "color": "string — hex accent colour for the button"
+          }
+        }
+      },
+      "color_system": {
+        "primary_purple": "#4A4DC9",
+        "primary_orange": "#FC9145",
+        "deep_purple": "#533086",
+        "light_purple": "#C1C1EA",
+        "light_orange": "#FFF3E4",
+        "dark_grey": "#4E4E4E",
+        "mid_grey": "#CACACA",
+        "light_grey": "#EBEBEB",
+        "off_white": "#F5F5F5",
+        "font": "Poppins / Nunito"
+      },
+      "tool_call_examples": [
+        {
+          "scenario": "Default classroom — Grade 6 chapter on Materials",
+          "parameters": {
+            "additionalProps": {
+              "title": "Classroom Materials Hunt"
+            }
+          }
+        },
+        {
+          "scenario": "Kitchen scene — different objects",
+          "parameters": {
+            "additionalProps": {
+              "title": "Kitchen Materials Hunt",
+              "objects": [
+                { "id": "pot", "label": "Cooking Pot", "correctMaterial": "metal", "hint": "Conducts heat and is shiny when new.", "x": 25, "y": 40, "emoji": "🍲", "color": "#4E4E4E" },
+                { "id": "bowl", "label": "Clay Bowl", "correctMaterial": "mineral", "hint": "Fired in a kiln from earth's clay.", "x": 55, "y": 40, "emoji": "🥣", "color": "#CACACA" },
+                { "id": "spatula", "label": "Spatula", "correctMaterial": "wood", "hint": "Cut from a tree, smooth to hold.", "x": 40, "y": 65, "emoji": "🍴", "color": "#8B5E3C" }
+              ]
+            }
+          }
+        },
+        {
+          "scenario": "Custom 4-material palette only",
+          "parameters": {
+            "additionalProps": {
+              "materials": [
+                { "id": "metal", "label": "Metal", "emoji": "⚙️", "color": "#4E4E4E" },
+                { "id": "wood", "label": "Wood", "emoji": "🌲", "color": "#8B5E3C" },
+                { "id": "plastic", "label": "Plastic", "emoji": "🧪", "color": "#FC9145" },
+                { "id": "glass", "label": "Glass", "emoji": "🔬", "color": "#4A4DC9" }
+              ]
+            }
+          }
+        }
+      ],
+      "design_tokens": {
+        "border_radius_large": "20–24px",
+        "border_radius_small": "12–14px",
+        "shadow": "0 4px 20px rgba(83,48,134,0.1)",
+        "gradient_primary": "linear-gradient(135deg, #533086, #4A4DC9)",
+        "gradient_accent": "linear-gradient(90deg, #4A4DC9, #FC9145)"
+      }
+    }
+  }

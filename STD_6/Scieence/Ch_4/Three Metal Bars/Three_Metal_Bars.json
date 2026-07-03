@@ -1,0 +1,176 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Magnet vs Iron Reasoning Tool",
+    "description": "An interactive drag-and-test tool for Grade 6 Science – Chapter 4: Exploring Magnets. Students drag three identical metal bars (X, Y, Z) into test zones to observe attraction/repulsion, then classify each bar as magnet or iron.",
+    "data": {
+      "toolName": "magnet_reasoning_tool",
+      "parameters": {
+        "width": 700,
+        "height": 640,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "instructionText": "Drag each bar near the others to test for attraction or repulsion. Test all three pairs. Then decide which two are magnets and which is iron.",
+          "magnetPair": ["X", "Y"],
+          "ironBar": "Z",
+          "correctExplanation": "Only magnets can repel each other. Since X and Y showed repulsion, they must both be magnets. Z only attracted every bar — so Z is iron!"
+        }
+      }
+    },
+    "instructions_for_student": "Drag each bar near the others to test for attraction or repulsion. Test all three pairs. Then decide which two are magnets and which is iron.",
+    "subject": "Science",
+    "grade": 6,
+    "chapter": "Chapter 4 – Exploring Magnets",
+    "curriculum": "NCERT Curiosity",
+    "activity_reference": "Question 5 – Reshma's Three Metal Bars (Textbook p.75)",
+  
+    "_schema": {
+      "additionalProps": {
+        "instructionText": {
+          "type": "string",
+          "description": "Instruction shown to the student at the top of the tool",
+          "default": "Drag each bar near the others to test for attraction or repulsion. Test all three pairs. Then decide which two are magnets and which is iron."
+        },
+        "magnetPair": {
+          "type": "array",
+          "items": "BarId ('X' | 'Y' | 'Z')",
+          "description": "The two bar IDs that are magnets. These will repel each other and attract iron.",
+          "default": ["X", "Y"],
+          "example_variants": [
+            ["X", "Y"],
+            ["X", "Z"],
+            ["Y", "Z"]
+          ]
+        },
+        "ironBar": {
+          "type": "string",
+          "enum": ["X", "Y", "Z"],
+          "description": "The bar ID that is iron (non-magnet). It only attracts and never repels.",
+          "default": "Z"
+        },
+        "correctExplanation": {
+          "type": "string",
+          "description": "Explanation shown when student correctly identifies the magnets and iron bar"
+        }
+      },
+      "parameters": {
+        "themeColor": {
+          "type": "string",
+          "description": "Accent color (hex). Affects active states, badges, and highlights.",
+          "default": "#f59e0b"
+        },
+        "darkMode": {
+          "type": "boolean",
+          "description": "Enable dark theme for projector/classroom use",
+          "default": false
+        },
+        "width": {
+          "type": "number",
+          "description": "Max width in pixels",
+          "default": 700
+        }
+      }
+    },
+  
+    "_interaction_logic": {
+      "description": "How the tool determines repulsion vs attraction for each pair",
+      "rules": [
+        {
+          "condition": "Both bars are in magnetPair",
+          "result": "repulsion",
+          "rationale": "Two magnets can repel when like poles face each other"
+        },
+        {
+          "condition": "One bar is in magnetPair, the other is ironBar",
+          "result": "attraction",
+          "rationale": "A magnet always attracts iron regardless of orientation"
+        },
+        {
+          "condition": "Both bars are ironBar (impossible with 3 bars)",
+          "result": "N/A"
+        }
+      ],
+      "student_discovery_path": [
+        "Test X-Y → sees REPULSION (red arrows) → knows at least one combination of X,Y shows repulsion",
+        "Test X-Z → sees ATTRACTION (green arrows) → Z attracted, not iron identification yet",
+        "Test Y-Z → sees ATTRACTION (green arrows) → Z attracted again",
+        "Conclusion: X and Y repelled each other → both magnets. Z never repelled → iron."
+      ]
+    },
+  
+    "_agent_examples": [
+      {
+        "description": "Default NCERT Q5 — X and Y are magnets, Z is iron",
+        "call": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Identify the Magnets — Reshma's Bar Test",
+          "data": {
+            "toolName": "magnet_reasoning_tool",
+            "parameters": {
+              "themeColor": "#f59e0b",
+              "additionalProps": {
+                "magnetPair": ["X", "Y"],
+                "ironBar": "Z"
+              }
+            }
+          }
+        }
+      },
+      {
+        "description": "Variant — X and Z are magnets, Y is iron",
+        "call": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Identify the Magnets — Variant B",
+          "data": {
+            "toolName": "magnet_reasoning_tool",
+            "parameters": {
+              "themeColor": "#4A4DC9",
+              "additionalProps": {
+                "magnetPair": ["X", "Z"],
+                "ironBar": "Y",
+                "correctExplanation": "X and Z repelled each other — they are both magnets. Y only attracted, never repelled — so Y is iron."
+              }
+            }
+          }
+        }
+      },
+      {
+        "description": "Dark mode classroom variant — Y and Z are magnets, X is iron",
+        "call": {
+          "frontend_action": "show_interactive_tool",
+          "title": "Identify the Magnets — Dark Mode",
+          "data": {
+            "toolName": "magnet_reasoning_tool",
+            "parameters": {
+              "themeColor": "#fc9145",
+              "darkMode": true,
+              "additionalProps": {
+                "magnetPair": ["Y", "Z"],
+                "ironBar": "X",
+                "correctExplanation": "Y and Z showed repulsion — both are magnets. X only attracted both bars — it is iron."
+              }
+            }
+          }
+        }
+      }
+    ],
+  
+    "_decision_tree": {
+      "use_this_tool_when": [
+        "Student asks about Reshma's three-bar identification question (NCERT Ch4 Q5)",
+        "Question involves distinguishing magnets from iron using repulsion test",
+        "Student needs to understand why repulsion uniquely identifies magnets",
+        "Drag-and-test interactive experiment about magnet properties"
+      ],
+      "do_not_use_when": [
+        "Question is about U-clip counts on bar magnet positions (use magnet_selection_tool)",
+        "Question is about compass direction or north-south alignment",
+        "Open-ended short answer question (respond with text)"
+      ]
+    }
+  }

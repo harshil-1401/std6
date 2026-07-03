@@ -1,0 +1,139 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Build a Magnetic Compass",
+    "instructions_for_student": "Drag the six step cards into the correct order to build a magnetic compass. Start from collecting materials and end with floating the cork.",
+    "data": {
+      "toolName": "magnetic_compass_sequencer",
+      "parameters": {
+        "width": 760,
+        "height": 700,
+        "themeColor": "#f59e0b",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "autoPlayDuration": 0,
+        "additionalProps": {
+          "title": "Build a Magnetic Compass",
+          "subtitle": "Drag each step card into the correct order",
+          "completionMessage": "You built a magnetic compass! 🧭",
+          "steps": [
+            {
+              "id": 1,
+              "text": "Collect cork, needle, magnet, bowl, and water",
+              "shortLabel": "Gather materials",
+              "icon": "🧲",
+              "hint": "Always start by collecting all the materials you need!"
+            },
+            {
+              "id": 2,
+              "text": "Stroke needle with magnet 30–40 times in one direction",
+              "shortLabel": "Magnetise needle",
+              "icon": "🪡",
+              "hint": "You need to magnetise the needle before testing it."
+            },
+            {
+              "id": 3,
+              "text": "Test needle with iron filings",
+              "shortLabel": "Test magnetisation",
+              "icon": "🔬",
+              "hint": "Test the needle after magnetising — not before!"
+            },
+            {
+              "id": 4,
+              "text": "Push needle through cork horizontally",
+              "shortLabel": "Insert into cork",
+              "icon": "🍾",
+              "hint": "The cork must hold the needle before you fill the bowl."
+            },
+            {
+              "id": 5,
+              "text": "Fill bowl with water",
+              "shortLabel": "Fill bowl",
+              "icon": "🥣",
+              "hint": "Fill the bowl with water before floating the cork."
+            },
+            {
+              "id": 6,
+              "text": "Float cork in water and observe direction",
+              "shortLabel": "Float & observe",
+              "icon": "🧭",
+              "hint": "Floating the cork is the final step — observe the direction!"
+            }
+          ]
+        }
+      }
+    },
+    "_schema_version": "2.1",
+    "_tool_meta": {
+      "component": "MagneticCompassSequencer",
+      "file": "MagneticCompassSequencer.tsx",
+      "subject": "Science",
+      "topic": "Magnets – Chapter 4 Exploring Magnets (Grade 6 NCERT)",
+      "activity_reference": "Activity 4.4: Let us construct",
+      "design_theme": {
+        "primary": "#f59e0b",
+        "secondary": "#533086",
+        "accent": "#10b981",
+        "font_display": "Baloo 2",
+        "font_body": "Nunito",
+        "palette_source": "fecu104.pdf (Singularity Design System)",
+        "colors_used": ["#533086", "#FC9145", "#f59e0b", "#C1C1EA", "#FFF3E4", "#10b981"]
+      },
+      "agent_readme": {
+        "description": "A drag-and-drop sequencing tool where students arrange 6 shuffled procedure cards into the correct order for building a homemade magnetic compass. Correct placements lock green with a checkmark. Incorrect placements bounce back with a contextual hint. Completion triggers a confetti screen with the full ordered procedure summary.",
+        "interaction_model": "drag-and-drop (desktop) + touch-drag (mobile)",
+        "validation": "card.id === slotIndex + 1 (each card's id must equal its intended 1-based position)",
+        "additionalProps_schema": {
+          "title": { "type": "string", "description": "Main heading shown at top of tool", "default": "Build a Magnetic Compass" },
+          "subtitle": { "type": "string", "description": "Subheading instruction line", "default": "Drag each step card into the correct order" },
+          "completionMessage": { "type": "string", "description": "Headline text on the completion screen", "default": "You built a magnetic compass! 🧭" },
+          "steps": {
+            "type": "array",
+            "description": "Array of exactly N step cards. IDs must be 1..N; the correct slot for a card = card.id - 1",
+            "items": {
+              "id": { "type": "number", "description": "Correct 1-based position index" },
+              "text": { "type": "string", "description": "Full step description displayed inside the slot" },
+              "shortLabel": { "type": "string", "description": "Compact label shown on the pool card chip" },
+              "icon": { "type": "string", "description": "Emoji icon representing this step" },
+              "hint": { "type": "string", "description": "Hint shown when card is placed in the wrong slot" }
+            }
+          }
+        },
+        "customisation_examples": [
+          {
+            "_comment": "Use fewer steps (e.g. 4 steps for simpler activity)",
+            "additionalProps": {
+              "title": "Simple Compass (Shorter)",
+              "steps": [
+                { "id": 1, "text": "Collect needle and magnet", "shortLabel": "Gather materials", "icon": "🧲", "hint": "Start by gathering your supplies!" },
+                { "id": 2, "text": "Magnetise the needle", "shortLabel": "Magnetise", "icon": "🪡", "hint": "Stroke in one direction only." },
+                { "id": 3, "text": "Float needle on water", "shortLabel": "Float needle", "icon": "💧", "hint": "The needle needs to float freely." },
+                { "id": 4, "text": "Observe north direction", "shortLabel": "Observe", "icon": "🧭", "hint": "Look which end points north!" }
+              ]
+            }
+          },
+          {
+            "_comment": "Different activity – making an electromagnet",
+            "additionalProps": {
+              "title": "Build an Electromagnet",
+              "subtitle": "Sequence the steps correctly",
+              "completionMessage": "Electromagnet built! ⚡🧲",
+              "steps": [
+                { "id": 1, "text": "Collect iron nail, copper wire, and battery", "shortLabel": "Gather materials", "icon": "🔩", "hint": "You need all three components first!" },
+                { "id": 2, "text": "Wrap copper wire tightly around the nail", "shortLabel": "Coil wire", "icon": "🌀", "hint": "Coil the wire before connecting to the battery." },
+                { "id": 3, "text": "Connect wire ends to battery terminals", "shortLabel": "Connect battery", "icon": "🔋", "hint": "Connect only after coiling." },
+                { "id": 4, "text": "Test by picking up paper clips", "shortLabel": "Test magnet", "icon": "📎", "hint": "Testing is the final step!" }
+              ]
+            }
+          }
+        ],
+        "decision_tree": {
+          "default_6_steps": "Use the default steps array (as above) for Activity 4.4 from NCERT Grade 6 Science Chapter 4",
+          "fewer_steps": "Reduce steps array length — tool auto-adjusts slot count to steps.length",
+          "different_topic": "Replace all step objects with new content; ensure ids are sequential 1..N",
+          "change_hint": "Edit the 'hint' field in any step object for targeted corrective feedback"
+        }
+      }
+    }
+  }

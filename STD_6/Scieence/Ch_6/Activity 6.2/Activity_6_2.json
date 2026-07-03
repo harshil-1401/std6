@@ -1,0 +1,200 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Material Classifier — Activity 6.2",
+    "toolName": "material_classifier",
+    "instructions_for_student": "Pick a property from the dropdown and sort all ten objects by dragging each tile into the correct bin. Press Re-classify and try a different property to see how the same objects can be grouped in new ways!",
+  
+    "schema_version": "2.1",
+  
+    "parameters": {
+      "width": 860,
+      "height": 700,
+      "themeColor": "#533086",
+      "darkMode": false,
+      "showModeSelector": false,
+      "showNavigation": false,
+      "animationSpeed": 1,
+  
+      "additionalProps": {
+        "showScoreBar": true,
+  
+        "objects": [
+          { "id": "spoon",  "emoji": "🥄", "name": "Steel Spoon",  "material": "metal",   "shine": "shiny", "hardness": "hard", "colour": "neutral", "shape": "flat"  },
+          { "id": "pot",    "emoji": "🪴", "name": "Clay Pot",     "material": "clay",    "shine": "dull",  "hardness": "hard", "colour": "warm",    "shape": "round" },
+          { "id": "scarf",  "emoji": "🧣", "name": "Cotton Scarf", "material": "cloth",   "shine": "dull",  "hardness": "soft", "colour": "warm",    "shape": "flat"  },
+          { "id": "ball",   "emoji": "🏀", "name": "Plastic Ball", "material": "plastic", "shine": "mixed", "hardness": "hard", "colour": "warm",    "shape": "round" },
+          { "id": "marble", "emoji": "🔮", "name": "Glass Marble", "material": "glass",   "shine": "shiny", "hardness": "hard", "colour": "cool",    "shape": "round" },
+          { "id": "rubber", "emoji": "🔴", "name": "Rubber Band",  "material": "rubber",  "shine": "mixed", "hardness": "soft", "colour": "warm",    "shape": "flat"  },
+          { "id": "wood",   "emoji": "🟫", "name": "Wooden Block", "material": "wood",    "shine": "dull",  "hardness": "hard", "colour": "warm",    "shape": "block" },
+          { "id": "paper",  "emoji": "📄", "name": "Paper Sheet",  "material": "paper",   "shine": "dull",  "hardness": "soft", "colour": "neutral", "shape": "flat"  },
+          { "id": "sponge", "emoji": "🧽", "name": "Sponge",       "material": "sponge",  "shine": "dull",  "hardness": "soft", "colour": "warm",    "shape": "block" },
+          { "id": "ice",    "emoji": "🧊", "name": "Ice Cube",     "material": "ice",     "shine": "shiny", "hardness": "hard", "colour": "cool",    "shape": "block" }
+        ],
+  
+        "properties": [
+          {
+            "key": "shine",
+            "label": "Shine / Lustre",
+            "bins": [
+              { "id": "shiny", "label": "Shiny (Lustrous)",     "color": "#533086", "bg": "linear-gradient(135deg,#f0ecfa,#e6dff5)", "border": "#C1C1EA", "emoji": "✨" },
+              { "id": "dull",  "label": "Dull (Non-Lustrous)",  "color": "#4E4E4E", "bg": "linear-gradient(135deg,#f5f5f5,#ebebeb)", "border": "#CACACA", "emoji": "🪨" },
+              { "id": "mixed", "label": "Somewhere In Between", "color": "#FF7212", "bg": "linear-gradient(135deg,#fff3e4,#ffe8cc)", "border": "#FFF3E4", "emoji": "🌗" }
+            ]
+          },
+          {
+            "key": "hardness",
+            "label": "Hardness",
+            "bins": [
+              { "id": "hard",  "label": "Hard",  "color": "#533086", "bg": "linear-gradient(135deg,#f0ecfa,#e6dff5)", "border": "#C1C1EA", "emoji": "💎" },
+              { "id": "soft",  "label": "Soft",  "color": "#FC9145", "bg": "linear-gradient(135deg,#fff3e4,#ffe8cc)", "border": "#FFF3E4", "emoji": "🧸" },
+              { "id": "mixed", "label": "Mixed", "color": "#4E4E4E", "bg": "linear-gradient(135deg,#f5f5f5,#ebebeb)", "border": "#CACACA", "emoji": "⚖️" }
+            ]
+          },
+          {
+            "key": "colour",
+            "label": "Colour Tone",
+            "bins": [
+              { "id": "warm",    "label": "Warm Tones",    "color": "#FC9145", "bg": "linear-gradient(135deg,#fff3e4,#ffe8cc)", "border": "#FFF3E4", "emoji": "🔥" },
+              { "id": "cool",    "label": "Cool Tones",    "color": "#4A4DC9", "bg": "linear-gradient(135deg,#eeeffe,#d8d9fc)", "border": "#C1C1EA", "emoji": "❄️" },
+              { "id": "neutral", "label": "Neutral Tones", "color": "#4E4E4E", "bg": "linear-gradient(135deg,#f5f5f5,#ebebeb)", "border": "#CACACA", "emoji": "⚪" }
+            ]
+          },
+          {
+            "key": "shape",
+            "label": "Shape",
+            "bins": [
+              { "id": "flat",  "label": "Flat / Thin",  "color": "#4A4DC9", "bg": "linear-gradient(135deg,#eeeffe,#d8d9fc)", "border": "#C1C1EA", "emoji": "📋" },
+              { "id": "round", "label": "Round / Oval", "color": "#533086", "bg": "linear-gradient(135deg,#f0ecfa,#e6dff5)", "border": "#C1C1EA", "emoji": "⭕" },
+              { "id": "block", "label": "Block / Cube", "color": "#FC9145", "bg": "linear-gradient(135deg,#fff3e4,#ffe8cc)", "border": "#FFF3E4", "emoji": "📦" }
+            ]
+          },
+          {
+            "key": "material",
+            "label": "Material Type",
+            "bins": [
+              { "id": "metal",   "label": "Metal / Glass / Ice",        "color": "#4A4DC9", "bg": "linear-gradient(135deg,#eeeffe,#d8d9fc)", "border": "#C1C1EA", "emoji": "🔩" },
+              { "id": "natural", "label": "Natural (Clay/Wood/Cotton)",  "color": "#533086", "bg": "linear-gradient(135deg,#f0ecfa,#e6dff5)", "border": "#C1C1EA", "emoji": "🌿" },
+              { "id": "other",   "label": "Synthetic / Other",          "color": "#FC9145", "bg": "linear-gradient(135deg,#fff3e4,#ffe8cc)", "border": "#FFF3E4", "emoji": "🏭" }
+            ]
+          }
+        ]
+      }
+    },
+  
+    "agent_readme": {
+      "tool_name": "material_classifier",
+      "description": "Interactive drag-and-drop classifier for NCERT Grade 6 Science Chapter 6 (Materials Around Us). Ten object tiles live in a tray; the student picks a property from a pill-button row, drags each tile into one of three labelled bins, then can re-classify with a different property.",
+  
+      "quick_reference": {
+        "properties_supported": ["shine", "hardness", "colour", "shape", "material"],
+        "bin_count_per_property": 3,
+        "total_objects": 10,
+        "mobile_support": true,
+        "touch_drag": true,
+        "confetti_on_complete": true
+      },
+  
+      "additionalProps_schema": {
+        "objects": {
+          "type": "array",
+          "description": "Array of object items shown in the tray",
+          "item_fields": {
+            "id":       { "type": "string",  "description": "Unique identifier" },
+            "emoji":    { "type": "string",  "description": "Emoji icon shown on tile" },
+            "name":     { "type": "string",  "description": "Display name" },
+            "material": { "type": "string",  "description": "Raw material (used for material-type binning)" },
+            "shine":    { "type": "string",  "enum": ["shiny","dull","mixed"], "description": "Lustre property" },
+            "hardness": { "type": "string",  "enum": ["hard","soft","mixed"],  "description": "Hardness property" },
+            "colour":   { "type": "string",  "enum": ["warm","cool","neutral"],"description": "Colour tone" },
+            "shape":    { "type": "string",  "enum": ["flat","round","block"], "description": "General shape" }
+          }
+        },
+        "properties": {
+          "type": "array",
+          "description": "List of classifiable properties shown in the pill dropdown",
+          "item_fields": {
+            "key":   { "type": "string", "description": "Matches the field name in each object (e.g. 'shine')" },
+            "label": { "type": "string", "description": "Human-readable label for the pill button" },
+            "bins":  {
+              "type": "array",
+              "description": "Three bins for this property",
+              "item_fields": {
+                "id":     { "type": "string", "description": "Must match possible field values in objects" },
+                "label":  { "type": "string", "description": "Bin header text" },
+                "color":  { "type": "string", "description": "Hex color for bin header & badge" },
+                "bg":     { "type": "string", "description": "CSS background (gradient) for bin card" },
+                "border": { "type": "string", "description": "Border color hex" },
+                "emoji":  { "type": "string", "description": "Bin icon emoji" }
+              }
+            }
+          }
+        },
+        "showScoreBar": { "type": "boolean", "default": true, "description": "Show the progress bar in the header" }
+      },
+  
+      "tool_call_examples": [
+        {
+          "scenario": "Default — full 10-object classroom activity",
+          "parameters": {
+            "additionalProps": {
+              "showScoreBar": true
+            }
+          },
+          "instructions_for_student": "Pick a property and sort all ten objects. Try at least three different properties!"
+        },
+        {
+          "scenario": "Shine / Lustre only — focus lesson on lustrous vs non-lustrous",
+          "parameters": {
+            "additionalProps": {
+              "properties": ["shine_only — pass a single-property array using the shine entry above"]
+            }
+          },
+          "instructions_for_student": "Which objects are shiny (lustrous)? Drag them into the correct bin."
+        },
+        {
+          "scenario": "Custom objects — kitchen items",
+          "parameters": {
+            "additionalProps": {
+              "objects": [
+                { "id": "knife",  "emoji": "🔪", "name": "Steel Knife",    "material": "metal",  "shine": "shiny", "hardness": "hard", "colour": "neutral", "shape": "flat"  },
+                { "id": "bowl",   "emoji": "🍵", "name": "Ceramic Bowl",   "material": "clay",   "shine": "mixed", "hardness": "hard", "colour": "warm",    "shape": "round" },
+                { "id": "cloth",  "emoji": "🧻", "name": "Kitchen Cloth",  "material": "cloth",  "shine": "dull",  "hardness": "soft", "colour": "warm",    "shape": "flat"  },
+                { "id": "bottle", "emoji": "🍶", "name": "Glass Bottle",   "material": "glass",  "shine": "shiny", "hardness": "hard", "colour": "cool",    "shape": "round" }
+              ]
+            }
+          },
+          "instructions_for_student": "Sort these kitchen objects by shine, hardness, or material type."
+        },
+        {
+          "scenario": "Dark mode variant",
+          "parameters": {
+            "darkMode": true,
+            "additionalProps": { "showScoreBar": true }
+          },
+          "instructions_for_student": "Classify the materials in dark mode!"
+        }
+      ],
+  
+      "decision_tree": {
+        "student_asks_classify_by_shine":    "Use property key='shine'; bins: shiny/dull/mixed",
+        "student_asks_classify_by_hardness": "Use property key='hardness'; bins: hard/soft/mixed",
+        "student_asks_classify_by_material": "Use property key='material'; bins: metal/natural/other",
+        "student_wants_custom_objects":      "Replace additionalProps.objects array with custom items",
+        "student_wants_fewer_bins":          "Reduce bins array to 2 entries and match object field values"
+      },
+  
+      "design_tokens": {
+        "primary_purple":   "#533086",
+        "primary_blue":     "#4A4DC9",
+        "accent_orange":    "#FC9145",
+        "accent_orange_2":  "#FF7212",
+        "light_purple_bg":  "#C1C1EA",
+        "light_orange_bg":  "#FFF3E4",
+        "grey_dark":        "#4E4E4E",
+        "grey_mid":         "#CACACA",
+        "grey_light":       "#EBEBEB",
+        "surface":          "#F5F5F5",
+        "font_family":      "Poppins"
+      }
+    }
+  }

@@ -1,0 +1,146 @@
+{
+  "toolId": "M1.S2.T2.C7.2D1",
+  "title": "Sort in three ways",
+  "subtype": "sorter",
+  "conceptId": "M1.S2.T2.C7",
+  "relatedConceptIds": [],
+  "module": "M1",
+  "placement": {
+    "beat": "Apply",
+    "where": "replaces NCERT Ch 6 Activity 6.2 / Fig. 6.4 — students sort the same set of everyday objects three different ways (by shape, colour, then material) to discover that the same things can be grouped by different properties"
+  },
+  "sharedState": {
+    "fields": [
+      "activeProperty",
+      "placed",
+      "total",
+      "completedPasses",
+      "finished",
+      "groups",
+      "operatorMode"
+    ]
+  },
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": [
+        "{type:'ready', toolId}",
+        "{type:'state', state}",
+        "{type:'event', name, detail}",
+        "{type:'response', id, result}"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "placeCard(idOrArray, bin?)",
+      "sort(idOrArray, bin?)",
+      "setProperty(property) — switch the active sort pass; property is 'shape'|'colour'|'material'. Only switches to a not-yet-completed pass; changes which property placeCard/sort grades against."
+    ]
+  },
+  "studentControls": [
+    {
+      "control": "Tap an object in the tray to select it, then tap the matching property bin",
+      "effect": "if the object's property matches the bin it snaps in with a ✓ pop and the correct chime; a wrong bin shakes red, rejects, and the object stays in the tray"
+    },
+    {
+      "control": "Save & advance button (appears when every object in the step is placed)",
+      "effect": "marks the pass complete and auto-advances to the next property (shape → colour → material), or shows the result on the third pass"
+    },
+    {
+      "control": "Try again button (end screen)",
+      "effect": "clears all three boards and returns to Step 1 (Shape)"
+    },
+    {
+      "control": "Mute / unmute button (top-right)",
+      "effect": "toggles the tap/correct/wrong/completion sound cues"
+    }
+  ],
+  "answerKey": {
+    "rule": "A placement is correct only when tile[activeProperty] === binId. There is exactly one correct bin per object per pass, so the activity cannot be completed incorrectly. The colour pass omits the key (7 objects); shape and material use all 8.",
+    "objects": {
+      "apple": { "label": "Apple", "shape": "round", "colour": "red", "material": "plant" },
+      "straw": { "label": "Strawberry", "shape": "round", "colour": "red", "material": "plant" },
+      "leaf": { "label": "Leaf", "shape": "flat", "colour": "green", "material": "plant" },
+      "cucumber": { "label": "Cucumber", "shape": "long", "colour": "green", "material": "plant" },
+      "coin": { "label": "Coin", "shape": "round", "colour": "brown", "material": "metal" },
+      "key": { "label": "Key", "shape": "long", "colour": "brown", "material": "metal" },
+      "log": { "label": "Wooden log", "shape": "long", "colour": "brown", "material": "wood" },
+      "plank": { "label": "Wood block", "shape": "flat", "colour": "brown", "material": "wood" }
+    },
+    "passes": {
+      "shape": {
+        "stepNum": 1,
+        "bins": ["round", "long", "flat"],
+        "omits": [],
+        "correctGroups": {
+          "round": ["apple", "straw", "coin"],
+          "long": ["cucumber", "key", "log"],
+          "flat": ["leaf", "plank"]
+        }
+      },
+      "colour": {
+        "stepNum": 2,
+        "bins": ["red", "green", "brown"],
+        "omits": ["key"],
+        "correctGroups": {
+          "red": ["apple", "straw"],
+          "green": ["leaf", "cucumber"],
+          "brown": ["coin", "log", "plank"]
+        }
+      },
+      "material": {
+        "stepNum": 3,
+        "bins": ["plant", "metal", "wood"],
+        "omits": [],
+        "correctGroups": {
+          "plant": ["apple", "straw", "leaf", "cucumber"],
+          "metal": ["coin", "key"],
+          "wood": ["log", "plank"]
+        }
+      }
+    },
+    "validProperties": ["shape", "colour", "material"],
+    "validTileIds": ["apple", "straw", "leaf", "cucumber", "coin", "key", "log", "plank"],
+    "validBinIds": {
+      "shape": ["round", "long", "flat"],
+      "colour": ["red", "green", "brown"],
+      "material": ["plant", "metal", "wood"]
+    },
+    "agentVerbNotes": "placeCard / sort accept a SINGLE id or an ARRAY. Each entry is a tile id (string) or {id, bin}. When bin is omitted the card auto-places into its correct bin for the active property, so the agent can credit several objects at once, e.g. placeCard(['apple','straw','coin']) on the shape pass fills the Round bin. Ids and bins resolve by id OR by literal label (case-insensitive). setProperty('shape'|'colour'|'material') switches the active sort.",
+    "operatorModes": ["ai", "student"],
+    "operatorModeNote": "ai = focused demo: the bins/boards (phenomenon) and read-out stay visible, the object tray + Save/Try-again buttons hide and student taps are inert (the agent drives via placeCard()/setProperty()/highlight()); student = full interactive controls. Default student."
+  },
+  "props": {
+    "defaults": {
+      "width": 0,
+      "height": 0,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false
+    },
+    "additionalProps": {}
+  },
+  "events": [
+    "ready",
+    "card_placed",
+    "placement_rejected",
+    "pass_completed",
+    "property_changed",
+    "completed",
+    "reset",
+    "operator_mode_changed"
+  ],
+  "scientificFacts": [
+    "Classification means arranging objects into groups by a property they share, such as shape, colour or the material they are made of.",
+    "The same set of objects can be grouped in many different ways — sort by shape, then by colour, and the groups change completely.",
+    "Objects are made of materials; for example a coin and a key are metal, while a log and a wood block are wood.",
+    "Grouping things helps us notice patterns and find what we need more easily."
+  ]
+}

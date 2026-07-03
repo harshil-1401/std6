@@ -1,0 +1,171 @@
+{
+    "componentName": "LustreTwoBinSorter",
+    "componentFile": "lustre_two_bin_sorter.tsx",
+    "chapter": "Chapter 6 — Materials Around Us",
+    "section": "6.3.1 Observe and identify appearance of materials",
+    "grade": "Grade 6 — Curiosity, Science",
+    "learningObjective": "Identify lustrous vs non-lustrous materials by surface appearance and understand that lustre is not exclusive to metals.",
+    "props": {
+      "width": 900,
+      "height": 700,
+      "animationSpeed": 1,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "initialMode": "practice",
+      "showModeSelector": false,
+      "enabledModes": ["practice"],
+      "showNavigation": false,
+      "showPlayPause": false,
+      "showStepIndicator": true,
+      "initialStep": 0,
+      "autoPlayDuration": 0,
+      "data": {
+        "themeColor": "#4A4DC9",
+        "autoPlayDuration": 0
+      },
+      "steps": [
+        {
+          "id": 1,
+          "title": "Sort by Lustre",
+          "description": "Drag each object into Lustrous or Non-lustrous. Read the reason on every correct drop.",
+          "type": "practice",
+          "mode": "practice"
+        }
+      ],
+      "additionalProps": {
+        "lustrousBinLabel": "Lustrous",
+        "nonlustrousBinLabel": "Non-lustrous",
+        "showHints": true,
+        "enableTimer": true,
+        "shuffleSeed": 42,
+        "objects": [
+          {
+            "id": "o1",
+            "name": "Freshly Cut Iron",
+            "emoji": "🔩",
+            "category": "lustrous",
+            "reason": "A freshly cut metal surface shines brightly — that is lustre.",
+            "hint": "Look at the freshly cut surface, not the old rusted side!"
+          },
+          {
+            "id": "o2",
+            "name": "Polished Silver Bangle",
+            "emoji": "💍",
+            "category": "lustrous",
+            "reason": "Polished silver has a bright, mirror-like shine — classic lustre.",
+            "hint": "Polished metals like silver, gold, copper are lustrous."
+          },
+          {
+            "id": "o3",
+            "name": "New Steel Spoon",
+            "emoji": "🥄",
+            "category": "lustrous",
+            "reason": "New steel reflects light — shiny means lustrous.",
+            "hint": "A new steel utensil shines brightly when light falls on it."
+          },
+          {
+            "id": "o4",
+            "name": "Glass Marble",
+            "emoji": "🔮",
+            "category": "lustrous",
+            "reason": "Smooth polished glass reflects light and shines — lustrous, though it is not a metal.",
+            "hint": "Not everything lustrous is a metal! Smooth glass shines too."
+          },
+          {
+            "id": "o5",
+            "name": "Old Aluminium Pan",
+            "emoji": "🍳",
+            "category": "lustrous",
+            "reason": "Aluminium keeps its shine fairly well — its surface still reflects light.",
+            "hint": "Aluminium does not tarnish much. Its surface still shines."
+          },
+          {
+            "id": "o6",
+            "name": "Plastic Comb (Glossy)",
+            "emoji": "🪮",
+            "category": "lustrous",
+            "reason": "A glossy plastic surface can reflect light and look shiny — lustrous (coating, not a metal).",
+            "hint": "\"All that glitters is not gold.\" Glossy plastic shines too."
+          },
+          {
+            "id": "o7",
+            "name": "Tarnished Copper Vessel",
+            "emoji": "🫖",
+            "category": "nonlustrous",
+            "reason": "Air and moisture made the copper dull — the surface looks non-lustrous now.",
+            "hint": "Tarnish hides the shine! Old copper turns dull — non-lustrous now."
+          },
+          {
+            "id": "o8",
+            "name": "Raw Wooden Block",
+            "emoji": "🪵",
+            "category": "nonlustrous",
+            "reason": "Wood has a rough, dull surface — non-lustrous.",
+            "hint": "Wood, paper, jute — all have dull surfaces."
+          },
+          {
+            "id": "o9",
+            "name": "Chalk Stick",
+            "emoji": "⚪",
+            "category": "nonlustrous",
+            "reason": "Chalk has a powdery, dull surface — non-lustrous.",
+            "hint": "Chalk crumbles and has no shine at all."
+          },
+          {
+            "id": "o10",
+            "name": "Rubber Eraser",
+            "emoji": "🧽",
+            "category": "nonlustrous",
+            "reason": "Rubber has a soft, dull, matte surface — non-lustrous.",
+            "hint": "Rubber is matte, never shiny."
+          },
+          {
+            "id": "o11",
+            "name": "Leaf",
+            "emoji": "🍃",
+            "category": "nonlustrous",
+            "reason": "A leaf has a soft, dull surface — non-lustrous.",
+            "hint": "Natural surfaces like leaves are dull, not shiny like metals."
+          },
+          {
+            "id": "o12",
+            "name": "Coal Lump",
+            "emoji": "⬛",
+            "category": "nonlustrous",
+            "reason": "Coal is black, rough and dull — clearly non-lustrous.",
+            "hint": "Coal is a famous non-lustrous example from your textbook."
+          }
+        ]
+      }
+    },
+    "designSystem": {
+      "fontFamily": "Poppins",
+      "primaryColor": "#4A4DC9",
+      "secondaryColor": "#FF7212",
+      "accentPurple": "#533086",
+      "accentAmber": "#FC9145",
+      "lightPurple": "#C1C1EA",
+      "lightOrange": "#FFF3E4",
+      "darkText": "#4E4E4E",
+      "borderGrey": "#CACACA",
+      "bgGrey": "#EBEBEB",
+      "bgLight": "#F5F5F5"
+    },
+    "responsive": {
+      "mobile": { "breakpoint": "< 640px", "binsStack": "vertical", "tileGrid": "auto-fill 100px" },
+      "tablet": { "breakpoint": "640–900px", "binsStack": "horizontal", "tileGrid": "auto-fill 120px" },
+      "desktop": { "breakpoint": "≥ 900px", "binsStack": "horizontal", "tileGrid": "auto-fill 130px" }
+    },
+    "features": {
+      "scoreStrip": "Tracks correct, wrong, timer, and total in the header",
+      "feedbackOnCorrect": "Tile locks in green and one-line reason appears",
+      "feedbackOnWrong": "Tile shakes red and a hint linking to the error pattern appears",
+      "completion": "Trophy banner + stats card (correct/wrong/time) + key takeaway + Try Again",
+      "interaction": "Tap-and-tap or drag-and-drop",
+      "shuffled": "Tiles shuffle on each session for replay value",
+      "responsive": "Bins stack vertically on mobile, side-by-side from 640px up",
+      "themeAlignment": "Singularity design — Poppins font, purple/orange palette, rounded 14–20px"
+    },
+    "studentInstructions": "Drag each object into Lustrous or Non-lustrous. Read the reason on every correct drop.",
+    "errorAlertPattern": "Age alone does not decide shine — check the freshly cut surface. Tarnish ≠ never lustrous. And lustre can come from coatings, not only metals."
+  }

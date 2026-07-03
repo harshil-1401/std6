@@ -1,0 +1,128 @@
+{
+  "toolId": "M2.S4.T7.C20.2D3",
+  "title": "Does it dissolve in water?",
+  "subtype": "simulation",
+  "conceptId": "M2.S4.T7.C20",
+  "relatedConceptIds": [],
+  "module": "M2",
+  "placement": {
+    "beat": "Apply",
+    "where": "Activity 6.7 / Table 6.5 (Materials Around Us, 6.3.4 — what is soluble in water and what is not). The student drops each material into a glass of water, stirs, observes whether it dissolves, and records the verdict; replaces the paper recording table with a live dissolving simulation."
+  },
+  "sharedState": {
+    "fields": [
+      "active",
+      "total",
+      "results",
+      "solved",
+      "wrongAttempts",
+      "finished",
+      "operatorMode"
+    ]
+  },
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": [
+        "{type:'ready', toolId}",
+        "{type:'state', state}",
+        "{type:'event', name, detail}",
+        "{type:'response', id, result}"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "addToWater(id | [ids]) — drop material(s) into the water (call FIRST, before stir); id is 'sugar'|'salt'|'chalk'|'sand'|'sawdust' or an array.",
+      "stir(id | [ids]) — run the dissolving animation and reveal the result; call addToWater() FIRST (auto-adds if empty); id is 'sugar'|'salt'|'chalk'|'sand'|'sawdust' or array; then select(id,verdict).",
+      "select(id, verdict)"
+    ]
+  },
+  "studentControls": [
+    {
+      "control": "Pick a material card (Sugar, Salt, Chalk powder, Sand, Sawdust)",
+      "effect": "makes that material active and shows its glass of water"
+    },
+    {
+      "control": "'+ Add to water' button",
+      "effect": "drops the active material into the glass (phase becomes 'added')"
+    },
+    {
+      "control": "'Stir' button",
+      "effect": "runs the dissolving animation: soluble materials vanish into a clear solution, insoluble ones turn the water cloudy and settle as sediment"
+    },
+    {
+      "control": "Verdict buttons 'Dissolves' / 'Does not' (shown after stirring)",
+      "effect": "records the student's observation; correct = green lock + reason, wrong = shake + textbook hint + increments mistakes"
+    },
+    {
+      "control": "Reset / Start over button",
+      "effect": "clears all glasses, verdicts and mistakes and returns every material to 'Not tested'"
+    },
+    {
+      "control": "Mute / unmute button (top-right)",
+      "effect": "toggles the tap/stir/correct/wrong/completion sound cues"
+    }
+  ],
+  "answerKey": {
+    "materials": {
+      "sugar": "dissolves",
+      "salt": "dissolves",
+      "chalk": "does_not",
+      "sand": "does_not",
+      "sawdust": "does_not"
+    },
+    "soluble": ["sugar", "salt"],
+    "insoluble": ["chalk", "sand", "sawdust"],
+    "verdicts": ["dissolves", "does_not"],
+    "total": 5,
+    "rule": "Soluble materials (sugar, salt) completely disappear when stirred into water — their particles are too small to see but are still present. Insoluble materials (chalk powder, sand, sawdust) do not mix with water and stay visible, settling at the bottom even after vigorous stirring.",
+    "reasons": {
+      "sugar": "Sugar is soluble — its particles break apart and spread evenly, so it disappears into a clear, sweet solution.",
+      "salt": "Salt is soluble — it disappears quickly when stirred, leaving the water clear (and salty).",
+      "chalk": "Chalk powder is insoluble — it makes the water cloudy and slowly settles at the bottom. It does not dissolve.",
+      "sand": "Sand is insoluble — the grains stay whole and sink straight to the bottom. It does not dissolve.",
+      "sawdust": "Sawdust is insoluble — the bits float and stay visible. It does not dissolve in water."
+    },
+    "stars": {
+      "3": "0 wrong verdicts",
+      "2": "1-2 wrong verdicts",
+      "1": "3 or more wrong verdicts"
+    },
+    "operatorModes": ["ai", "student"],
+    "operatorModeNote": "ai = focused DEMO: the glass (dissolving phenomenon) and the verdict read-out stay visible, but the material chooser, Add/Stir/verdict controls and the bottom action bar are hidden and inert — the agent drives via addToWater()/stir()/select()/highlight(). student = full interactive controls. Default student."
+  },
+  "props": {
+    "defaults": {
+      "width": 0,
+      "height": 0,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false
+    },
+    "additionalProps": {}
+  },
+  "events": [
+    "ready",
+    "material_added",
+    "stir_started",
+    "stir_done",
+    "answer_correct",
+    "answer_incorrect",
+    "completed",
+    "reset",
+    "operator_mode_changed"
+  ],
+  "scientificFacts": [
+    "A material that completely disappears when stirred into water is soluble; sugar and salt are soluble.",
+    "A material that stays visible and settles at the bottom is insoluble; chalk powder, sand and sawdust are insoluble.",
+    "Dissolving does not destroy matter — soluble particles become too small to see but are still in the water (a physical change).",
+    "Stirring harder or longer does not make an insoluble material dissolve."
+  ]
+}

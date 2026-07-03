@@ -1,0 +1,135 @@
+{
+  "toolId": "M2.S4.T6.C18.2D2",
+  "title": "See through the screen",
+  "subtype": "image_reveal",
+  "conceptId": "M2.S4.T6.C18",
+  "relatedConceptIds": [],
+  "module": "M2",
+  "placement": {
+    "beat": "Apply",
+    "where": "replaces the torch-and-material walkthrough plus Activity 6.6 sorter; students shine light through each material to reveal what they can see, then sort every object into Transparent / Translucent / Opaque (Table 6.4)"
+  },
+  "sharedState": {
+    "fields": [
+      "placed",
+      "revealed",
+      "explored",
+      "sorted",
+      "sortedCount",
+      "total",
+      "wrongTaps",
+      "finished",
+      "operatorMode"
+    ]
+  },
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": [
+        "{type:'ready', toolId}",
+        "{type:'state', state}",
+        "{type:'event', name, detail}",
+        "{type:'response', id, result}"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "select(itemIdOrArray)",
+      "reveal(itemIdOrArray?)",
+      "test(itemIdOrArray) — SHORTCUT: places item AND shines the light in one call to reveal transparency; id is 'glass_tumbler'|'window_glass'|'butter_paper'|'frosted_glass'|'eraser'|'wooden_board' or array.",
+      "sort(itemIdOrArray, category)"
+    ]
+  },
+  "studentControls": [
+    {
+      "control": "Pick a material chip (glass tumbler, window glass, butter paper, frosted glass, eraser, wooden board)",
+      "effect": "places that material on the screen in front of the friend and clears any previous reveal"
+    },
+    {
+      "control": "Shine the light button",
+      "effect": "reveals what you can see through the placed material — clear (transparent), fuzzy outline (translucent), or fully blocked (opaque) — and marks it explored"
+    },
+    {
+      "control": "Tap an object tile, then tap a see-through bin",
+      "effect": "if the object belongs in that family it locks in green with a one-line reason, score and streak rise; otherwise a gentle hint shows, wrongTaps increases, and the bin shakes (no lock)"
+    },
+    {
+      "control": "Reset / Play again button",
+      "effect": "clears the screen, all sorts, wrong tries and streak, and restocks the tray"
+    },
+    {
+      "control": "Mute / unmute button (top-right)",
+      "effect": "toggles the tap/correct/wrong/completion sound cues"
+    }
+  ],
+  "answerKey": {
+    "categories": {
+      "transparent": {
+        "label": "Transparent",
+        "meaning": "You can see clearly straight through it; almost all light passes.",
+        "items": ["glass_tumbler", "window_glass"]
+      },
+      "translucent": {
+        "label": "Translucent",
+        "meaning": "Some light passes but the view is fuzzy; you see only a blurry outline.",
+        "items": ["butter_paper", "frosted_glass"]
+      },
+      "opaque": {
+        "label": "Opaque",
+        "meaning": "No light passes through; the view is completely blocked.",
+        "items": ["eraser", "wooden_board"]
+      }
+    },
+    "items": [
+      { "id": "glass_tumbler", "name": "Glass tumbler", "category": "transparent", "reason": "Clear glass — you can see straight through it." },
+      { "id": "window_glass", "name": "Window glass", "category": "transparent", "reason": "A clear window — you see the outside view clearly." },
+      { "id": "butter_paper", "name": "Butter paper", "category": "translucent", "reason": "Light passes through, but the view is blurry — not clear." },
+      { "id": "frosted_glass", "name": "Frosted glass", "category": "translucent", "reason": "Blurry — light passes but no clear view." },
+      { "id": "eraser", "name": "Eraser", "category": "opaque", "reason": "No light passes through — completely blocks the view." },
+      { "id": "wooden_board", "name": "Wooden board", "category": "opaque", "reason": "Wood blocks all light — you cannot see through it." }
+    ],
+    "total": 6,
+    "rule": "Classify a material by how much light passes through it: transparent (see clearly), translucent (fuzzy view), opaque (no view).",
+    "stars": {
+      "3": "0 wrong tries",
+      "2": "1-2 wrong tries",
+      "1": "3 or more wrong tries"
+    },
+    "operatorModes": ["ai", "student"],
+    "operatorModeNote": "ai = focused demo: the see-through screen and read-out stay live, the material picker / shine button / sorting taps are hidden or inert and the agent drives via select()/reveal()/test()/sort()/highlight(); student = full interactive controls. Default student."
+  },
+  "props": {
+    "defaults": {
+      "width": 0,
+      "height": 0,
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false
+    },
+    "additionalProps": {}
+  },
+  "events": [
+    "ready",
+    "material_selected",
+    "revealed",
+    "answer_correct",
+    "answer_incorrect",
+    "item_placed",
+    "completed",
+    "reset",
+    "operator_mode_changed"
+  ],
+  "scientificFacts": [
+    "Transparent materials such as clear glass let almost all light pass through, so you can see objects behind them clearly.",
+    "Translucent materials such as butter paper or frosted glass let some light through but scatter it, so you see only a blurry outline.",
+    "Opaque materials such as wood or an eraser block light completely, so you cannot see through them at all.",
+    "The same material can be sorted by a simple test: shine light or place it in front of an object and check how clearly you can see."
+  ]
+}

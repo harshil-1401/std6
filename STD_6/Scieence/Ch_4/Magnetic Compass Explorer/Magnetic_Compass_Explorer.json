@@ -1,0 +1,671 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Compass Explorer",
+  
+    "data": {
+      "toolName": "compass_explorer_tool",
+  
+      "parameters": {
+        "width": 880,
+        "height": 700,
+        "themeColor": "#4A4DC9",
+        "darkMode": false,
+        "showModeSelector": false,
+        "showNavigation": false,
+        "showPlayPause": false,
+        "showStepIndicator": true,
+        "animationSpeed": 1,
+        "autoPlayDuration": 0,
+  
+        "additionalProps": {
+          "title": "Compass Explorer",
+          "subtitle": "Chapter 4 — Exploring Magnets",
+  
+          "locations": [
+            {
+              "id": "school",
+              "name": "School Playground",
+              "emoji": "🏫",
+              "x": 25,
+              "y": 30,
+              "color": "#4A4DC9"
+            },
+            {
+              "id": "forest",
+              "name": "Forest Trail",
+              "emoji": "🌲",
+              "x": 62,
+              "y": 48,
+              "color": "#22C55E"
+            },
+            {
+              "id": "river",
+              "name": "River Bank",
+              "emoji": "🏞️",
+              "x": 42,
+              "y": 72,
+              "color": "#06B6D4"
+            }
+          ]
+        }
+      }
+    },
+  
+    "instructions_for_student": "Watch the compass needle settle, predict which way it points, then drag the box to align N with the needle. Try at all three locations!",
+  
+    "toolSchema": {
+      "toolName": "compass_explorer_tool",
+      "version": "1.0.0",
+      "description": "An interactive 5-step compass learning tool. Students watch a realistic SVG compass needle swing and settle (per-location RAF physics animation), predict north, drag to align the dial, then explore multiple map locations — proving the needle always points north regardless of location.",
+  
+      "chapter": "Chapter 4 — Exploring Magnets",
+      "textbook": "NCERT Curiosity — Textbook of Science, Grade 6",
+      "topic": "4.3 Finding Directions — Magnetic Compass",
+  
+      "steps": {
+        "1": {
+          "title": "Watch the Needle Settle",
+          "description": "Student observes the compass needle swing from a displaced position and settle pointing north. Each location has a unique swing personality (amplitude, frequency, decay).",
+          "interaction": "observe",
+          "canSkip": false
+        },
+        "2": {
+          "title": "Make Your Prediction",
+          "description": "Student selects which direction the red needle tip is pointing. Four options: North / South / East / West. Correct answer is always North.",
+          "interaction": "tap_choice",
+          "options": ["North", "South", "East", "West"],
+          "correctAnswer": "North",
+          "canSkip": false
+        },
+        "3": {
+          "title": "Align the Compass",
+          "description": "Student drag-rotates the compass box until N on the dial lines up with the red needle. Live alignment meter shows degrees off. Success triggers green glow + direction reveal grid.",
+          "interaction": "drag_rotate",
+          "alignThresholdDeg": 8,
+          "canSkip": false
+        },
+        "4": {
+          "title": "Explore Every Location",
+          "description": "Unified map+compass screen. Student taps each pin on the illustrated SVG map — compass resets with a new unique swing — and aligns N at each location. Compass is draggable inline without navigating away.",
+          "interaction": "tap_map_pin_then_drag_rotate",
+          "canSkip": false
+        },
+        "5": {
+          "title": "Summary",
+          "description": "Key concept cards: Earth is a giant magnet, North-seeking pole, compass works everywhere, reading N/S/E/W from the dial. Restart button.",
+          "interaction": "read",
+          "canSkip": true
+        }
+      },
+  
+      "additionalPropsSchema": {
+        "title": {
+          "type": "string",
+          "default": "Compass Explorer",
+          "description": "Main H1 heading displayed at top of the tool. Rendered as gradient text using design system colors."
+        },
+        "subtitle": {
+          "type": "string",
+          "default": "Chapter 4 — Exploring Magnets",
+          "description": "Small blue pill chip displayed above the title. Use for chapter or activity reference."
+        },
+        "locations": {
+          "type": "Location[]",
+          "default": "[School Playground, Forest Trail, River Bank]",
+          "description": "Array of 2–5 Location objects. Each gets a unique needle-swing personality and fixed dial start offset so every location feels dramatically different. Built-in IDs (school/forest/river) match illustrated map terrain art.",
+          "minItems": 2,
+          "maxItems": 5,
+          "itemSchema": {
+            "id": {
+              "type": "string",
+              "required": true,
+              "description": "Unique key. Use school | forest | river for built-in terrain art. Any string works for custom locations.",
+              "builtInValues": ["school", "forest", "river"]
+            },
+            "name": {
+              "type": "string",
+              "required": true,
+              "description": "Display name shown on map pin label, active location badge, and step descriptions."
+            },
+            "emoji": {
+              "type": "string",
+              "required": true,
+              "description": "Single emoji for the map pin icon. Use thematically appropriate emojis."
+            },
+            "x": {
+              "type": "number",
+              "required": true,
+              "range": "0–100",
+              "description": "X position as % of map width. Note: built-in IDs use hardcoded safe pin coordinates regardless of this value."
+            },
+            "y": {
+              "type": "number",
+              "required": true,
+              "range": "0–100",
+              "description": "Y position as % of map height."
+            },
+            "color": {
+              "type": "string",
+              "required": true,
+              "description": "Hex color for active pin, badge border, location row highlight. Each location should have a visually distinct color.",
+              "examples": ["#4A4DC9", "#22C55E", "#06B6D4", "#FF7212", "#8B5CF6", "#EF4444", "#1D4ED8"]
+            }
+          }
+        }
+      },
+  
+      "needlePersonalities": {
+        "description": "Each location index receives a fixed swing personality. Personalities are assigned by array index, not by location ID.",
+        "personalities": [
+          {
+            "index": 0,
+            "location": "First location (default: School Playground)",
+            "dialStartDeg": 142,
+            "amplitude": 55,
+            "frequency": 13,
+            "decay": 7,
+            "feel": "Wide, lazy pendulum — N starts far left"
+          },
+          {
+            "index": 1,
+            "location": "Second location (default: Forest Trail)",
+            "dialStartDeg": 251,
+            "amplitude": 38,
+            "frequency": 18,
+            "decay": 9,
+            "feel": "Fast tight oscillation — N starts near bottom-right (almost flipped)"
+          },
+          {
+            "index": 2,
+            "location": "Third location (default: River Bank)",
+            "dialStartDeg": 67,
+            "amplitude": 70,
+            "frequency": 11,
+            "decay": 6,
+            "feel": "Dramatic slow pendulum — biggest swing, slowest decay"
+          },
+          {
+            "index": 3,
+            "location": "Fourth location (fallback)",
+            "dialStartDeg": 188,
+            "amplitude": 45,
+            "frequency": 15,
+            "decay": 8,
+            "feel": "Medium swing — N near bottom"
+          },
+          {
+            "index": 4,
+            "location": "Fifth location (fallback)",
+            "dialStartDeg": 315,
+            "amplitude": 50,
+            "frequency": 12,
+            "decay": 7,
+            "feel": "Medium-wide swing — N upper-right"
+          }
+        ]
+      },
+  
+      "design": {
+        "colorPrimary": "#4A4DC9",
+        "colorSecondary": "#FF7212",
+        "colorGradientFrom": "#533086",
+        "colorGradientTo": "#FC9145",
+        "colorBlueLightFill": "#C1C1EA",
+        "colorOrangeLightFill": "#FFF3E4",
+        "colorNeutral900": "#4E4E4E",
+        "colorNeutral400": "#CACACA",
+        "colorNeutral200": "#EBEBEB",
+        "colorBackground": "#F5F5F5",
+        "colorSurface": "#FFFFFF",
+        "colorSuccess": "#22C55E",
+        "colorError": "#EF4444",
+        "compassNeedleNorth": "#EF4444",
+        "compassNeedleSouth": "#9CA3AF",
+        "font": "Poppins",
+        "buttonHeight": 48,
+        "buttonBorderRadius": 24,
+        "cardBorderRadius": 20
+      },
+  
+      "responsive": {
+        "mobileBreakpoint": 520,
+        "tabletBreakpoint": 800,
+        "compassSizeFormula": "clamp(160px, 35vw, 280px)",
+        "mapWidthFormula": "min(480px, 100% - padding)",
+        "layoutMobile": "Single column, full-width stacked, full-width buttons, 44px tap targets",
+        "layoutTablet": "Single column, centred compass, medium padding",
+        "layoutDesktop": "Side-by-side row: compass on left, info/guidance panel on right"
+      },
+  
+      "additionalPropsExamples": {
+        "default_3_locations": {
+          "title": "Compass Explorer",
+          "subtitle": "Chapter 4 — Exploring Magnets",
+          "locations": [
+            { "id": "school", "name": "School Playground", "emoji": "🏫", "x": 25, "y": 30, "color": "#4A4DC9" },
+            { "id": "forest", "name": "Forest Trail",      "emoji": "🌲", "x": 62, "y": 48, "color": "#22C55E" },
+            { "id": "river",  "name": "River Bank",        "emoji": "🏞️", "x": 42, "y": 72, "color": "#06B6D4" }
+          ]
+        },
+        "two_locations": {
+          "title": "Compass Basics",
+          "subtitle": "Chapter 4 — Finding Directions",
+          "locations": [
+            { "id": "school", "name": "Classroom",    "emoji": "🏫", "x": 30, "y": 35, "color": "#4A4DC9" },
+            { "id": "forest", "name": "School Garden","emoji": "🌻", "x": 65, "y": 60, "color": "#22C55E" }
+          ]
+        },
+        "four_locations": {
+          "title": "Compass Around Town",
+          "subtitle": "Directions Practice",
+          "locations": [
+            { "id": "school",  "name": "School",  "emoji": "🏫", "x": 18, "y": 22, "color": "#4A4DC9" },
+            { "id": "forest",  "name": "Park",    "emoji": "🌳", "x": 68, "y": 38, "color": "#22C55E" },
+            { "id": "river",   "name": "Lake",    "emoji": "🏞️", "x": 35, "y": 70, "color": "#06B6D4" },
+            { "id": "market",  "name": "Market",  "emoji": "🏪", "x": 78, "y": 72, "color": "#8B5CF6" }
+          ]
+        },
+        "five_locations": {
+          "title": "North Is Everywhere",
+          "subtitle": "Chapter 4 — Compass Challenge",
+          "locations": [
+            { "id": "school",  "name": "School",   "emoji": "🏫", "x": 15, "y": 20, "color": "#4A4DC9" },
+            { "id": "forest",  "name": "Forest",   "emoji": "🌲", "x": 60, "y": 35, "color": "#22C55E" },
+            { "id": "river",   "name": "River",    "emoji": "🏞️", "x": 38, "y": 68, "color": "#06B6D4" },
+            { "id": "hill",    "name": "Hilltop",  "emoji": "⛰️", "x": 80, "y": 25, "color": "#FF7212" },
+            { "id": "village", "name": "Village",  "emoji": "🏘️", "x": 70, "y": 78, "color": "#8B5CF6" }
+          ]
+        },
+        "kerala_sailor_theme": {
+          "title": "Sailor's Compass",
+          "subtitle": "Chapter 4 — How Sailors Found Direction",
+          "locations": [
+            { "id": "school",  "name": "Harbour",      "emoji": "⚓", "x": 22, "y": 32, "color": "#1D4ED8" },
+            { "id": "forest",  "name": "Spice Island", "emoji": "🏝️","x": 68, "y": 45, "color": "#22C55E" },
+            { "id": "river",   "name": "Open Sea",     "emoji": "🌊", "x": 45, "y": 72, "color": "#06B6D4" }
+          ]
+        }
+      },
+  
+      "modes": {
+        "explore": {
+          "steps": [1, 2, 3, 4, 5],
+          "description": "Single linear 5-step flow. No branching, no mode tabs."
+        }
+      },
+  
+      "stepSummary": {
+        "1": { "title": "Watch the Needle Settle",  "type": "observe"              },
+        "2": { "title": "Make Your Prediction",     "type": "tap_choice"           },
+        "3": { "title": "Align the Compass",        "type": "drag_rotate"          },
+        "4": { "title": "Explore Every Location",   "type": "map_explore_and_drag" },
+        "5": { "title": "Summary",                  "type": "read_and_restart"     }
+      }
+    },
+  
+    "agentReadme": {
+      "_note": "Agent-facing documentation. Not rendered by the tool.",
+  
+      "overview": "CompassExplorerTool is a 5-step interactive compass learning experience for NCERT Grade 6 Chapter 4. Students observe a physically realistic RAF-animated compass needle, predict north, drag-align the dial, then explore 2–5 map locations — proving the needle always points north regardless of location. The tool is fully responsive (fluid compass size, CSS media-query layout) and follows the Singularity design system (Poppins, #4A4DC9, gradient #533086→#FC9145).",
+  
+      "quickReferenceTable": [
+        { "studentRequest": "Teach me how a compass works",            "config": "default 3 locations",             "keyParams": "use default additionalProps"                             },
+        { "studentRequest": "Show Activity 4.3",                       "config": "custom subtitle",                  "keyParams": "subtitle: 'Activity 4.3 — Finding Directions'"          },
+        { "studentRequest": "Quick 2-location demo",                   "config": "2 locations",                      "keyParams": "locations: 2 items (school + forest)"                   },
+        { "studentRequest": "Sailor story / Kerala navigation",        "config": "ocean theme",                      "keyParams": "locations with harbour/island/sea emojis"               },
+        { "studentRequest": "Extended challenge / 4 locations",        "config": "4 locations",                      "keyParams": "locations: 4 items with varied colors"                  },
+        { "studentRequest": "Prove compass works everywhere (assess)", "config": "assessment framing",               "keyParams": "title: 'Prove It', subtitle: 'Assessment'"              },
+        { "studentRequest": "Compact sidebar embed",                   "config": "small width, 2 locations",         "keyParams": "width:520, height:600, showStepIndicator:false"          },
+        { "studentRequest": "Village / rural India context",           "config": "village-themed locations",         "keyParams": "name/emoji reflecting Indian rural setting"             }
+      ],
+  
+      "visibilityControlParameters": {
+        "showStepIndicator": { "type": "boolean", "default": true,  "description": "Show/hide the 5 progress dots at the top of the card" },
+        "showModeSelector":  { "type": "boolean", "default": false, "description": "Always false — this tool has one linear flow, no mode tabs" },
+        "showNavigation":    { "type": "boolean", "default": false, "description": "Always false — steps advance via in-step CTA buttons" },
+        "showPlayPause":     { "type": "boolean", "default": false, "description": "Always false — student-paced interaction, no autoplay" },
+        "animationSpeed":    { "type": "number",  "default": 1,     "description": "Multiplier for animation durations. 0.5 = twice as fast." },
+        "autoPlayDuration":  { "type": "number",  "default": 0,     "description": "Always 0 — no auto-advance" }
+      },
+  
+      "additionalPropsReference": {
+        "title": {
+          "type": "string",
+          "default": "Compass Explorer",
+          "description": "Main heading. Rendered in gradient text (#533086 → #4A4DC9 → #FC9145)."
+        },
+        "subtitle": {
+          "type": "string",
+          "default": "Chapter 4 — Exploring Magnets",
+          "description": "Pill chip above title. Use for chapter/activity reference."
+        },
+        "locations": {
+          "type": "Location[]",
+          "default": "[school, forest, river]",
+          "description": "2–5 Location objects. Order determines needle-swing personality (index 0 = wide slow, 1 = fast tight, 2 = dramatic slow).",
+          "itemProperties": {
+            "id":    { "type": "string", "required": true,  "note": "Built-in: school|forest|river → matched terrain art. Custom: any string → fallback coords." },
+            "name":  { "type": "string", "required": true  },
+            "emoji": { "type": "string", "required": true  },
+            "x":     { "type": "number", "required": true,  "note": "0–100, % of map width. Ignored for built-in IDs." },
+            "y":     { "type": "number", "required": true,  "note": "0–100, % of map height. Ignored for built-in IDs." },
+            "color": { "type": "string", "required": true,  "note": "Hex color. Each location should be visually distinct." }
+          }
+        }
+      },
+  
+      "toolCallExamples": {
+        "example1_default": {
+          "_description": "Default 3 locations — textbook school, forest, river",
+          "frontend_action": "show_interactive_tool",
+          "title": "Compass Explorer",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "additionalProps": {
+                "title": "Compass Explorer",
+                "subtitle": "Chapter 4 — Exploring Magnets",
+                "locations": [
+                  { "id": "school", "name": "School Playground", "emoji": "🏫", "x": 25, "y": 30, "color": "#4A4DC9" },
+                  { "id": "forest", "name": "Forest Trail",      "emoji": "🌲", "x": 62, "y": 48, "color": "#22C55E" },
+                  { "id": "river",  "name": "River Bank",        "emoji": "🏞️", "x": 42, "y": 72, "color": "#06B6D4" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "Watch the needle settle, predict North, then drag the compass box to align — at all three locations!"
+        },
+  
+        "example2_activity_subtitle": {
+          "_description": "Activity 4.3 framing — same locations, textbook activity subtitle",
+          "frontend_action": "show_interactive_tool",
+          "title": "Activity 4.3 — Finding Directions",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "additionalProps": {
+                "title": "Activity 4.3 — Finding Directions",
+                "subtitle": "NCERT Grade 6 · Chapter 4",
+                "locations": [
+                  { "id": "school", "name": "School Playground", "emoji": "🏫", "x": 25, "y": 30, "color": "#4A4DC9" },
+                  { "id": "forest", "name": "Forest Trail",      "emoji": "🌲", "x": 62, "y": 48, "color": "#22C55E" },
+                  { "id": "river",  "name": "River Bank",        "emoji": "🏞️", "x": 42, "y": 72, "color": "#06B6D4" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "A freely suspended magnet always points north–south. Use the compass to find directions at each location!"
+        },
+  
+        "example3_two_locations": {
+          "_description": "Simplified 2-location — classroom + garden",
+          "frontend_action": "show_interactive_tool",
+          "title": "Compass Basics",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "additionalProps": {
+                "title": "Compass Basics",
+                "subtitle": "Chapter 4 — Exploring Magnets",
+                "locations": [
+                  { "id": "school", "name": "Classroom",    "emoji": "🏫", "x": 30, "y": 35, "color": "#4A4DC9" },
+                  { "id": "forest", "name": "School Garden","emoji": "🌻", "x": 65, "y": 60, "color": "#22C55E" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "Can you find North in the classroom AND the garden? Test your compass!"
+        },
+  
+        "example4_four_locations": {
+          "_description": "Extended exploration — 4 varied locations around a town",
+          "frontend_action": "show_interactive_tool",
+          "title": "Compass Around Town",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "additionalProps": {
+                "title": "Compass Around Town",
+                "subtitle": "Directions Practice — Grade 6",
+                "locations": [
+                  { "id": "school",  "name": "School",  "emoji": "🏫", "x": 18, "y": 22, "color": "#4A4DC9" },
+                  { "id": "forest",  "name": "Park",    "emoji": "🌳", "x": 68, "y": 38, "color": "#22C55E" },
+                  { "id": "river",   "name": "Lake",    "emoji": "🏞️", "x": 35, "y": 70, "color": "#06B6D4" },
+                  { "id": "market",  "name": "Market",  "emoji": "🏪", "x": 78, "y": 72, "color": "#8B5CF6" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "Explore 4 different locations. Does the compass always agree on which way is north?"
+        },
+  
+        "example5_five_locations": {
+          "_description": "Maximum challenge — 5 locations",
+          "frontend_action": "show_interactive_tool",
+          "title": "North Is Everywhere",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "additionalProps": {
+                "title": "North Is Everywhere",
+                "subtitle": "Chapter 4 — Compass Challenge",
+                "locations": [
+                  { "id": "school",  "name": "School",   "emoji": "🏫", "x": 15, "y": 20, "color": "#4A4DC9" },
+                  { "id": "forest",  "name": "Forest",   "emoji": "🌲", "x": 60, "y": 35, "color": "#22C55E" },
+                  { "id": "river",   "name": "River",    "emoji": "🏞️", "x": 38, "y": 68, "color": "#06B6D4" },
+                  { "id": "hill",    "name": "Hilltop",  "emoji": "⛰️", "x": 80, "y": 25, "color": "#FF7212" },
+                  { "id": "village", "name": "Village",  "emoji": "🏘️", "x": 70, "y": 78, "color": "#8B5CF6" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "Challenge: align the compass at all 5 locations. The needle never lies!"
+        },
+  
+        "example6_kerala_village": {
+          "_description": "Village/Kerala context — connects to the Reshma textbook story",
+          "frontend_action": "show_interactive_tool",
+          "title": "Finding North in Kerala",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "additionalProps": {
+                "title": "Finding North in Kerala",
+                "subtitle": "Chapter 4 — Exploring Magnets",
+                "locations": [
+                  { "id": "school",  "name": "Village School", "emoji": "🏫", "x": 25, "y": 28, "color": "#4A4DC9" },
+                  { "id": "forest",  "name": "Coconut Grove",  "emoji": "🌴", "x": 65, "y": 45, "color": "#22C55E" },
+                  { "id": "river",   "name": "Backwaters",     "emoji": "⛵", "x": 40, "y": 75, "color": "#06B6D4" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "Reshma wants to navigate from the backwaters to the coconut grove. Help her align the compass at each location!"
+        },
+  
+        "example7_sailor_theme": {
+          "_description": "Sailor/ocean theme — connects to textbook's ship-spices story",
+          "frontend_action": "show_interactive_tool",
+          "title": "Sailor's Compass",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "additionalProps": {
+                "title": "Sailor's Compass",
+                "subtitle": "Chapter 4 — How Sailors Found Direction",
+                "locations": [
+                  { "id": "school",  "name": "Harbour",      "emoji": "⚓", "x": 22, "y": 32, "color": "#1D4ED8" },
+                  { "id": "forest",  "name": "Spice Island", "emoji": "🏝️", "x": 68, "y": 45, "color": "#22C55E" },
+                  { "id": "river",   "name": "Open Sea",     "emoji": "🌊", "x": 45, "y": 72, "color": "#06B6D4" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "In the olden days, sailors used a magnetic compass to navigate oceans. Align the compass at each waypoint on the voyage!"
+        },
+  
+        "example8_assessment": {
+          "_description": "Assessment/proof framing — student must demonstrate mastery",
+          "frontend_action": "show_interactive_tool",
+          "title": "Prove It: Compass Works Everywhere",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "showStepIndicator": true,
+              "additionalProps": {
+                "title": "Prove It: Compass Works Everywhere",
+                "subtitle": "Assessment — Activity 4.3",
+                "locations": [
+                  { "id": "school", "name": "School Playground", "emoji": "🏫", "x": 25, "y": 30, "color": "#4A4DC9" },
+                  { "id": "forest", "name": "Forest Trail",      "emoji": "🌲", "x": 62, "y": 48, "color": "#22C55E" },
+                  { "id": "river",  "name": "River Bank",        "emoji": "🏞️", "x": 42, "y": 72, "color": "#06B6D4" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "Your task: align the compass at all 3 locations and observe — does the needle always point the same way? Why?"
+        },
+  
+        "example9_compact_embed": {
+          "_description": "Compact embed for sidebar or iframe — reduced size, 2 locations",
+          "frontend_action": "show_interactive_tool",
+          "title": "Quick Compass Check",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "width": 520,
+              "height": 600,
+              "showStepIndicator": false,
+              "additionalProps": {
+                "title": "Quick Compass Check",
+                "subtitle": "Grade 6 Science",
+                "locations": [
+                  { "id": "school", "name": "Location A", "emoji": "📍", "x": 30, "y": 40, "color": "#4A4DC9" },
+                  { "id": "river",  "name": "Location B", "emoji": "📍", "x": 65, "y": 65, "color": "#FF7212" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "Align the compass at both locations."
+        },
+  
+        "example10_custom_title_only": {
+          "_description": "Only change title — use defaults for everything else",
+          "frontend_action": "show_interactive_tool",
+          "title": "Where Is North?",
+          "data": {
+            "toolName": "compass_explorer_tool",
+            "parameters": {
+              "additionalProps": {
+                "title": "Where Is North?",
+                "subtitle": "Activity 4.3 — Finding Directions",
+                "locations": [
+                  { "id": "school", "name": "School Playground", "emoji": "🏫", "x": 25, "y": 30, "color": "#4A4DC9" },
+                  { "id": "forest", "name": "Forest Trail",      "emoji": "🌲", "x": 62, "y": 48, "color": "#22C55E" },
+                  { "id": "river",  "name": "River Bank",        "emoji": "🏞️", "x": 42, "y": 72, "color": "#06B6D4" }
+                ]
+              }
+            }
+          },
+          "instructions_for_student": "The compass needle always tells you where north is — test it everywhere!"
+        }
+      },
+  
+      "decisionTree": {
+        "root": "What does the student need?",
+        "branches": [
+          {
+            "condition": "Learn how a compass works (general)",
+            "useExample": "example1_default",
+            "note": "Full 3-location default — covers all textbook content for Activity 4.3"
+          },
+          {
+            "condition": "Reference to Activity 4.3 specifically",
+            "useExample": "example2_activity_subtitle",
+            "keyChange": "title + subtitle reference the activity"
+          },
+          {
+            "condition": "Short/quick demo or intro",
+            "useExample": "example3_two_locations",
+            "keyChange": "2 locations only — faster to complete"
+          },
+          {
+            "condition": "Reshma / Kerala / textbook story context",
+            "useExample": "example6_kerala_village",
+            "keyChange": "Village School + Coconut Grove + Backwaters"
+          },
+          {
+            "condition": "Sailors / ancient navigation / spice trade",
+            "useExample": "example7_sailor_theme",
+            "keyChange": "Harbour + Spice Island + Open Sea"
+          },
+          {
+            "condition": "Extended practice / more locations",
+            "useExample": "example4_four_locations or example5_five_locations",
+            "keyChange": "4 or 5 location objects"
+          },
+          {
+            "condition": "Assessment / prove understanding",
+            "useExample": "example8_assessment",
+            "keyChange": "Title framed as a task, subtitle says Assessment"
+          },
+          {
+            "condition": "Compact embed / sidebar / iframe",
+            "useExample": "example9_compact_embed",
+            "keyChange": "width:520, height:600, showStepIndicator:false, 2 locations"
+          },
+          {
+            "condition": "Just change the title / chapter reference",
+            "useExample": "example10_custom_title_only",
+            "keyChange": "Only modify title and subtitle strings"
+          }
+        ]
+      },
+  
+      "tipsForAgents": [
+        "Always include at least 2 locations — the map step requires minimum 2 pins to be meaningful.",
+        "Use built-in IDs (school / forest / river) to get matching illustrated terrain art on the map (river water, forest trees, school building). Custom IDs use fallback pin coordinates.",
+        "Needle swing personality is determined by array INDEX (0, 1, 2…), not by ID — reordering locations changes which swing each location gets.",
+        "The compass size is fluid (clamp(160px, 35vw, 280px)) — no need to set width/height unless embedding in a constrained container.",
+        "For textbook alignment, set subtitle to the specific activity reference: 'Activity 4.3 — Finding Directions'.",
+        "The correct answer to step 2 (prediction) is ALWAYS North — this is fixed by the physics, not configurable.",
+        "All 5 steps always run in order. filterSteps is not supported — the flow is linear by design.",
+        "Each location's color should be visually distinct. Avoid similar hues in the same locations array.",
+        "For assessment contexts, frame the title/subtitle as a challenge/task and include an observation question in instructions_for_student.",
+        "Step 4 is fully self-contained — students can stay on the map screen and align multiple locations without navigating away."
+      ],
+  
+      "errorHandling": {
+        "lessThan2Locations": "Renders with 1 location but step 4 map is less engaging (only 1 pin). Use at least 2.",
+        "moreThan5Locations": "Locations beyond index 4 use fallback personality and map coords — may overlap on the map.",
+        "missingColor": "Defaults to #4A4DC9 (primary blue).",
+        "missingEmoji": "Defaults to 📍 pin icon.",
+        "emptyAdditionalProps": "All defaults apply — title 'Compass Explorer', subtitle 'Chapter 4 — Exploring Magnets', 3 default locations.",
+        "unknownLocationId": "Works fine — custom IDs use interpolated map coordinates (x/y % values) instead of hardcoded terrain positions.",
+        "duplicateIds": "Only the first occurrence renders — ensure all location IDs are unique."
+      },
+  
+      "learningObjectives": [
+        "Understand that a freely suspended bar magnet always aligns north–south",
+        "Identify the red end of the needle as the North-seeking pole",
+        "Understand that Earth behaves like a giant magnet",
+        "Learn to use a magnetic compass to find cardinal directions",
+        "Observe that the compass works identically at every location on Earth",
+        "Practice aligning a compass dial with the needle to read N, S, E, W"
+      ],
+  
+      "keyTerms": [
+        "magnetic compass",
+        "North-seeking pole",
+        "South-seeking pole",
+        "freely suspended magnet",
+        "north–south direction",
+        "Earth as a giant magnet",
+        "cardinal directions",
+        "N S E W",
+        "dial alignment",
+        "lodestone",
+        "matsya-yantra"
+      ]
+    }
+  }

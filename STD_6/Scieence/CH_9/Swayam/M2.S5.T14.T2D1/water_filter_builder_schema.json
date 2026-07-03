@@ -1,0 +1,93 @@
+{
+  "toolName": "water_filter_builder",
+  "componentName": "WaterFilterBuilder",
+  "version": "1.0.0",
+  "title": "Build a Low-Cost Water Filter",
+  "activity": "Topic M2.S5.T14 — Build a simple low-cost water filter (layer order: cotton, charcoal, sand, pebbles)",
+  "description": "A tap-to-build Class 6 construction tool. An upturned plastic bottle with the bottom cut off (neck pointing down into an output beaker) has four empty layer slots. A side palette holds FIVE layer cards — cotton plug, charcoal, fine sand, coarse sand, and pebbles/gravel — but only four slots, so one card (coarse sand) is a distractor the student must reject. The student taps cards to stack the filter from the BOTTOM (neck) upward; tapping a placed layer removes it. When all four slots are filled, a 'Pour pond water' button animates muddy water trickling down through each layer and collecting in the beaker below. The correct order (bottom → top: cotton plug → charcoal → fine sand → pebbles/gravel) produces CLEAR output; any wrong order produces CLOUDY output with a one-line hint about what to fix. The student fixes and re-pours until clear, then a gamified summary explains why each layer goes where it does (stars for a first-try solve; confetti). NO drag-and-drop — placement is tap-a-card-then-it-fills-the-next-slot (house rule; robust on mobile).",
+  "toolType": "tap-to-build construction + pour-and-test (single flow, no quiz mode)",
+  "topic_id": "M2.S5.T14",
+  "tool_id": "M2.S5.T14.T2D1",
+  "subtype": "builder",
+  "prodSafe": "No 'lucide-react' import — all icons are inline SVGs defined in the file, so the tool renders on every iframe-renderer version (an external icon name can never be undefined at runtime).",
+
+  "parameters": {
+    "width": 840,
+    "height": 620,
+    "gradeLevel": 6,
+    "themeColor": "#4A4DC9",
+    "darkMode": false,
+    "showNavigation": true,
+    "showStepIndicator": true,
+    "initialStep": 0,
+    "animationSpeed": 1,
+    "autoPlayDuration": 0,
+    "additionalProps": {
+      "showHints": true
+    }
+  },
+
+  "parameterSchema": {
+    "gradeLevel": { "type": "number", "enum": [6, 7, 8], "default": 6, "description": "Tier preset. 6 = heaviest gamification, story framing, biggest text, slowest/most dramatic pour, 70-particle confetti + stars on the summary. 7 = moderate. 8 = light/formal. Authored for Class 6." },
+    "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Accent hint. The tool uses the Singularity palette: header purple, pond-water brown, CTAs orange #FF7212." },
+    "showNavigation": { "type": "boolean", "default": true, "description": "Reserved; the single flow advances via in-stage actions (place layers → pour → result → summary)." },
+    "autoPlayDuration": { "type": "number", "default": 0, "description": "Host auto-advance hint, in ms. Ignored — the tool calls setStopAutoNext(true) because every stage needs interaction." }
+  },
+
+  "additionalPropsSchema": {
+    "showHints": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show the one-line 'what to fix' hint on a cloudy (wrong-order) pour, plus the inline build tips."
+    },
+    "feedbackMessage": {
+      "type": "string",
+      "default": "",
+      "description": "Optional one-line coaching message (reserved; the tool already supplies per-stage prompts)."
+    }
+  },
+
+  "layers": {
+    "paletteCards": ["cotton", "charcoal", "fine_sand", "coarse_sand", "pebbles"],
+    "slots": 4,
+    "correctOrderBottomToTop": ["cotton", "charcoal", "fine_sand", "pebbles"],
+    "distractor": "coarse_sand",
+    "notes": "The bottle is upturned (neck down), so water poured in the wide cut top meets the coarsest layer (pebbles) first and exits through the cotton plug last. Slot index 0 = bottom (at the neck), slot 3 = top (at the mouth).",
+    "roles": {
+      "cotton": "Cotton plug at the very bottom (neck) — holds the other layers and the clean water in so nothing washes straight out.",
+      "charcoal": "Charcoal — removes colour, smell and very fine impurities.",
+      "fine_sand": "Fine sand — traps the fine mud and small particles.",
+      "pebbles": "Pebbles / gravel on top — catch the large floating leaves and debris first.",
+      "coarse_sand": "Coarse sand — the DISTRACTOR; plausible but pebbles/gravel make the better top layer for big debris."
+    }
+  },
+
+  "steps": [
+    { "id": "S1", "title": "Build the filter", "type": "interactive", "description": "Tap layer cards to stack the upturned bottle bottom→top. 5 cards, 4 slots (coarse sand is a distractor). Tap a placed layer to remove it. Gate: all four slots filled." },
+    { "id": "S2", "title": "Pour & test", "type": "interactive", "description": "Press 'Pour pond water'; muddy water trickles down through each layer into the beaker. Correct order → clear output; wrong order → cloudy output + a one-line hint. Student fixes and re-pours until clear." },
+    { "id": "S3", "title": "Why this works", "type": "result", "description": "Gamified summary: stars (3 for first-try-correct, 2 after retries), confetti, and a top→bottom recap of the correct stack explaining each layer's job, noting coarse sand was the trap. 'Build again' resets." }
+  ],
+
+  "interactionNotes": [
+    "TAP-TO-PLACE only — tap a palette card and it fills the next empty slot from the bottom up; tap a placed layer to remove it. NO drag-and-drop (house rule; robust on mobile for young students).",
+    "5 palette cards for 4 slots: cotton, charcoal, fine sand, coarse sand, pebbles/gravel. Coarse sand is a distractor — the intended top layer is pebbles/gravel.",
+    "The apparatus is a single responsive SVG side-view scene: an upturned (neck-down) cut-bottom bottle with 4 stacked layer slots over an output beaker. Driven by placed[] (4 layer ids), highlightNext (pulsing slot), pourT (0..1), and clarity (0..1).",
+    "Correct order bottom→top = cotton plug → charcoal → fine sand → pebbles/gravel. Because the bottle is upturned, water poured in the wide top meets pebbles first and exits through the cotton last.",
+    "Pour-and-test: only the right order gives clear output; any wrong order gives cloudy output and a context-aware one-line hint (e.g. cotton must be at the neck; coarsest on top; you used the coarse-sand trap).",
+    "Single guided flow — there is NO separate quiz/practice mode and no mode selector. After a correct clear pour the student reaches one summary scorecard (stars + per-layer 'why' recap + Build again).",
+    "Calls setStopAutoNext(true) and reports setStepDetails on every stage change (build=1, pour/result=2, summary=3 of 3).",
+    "Responsive from 320px; scene + palette stack vertically on mobile; touch targets 56px at Class 6; the bottle scene caps at 300px wide and scales with the container.",
+    "PROD-SAFE ICONS: no lucide-react dependency — icons are inline SVGs, so no 'X is not defined' error regardless of the renderer's injected icon allowlist."
+  ],
+
+  "conceptsReinforced": [
+    "A simple water filter can be built cheaply from an upturned cut-bottom bottle and locally-available materials.",
+    "The LAYER ORDER matters: coarsest material (pebbles/gravel) on top to catch big debris, then fine sand to trap mud, charcoal to remove colour/smell, and a cotton plug at the bottom to hold it all in.",
+    "Filtration here separates INSOLUBLE solids (mud, leaves, grit) from water; a dissolved (soluble) impurity would still pass through — this is a clean-up filter, not a way to remove dissolved salts.",
+    "Each layer has a job; getting the order wrong lets particles straight through and the water stays cloudy.",
+    "Everyday filter materials: cotton, charcoal, sand and pebbles/gravel."
+  ],
+
+  "objective_id": "M2.S5.T14.O1",
+  "instructions_for_student": "Tap the layer cards to stack your filter from the bottom up (cotton at the neck, pebbles on top), then pour the muddy pond water through. If it comes out cloudy, fix the order and try again until the water runs clear!"
+}

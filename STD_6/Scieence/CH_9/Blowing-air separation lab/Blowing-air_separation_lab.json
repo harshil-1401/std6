@@ -1,0 +1,267 @@
+{
+    "toolName": "blowing_air_separation_lab",
+    "version": "1.0.0",
+    "description": "Interactive winnowing (blowing-air separation) lab. A farmer pours a tray of a heavy+light mixture (rubbed peanuts or wheat+husk) into the wind; the student predicts which part blows away, picks an air strength, and watches realistic falling/pouring physics separate the heavy grains (which fall into a rounded mound) from the light husk (which is carried downwind into a thin scatter).",
+  
+    "parameters": {
+      "width": {
+        "type": "number",
+        "default": 880,
+        "description": "Maximum component width in pixels (component is fully responsive down to 320px)"
+      },
+      "height": {
+        "type": "number",
+        "default": 600,
+        "description": "Suggested height in pixels; the stage keeps a 760:480 aspect ratio and scales to fit"
+      },
+      "initialMode": {
+        "type": "string",
+        "enum": ["learn", "practice", "real_world", "hands_on"],
+        "default": "hands_on",
+        "description": "Starting mode. This tool is a predict-observe-explain (POE) activity and runs primarily in hands_on."
+      },
+      "enabledModes": {
+        "type": "array",
+        "items": { "type": "string", "enum": ["learn", "practice", "real_world", "hands_on"] },
+        "default": ["hands_on"],
+        "description": "Which modes to enable. The activity is a single hands_on POE flow."
+      },
+      "showModeSelector": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show/hide mode selector tabs"
+      },
+      "showNavigation": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show/hide prev/next buttons"
+      },
+      "showPlayPause": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show/hide play/pause button"
+      },
+      "showStepIndicator": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show/hide the phase progress indicator (predict -> ready -> blowing -> result)"
+      },
+      "initialStep": {
+        "type": "number",
+        "default": 1,
+        "description": "Starting phase ID (1 = predict)"
+      },
+      "filterSteps": {
+        "type": "array",
+        "items": { "type": "number" },
+        "default": null,
+        "description": "Array of phase IDs to show"
+      },
+      "animationSpeed": {
+        "type": "number",
+        "default": 1,
+        "description": "Multiplier on the falling/pouring physics speed (e.g. 0.5 = slow motion, 2 = fast)"
+      },
+      "autoPlayDuration": {
+        "type": "number",
+        "default": 0,
+        "description": "Auto-advance delay in ms (0 = disabled; the activity is student-driven)"
+      },
+      "themeColor": {
+        "type": "string",
+        "default": "#4A4DC9",
+        "description": "Primary theme color (Singularity purple)"
+      },
+      "darkMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Enable dark mode"
+      },
+      "gradeLevel": {
+        "type": "number",
+        "enum": [6, 7, 8],
+        "default": 6,
+        "description": "Tunes tone, font sizes, touch-target sizes, story framing, and the celebration intensity (confetti/stars). 6 = most playful, 8 = most concise."
+      }
+    },
+  
+    "additionalProps": {
+      "description": "Tool-specific dynamic content passed by the agent to configure the winnowing scenario",
+      "schema": {
+        "material": {
+          "type": "string",
+          "enum": ["peanuts", "wheat"],
+          "default": "peanuts",
+          "description": "Which mixture to separate. 'peanuts' = roasted peanuts + papery red skins; 'wheat' = wheat grains + husk."
+        },
+        "lockMaterial": {
+          "type": "boolean",
+          "default": false,
+          "description": "If true, hides the material switch so the student cannot change the mixture (keeps focus on a single scenario)."
+        },
+        "defaultStrength": {
+          "type": "string",
+          "enum": ["gentle", "medium", "strong"],
+          "default": "medium",
+          "description": "Pre-selected wind strength. gentle = poor separation (husk left behind), medium = clean winnowing, strong = all husk blown far but a little grain wasted."
+        },
+        "heavyCount": {
+          "type": "number",
+          "default": 26,
+          "description": "Number of heavy pieces (grains) poured. Controls the size of the grain mound."
+        },
+        "lightCount": {
+          "type": "number",
+          "default": 30,
+          "description": "Number of light pieces (husk/skins) poured. Controls how much chaff is carried away."
+        },
+        "instructions": {
+          "type": "string",
+          "default": "First predict which part will blow away. Then pick an air strength, press Blow, and watch which part leaves and which stays.",
+          "description": "Instruction line shown in the header."
+        }
+      },
+      "examples": {
+        "default_peanuts": {
+          "material": "peanuts",
+          "defaultStrength": "medium"
+        },
+        "wheat_locked": {
+          "material": "wheat",
+          "lockMaterial": true,
+          "defaultStrength": "medium"
+        },
+        "gentle_breeze_poor_separation": {
+          "material": "wheat",
+          "defaultStrength": "gentle",
+          "instructions": "Blow gently. Does ALL the husk leave, or does some stay behind?"
+        },
+        "strong_gust_some_waste": {
+          "material": "wheat",
+          "defaultStrength": "strong",
+          "instructions": "Blow hard! The husk flies far away — but watch the grain pile carefully."
+        },
+        "big_batch": {
+          "material": "peanuts",
+          "heavyCount": 40,
+          "lightCount": 44
+        },
+        "focused_single_scenario": {
+          "material": "wheat",
+          "lockMaterial": true,
+          "defaultStrength": "medium",
+          "heavyCount": 26,
+          "lightCount": 30
+        }
+      }
+    },
+  
+    "modes": {
+      "hands_on": {
+        "steps": [1, 2, 3, 4],
+        "description": "Predict-Observe-Explain winnowing: predict, choose wind, blow, then review the result."
+      }
+    },
+  
+    "stepSummary": {
+      "1": { "title": "Predict which part blows away", "mode": "hands_on" },
+      "2": { "title": "Choose how hard to blow", "mode": "hands_on" },
+      "3": { "title": "Blow the air and observe the separation", "mode": "hands_on" },
+      "4": { "title": "Review the result (winnowing explained)", "mode": "hands_on" }
+    },
+  
+    "toolCallExamples": [
+      {
+        "frontend_action": "show_interactive_tool",
+        "title": "Separate Peanuts from Their Skins",
+        "data": {
+          "toolName": "blowing_air_separation_lab",
+          "parameters": {
+            "gradeLevel": 6,
+            "initialMode": "hands_on",
+            "additionalProps": {
+              "material": "peanuts",
+              "defaultStrength": "medium"
+            }
+          }
+        },
+        "instructions_for_student": "Predict which part will fly away when you blow, then test it!"
+      },
+      {
+        "frontend_action": "show_interactive_tool",
+        "title": "Winnowing Wheat",
+        "data": {
+          "toolName": "blowing_air_separation_lab",
+          "parameters": {
+            "gradeLevel": 6,
+            "additionalProps": {
+              "material": "wheat",
+              "lockMaterial": true,
+              "defaultStrength": "medium"
+            }
+          }
+        },
+        "instructions_for_student": "Farmers use wind to separate heavy grain from light husk. Try it!"
+      },
+      {
+        "frontend_action": "show_interactive_tool",
+        "title": "Why a Gentle Breeze Isn't Enough",
+        "data": {
+          "toolName": "blowing_air_separation_lab",
+          "parameters": {
+            "gradeLevel": 7,
+            "showModeSelector": false,
+            "additionalProps": {
+              "material": "wheat",
+              "defaultStrength": "gentle",
+              "instructions": "Blow gently. Does ALL the husk leave, or does some stay behind?"
+            }
+          }
+        },
+        "instructions_for_student": "A weak breeze can't carry every bit of husk away. Watch what stays behind."
+      },
+      {
+        "frontend_action": "show_interactive_tool",
+        "title": "Too Strong a Gust Wastes Grain",
+        "data": {
+          "toolName": "blowing_air_separation_lab",
+          "parameters": {
+            "gradeLevel": 8,
+            "showModeSelector": false,
+            "additionalProps": {
+              "material": "wheat",
+              "defaultStrength": "strong",
+              "instructions": "Blow hard! The husk flies far — but check the grain pile."
+            }
+          }
+        },
+        "instructions_for_student": "A strong gust removes all the husk, but a little grain gets blown off the pile too."
+      },
+      {
+        "frontend_action": "show_interactive_tool",
+        "title": "Winnowing in Slow Motion",
+        "data": {
+          "toolName": "blowing_air_separation_lab",
+          "parameters": {
+            "gradeLevel": 6,
+            "animationSpeed": 0.5,
+            "additionalProps": {
+              "material": "peanuts",
+              "defaultStrength": "medium",
+              "heavyCount": 26,
+              "lightCount": 30
+            }
+          }
+        },
+        "instructions_for_student": "Watch closely in slow motion: heavy peanuts drop straight down, light skins drift away."
+      }
+    ],
+  
+    "errorHandling": [
+      "Invalid 'material': defaults to 'peanuts'.",
+      "Invalid 'defaultStrength': defaults to 'medium'.",
+      "Invalid 'gradeLevel': defaults to 6.",
+      "Missing heavyCount/lightCount: defaults to 26 and 30.",
+      "Empty additionalProps: shows the default peanuts + steady-wind scenario."
+    ]
+  }

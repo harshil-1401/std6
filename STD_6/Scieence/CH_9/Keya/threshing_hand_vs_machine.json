@@ -1,0 +1,236 @@
+{
+  "toolName": "threshing_hand_vs_machine",
+  "exportName": "ThreshingHandVsMachine",
+  "version": "1.1.0",
+  "displayName": "Threshing — By Hand vs By Machine",
+  "description": "Class 6 Science interactive (NCERT Curiosity) comparing threshing — separating grain from harvested stalks — done by hand versus by machine. Four sections: Tools (animated by-hand / by-machine demos plus a drag-to-sort Compare board), Learn (concept card walk with a comparison table), Real World (where threshing happens, from a handful to a whole farm), and Free Play. Celebration intensity and copy scale by grade tier (6 most playful, 8 most formal).",
+  "subject": "Science",
+  "grade": 6,
+  "chapter": "Methods of Separation of Substances",
+  "textbook": "Curiosity | Textbook of Science | Grade 6 (NCERT)",
+  "topic": "Threshing — separating grain from stalks, by hand vs by machine",
+  "concepts": [
+    "Threshing",
+    "Separation of grain from harvested crop",
+    "Hand method vs machine method (trade-offs)",
+    "Choosing a method by scale, cost, and effort",
+    "Scientific comparison and reasoning"
+  ],
+
+  "changelog": {
+    "1.1.0": [
+      "Synced JSON to the actual component contract: real sections (tools/learn/real_world/free_play) and real props (initialSection, initialMethod, showSectionNav).",
+      "Removed stale/incorrect fields (initialMode, showModeSelector, hand/machine card sides).",
+      "Added additionalProps schema + examples; the component now also reads config from props.additionalProps, matching the other tools.",
+      "Added exportName, designSystem, agentQuickReference, and NCERT alignment."
+    ]
+  },
+
+  "parameters": {
+    "width": {
+      "type": "number",
+      "default": 940,
+      "description": "Maximum width in pixels. The tool is responsive and self-sizes up to this width.",
+      "consumed": true
+    },
+    "height": {
+      "type": "number",
+      "default": 0,
+      "description": "Optional minimum height in pixels. 0 = let content determine height (recommended).",
+      "consumed": true
+    },
+    "gradeLevel": {
+      "type": "number",
+      "enum": [6, 7, 8],
+      "default": 6,
+      "description": "Grade tier. Controls celebration intensity (confetti count/duration) and encouragement copy. 6 = most playful, 8 = lightest/most formal.",
+      "consumed": true
+    },
+    "initialSection": {
+      "type": "string",
+      "enum": ["tools", "learn", "real_world", "free_play"],
+      "default": "tools",
+      "description": "Which section the tool opens on.",
+      "consumed": true
+    },
+    "initialMethod": {
+      "type": "string",
+      "enum": ["byHand", "byMachine"],
+      "default": "byHand",
+      "description": "Which method demo the Tools section opens on.",
+      "consumed": true
+    },
+    "showSectionNav": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show/hide the Tools / Learn / Real World / Free Play section tabs. Hide to lock the tool to a single section.",
+      "consumed": true
+    },
+    "showPlayPause": {
+      "type": "boolean",
+      "default": true,
+      "description": "Show/hide the play/pause control on the Tools-section demos.",
+      "consumed": true
+    }
+  },
+
+  "additionalProps": {
+    "description": "Agent config may be passed nested here (same pattern as the other tools). Values here override the top-level parameters of the same name. Step copy and Compare-board cards are defined internally and are not agent-configurable.",
+    "schema": {
+      "gradeLevel": { "type": "number", "enum": [6, 7, 8], "description": "Grade tier (overrides top-level)." },
+      "initialSection": { "type": "string", "enum": ["tools", "learn", "real_world", "free_play"], "description": "Opening section." },
+      "initialMethod": { "type": "string", "enum": ["byHand", "byMachine"], "description": "Opening method demo in Tools." },
+      "showSectionNav": { "type": "boolean", "description": "Show/hide the section tabs." },
+      "showPlayPause": { "type": "boolean", "description": "Show/hide the demo play/pause control." }
+    },
+    "examples": {
+      "default_full_flow": {
+        "additionalProps": { "gradeLevel": 6, "initialSection": "tools", "initialMethod": "byHand" }
+      },
+      "machine_demo_first": {
+        "additionalProps": { "initialSection": "tools", "initialMethod": "byMachine" }
+      },
+      "compare_activity_focus": {
+        "showSectionNav": false,
+        "additionalProps": { "initialSection": "tools" }
+      },
+      "concept_only": {
+        "additionalProps": { "initialSection": "learn", "showSectionNav": true }
+      },
+      "grade8_formal": {
+        "additionalProps": { "gradeLevel": 8, "initialSection": "learn" }
+      }
+    }
+  },
+
+  "sections": {
+    "tools": {
+      "order": 1,
+      "title": "Tools — Explore",
+      "component": "ToolsExplorer",
+      "intro": "Explore — see threshing in action before we name the parts.",
+      "description": "An animated 4-step demo of the chosen method (By Hand or By Machine), switchable, followed by a side-by-side CompareView and a drag-to-sort Compare board. The student drags four statement cards onto the By Hand or By Machine side; correct drops lock with a reason, wrong drops bounce back with a hint, and completing it triggers confetti and a summary.",
+      "methodDemos": {
+        "byHand": [
+          { "step": 0, "title": "The harvested crop", "type": "intro" },
+          { "step": 1, "title": "Lift the bundle", "type": "explanation" },
+          { "step": 2, "title": "Beat it — that's threshing!", "type": "explanation" },
+          { "step": 3, "title": "Slow and tiring", "type": "explanation" }
+        ],
+        "byMachine": [
+          { "step": 0, "title": "The threshing machine", "type": "intro" },
+          { "step": 1, "title": "Feed it in", "type": "explanation" },
+          { "step": 2, "title": "The drum spins — that's threshing!", "type": "explanation" },
+          { "step": 3, "title": "Fast and easy", "type": "explanation" }
+        ]
+      },
+      "compareBoard": {
+        "description": "Drag each card to the side it best fits. Each card is correct for exactly one side.",
+        "sides": ["byHand", "byMachine"],
+        "cards": [
+          { "id": "kg10", "text": "Faster for just 10 kg", "side": "byHand" },
+          { "id": "cheap", "text": "Cheaper for a small farm", "side": "byHand" },
+          { "id": "nofuel", "text": "Works without any fuel", "side": "byHand" },
+          { "id": "field", "text": "Threshes a whole field in a day", "side": "byMachine" }
+        ]
+      }
+    },
+    "learn": {
+      "order": 2,
+      "title": "Learn",
+      "component": "CardWalk (LEARN_CARDS)",
+      "intro": "Learn — one idea at a time, each building on the last.",
+      "description": "A guided card walk introducing threshing concepts one step at a time; the final card embeds a CompareTable summarising hand vs machine across cost, fuel, speed, and amount-per-day."
+    },
+    "real_world": {
+      "order": 3,
+      "title": "Real World",
+      "component": "CardWalk (REALWORLD_CARDS)",
+      "intro": "Real world — where threshing happens, from a handful to a whole farm.",
+      "description": "Card walk of real settings, each tagged with the scale (small household amount up to whole-farm) at which that method is used."
+    },
+    "free_play": {
+      "order": 4,
+      "title": "Free Play",
+      "component": "FreePlayBoard",
+      "intro": "Free play — experiment on your own.",
+      "description": "An open sandbox where students experiment without a fixed step sequence. Celebration intensity follows the grade tier."
+    }
+  },
+
+  "designSystem": {
+    "designLanguage": "Singularity",
+    "fonts": ["Poppins (Google Fonts)", "DM Serif Display (headings)"],
+    "colors": {
+      "primary": "#4A4DC9",
+      "primaryDark": "#533086",
+      "orange": "#FF7212",
+      "orange2": "#FC9145",
+      "ink": "#332F4A",
+      "gray700": "subtle text",
+      "gray100": "surface background",
+      "white": "#FFFFFF"
+    },
+    "components": ["Pill UIButton kit (contained / highlight / outlined / text)", "Inline stroke icons (no external icon library)"],
+    "gradeTiers": {
+      "6": { "confettiCount": 70, "confettiDuration": 2500, "playAgainLabel": "Play again!" },
+      "7": { "confettiCount": 40, "confettiDuration": 2000, "playAgainLabel": "Play again" },
+      "8": { "confettiCount": 15, "confettiDuration": 1500, "playAgainLabel": "Try again" }
+    },
+    "animations": [
+      "thFadeUp — section/card entry",
+      "thPop — badge pop",
+      "thFall — grain falling",
+      "thScaleIn — element reveal",
+      "thShake — wrong-drop bounce",
+      "thLock — correct-drop lock-in",
+      "respects prefers-reduced-motion"
+    ],
+    "notes": "Imports only react — no external dependencies, no Tailwind CDN."
+  },
+
+  "agentQuickReference": {
+    "teachConcept": {
+      "description": "Full flow: open on the Tools demos, let students explore then sort the Compare board.",
+      "call": {
+        "toolName": "threshing_hand_vs_machine",
+        "parameters": { "additionalProps": { "initialSection": "tools", "initialMethod": "byHand" } }
+      }
+    },
+    "conceptCardsOnly": {
+      "description": "Open on the Learn card walk for a guided explanation.",
+      "call": {
+        "toolName": "threshing_hand_vs_machine",
+        "parameters": { "additionalProps": { "initialSection": "learn" } }
+      }
+    },
+    "compareActivity": {
+      "description": "Lock to the Tools section (no tabs) for the drag-to-sort Compare activity.",
+      "call": {
+        "toolName": "threshing_hand_vs_machine",
+        "parameters": { "showSectionNav": false, "additionalProps": { "initialSection": "tools" } }
+      }
+    },
+    "olderGradeFormal": {
+      "description": "Grade 8 tone with lighter gamification.",
+      "call": {
+        "toolName": "threshing_hand_vs_machine",
+        "parameters": { "additionalProps": { "gradeLevel": 8, "initialSection": "learn" } }
+      }
+    }
+  },
+
+  "ncertAlignment": {
+    "chapterTitle": "Methods of Separation of Substances",
+    "textbook": "Curiosity — Textbook of Science, Grade 6 (NCERT)",
+    "keyConceptTaught": "Threshing separates grain from the cut, dried stalks of a harvested crop. It can be done by hand (beating bundles against a hard surface) or by machine (a powered drum). Both do the same job; the better choice depends on the amount, cost, and effort.",
+    "learningObjectives": [
+      "Define threshing as separating grain from harvested stalks",
+      "Describe the by-hand method and the by-machine method",
+      "Compare the two methods by amount, cost, fuel, and effort",
+      "Justify which method suits a given situation (small amount vs whole field)",
+      "Connect threshing to other separation methods in the chapter"
+    ],
+    "keywords": ["Threshing", "Grain", "Stalks", "Harvest", "Thresher", "Separation"]
+  }
+}

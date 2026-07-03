@@ -1,0 +1,458 @@
+{
+    "toolName": "materials_light_flow",
+    "version": "1.0.0",
+    "description": "A sequential two-phase lesson on transparent, translucent, and opaque materials. Phase 1 (Watch & Learn) is the torch-and-material stage: a torch shines light through clear glass, butter paper, or a wooden board, and a friend silhouette shows the resulting view (clear, fuzzy, blacked out). When the student reaches the last learning step, a 'Start Practice' card appears. Phase 2 (Sort & Practice) is the Activity 6.6 sorter: the student drags six object tiles into Transparent / Translucent / Opaque bins, and Table 6.4 fills in on completion. A two-step progress header sits above both phases, and a 'Review the lesson' link lets students jump back during practice.",
+    "category": "physical_science",
+    "gradeLevel": "6",
+    "ncertChapter": "Curiosity Class 6, Chapter 6: Materials Around Us, Section 6.3.3 / Activity 6.6",
+    "composedOf": [
+      {
+        "phase": "learn",
+        "tool": "torch_material_viewer",
+        "role": "Phase 1 — guided concept walkthrough (intro → transparent → translucent → opaque)"
+      },
+      {
+        "phase": "practice",
+        "tool": "materials_sorter_tool",
+        "role": "Phase 2 — sort six objects into the three bins (Activity 6.6 / Table 6.4)"
+      }
+    ],
+    "learningObjectives": [
+      "Identify materials as transparent, translucent, or opaque",
+      "Predict what a viewer can see through different materials",
+      "Connect everyday objects (glass, butter paper, wood) to their optical classification",
+      "Apply the classification independently by sorting objects into the correct category"
+    ],
+    "flow": {
+      "phases": ["learn", "practice"],
+      "default": "learn",
+      "transition": "After the torch lesson reaches its final step (opaque), a 'Start Practice' call-to-action card appears below the stage. Tapping it swaps in the sorter. If autoAdvance is true, the swap happens automatically after autoAdvanceDelay ms instead of waiting for the tap.",
+      "review": "When allowReview is true, a 'Review the lesson' link is shown during the practice phase so the student can return to Phase 1.",
+      "progressHeader": "A two-step stepper sits above both phases; step 1 shows a check mark once the student moves into practice."
+    },
+    "parameters": {
+      "width": {
+        "type": "number",
+        "default": 980,
+        "description": "Maximum width in pixels for the whole flow (responsive — shrinks to its container)."
+      },
+      "height": {
+        "type": "number",
+        "default": "auto",
+        "description": "Height is content-driven; each phase manages its own minimum height."
+      },
+      "themeColor": {
+        "type": "string",
+        "default": "#4A4DC9",
+        "description": "Primary brand color (purple from the Singularity design system)."
+      },
+      "darkMode": {
+        "type": "boolean",
+        "default": false,
+        "description": "Reserved for a future dark theme. Currently renders in the light Singularity theme."
+      },
+      "torch": {
+        "type": "object",
+        "description": "Pass-through configuration for Phase 1 (torch_material_viewer). Accepts the full torch props object — see nestedTools.torch for the complete schema.",
+        "default": {}
+      },
+      "sorter": {
+        "type": "object",
+        "description": "Pass-through configuration for Phase 2 (materials_sorter_tool). Accepts the full sorter props object — see nestedTools.sorter for the complete schema.",
+        "default": {}
+      }
+    },
+    "additionalProps": {
+      "autoAdvance": {
+        "type": "boolean",
+        "default": false,
+        "description": "When true, the flow moves to the practice phase automatically once the lesson ends, instead of waiting for the 'Start Practice' tap."
+      },
+      "autoAdvanceDelay": {
+        "type": "number",
+        "default": 1400,
+        "description": "Milliseconds to wait before auto-advancing to practice (only when autoAdvance is true)."
+      },
+      "learnPillLabel": {
+        "type": "string",
+        "default": "Watch & Learn",
+        "description": "Label for step 1 in the two-step progress header."
+      },
+      "practicePillLabel": {
+        "type": "string",
+        "default": "Sort & Practice",
+        "description": "Label for step 2 in the two-step progress header."
+      },
+      "ctaLabel": {
+        "type": "string",
+        "default": "Start Practice",
+        "description": "Text on the button inside the transition card."
+      },
+      "ctaHeadline": {
+        "type": "string",
+        "default": "You've met all three material types!",
+        "description": "Headline on the transition card shown at the end of the lesson."
+      },
+      "ctaSubtext": {
+        "type": "string",
+        "default": "Now test yourself — sort the objects into the right bins.",
+        "description": "Supporting line on the transition card."
+      },
+      "allowReview": {
+        "type": "boolean",
+        "default": true,
+        "description": "Show a 'Review the lesson' link during the practice phase so the student can jump back to Phase 1."
+      },
+      "examples": [
+        {
+          "name": "Default — full learn-then-practice flow",
+          "props": {}
+        },
+        {
+          "name": "Auto-advance into practice (no button tap)",
+          "props": {
+            "additionalProps": {
+              "autoAdvance": true,
+              "autoAdvanceDelay": 1200
+            }
+          }
+        },
+        {
+          "name": "Locked sequence — hide the review link",
+          "props": {
+            "additionalProps": {
+              "allowReview": false
+            }
+          }
+        },
+        {
+          "name": "Custom phase labels and CTA copy",
+          "props": {
+            "additionalProps": {
+              "learnPillLabel": "Step 1: See it",
+              "practicePillLabel": "Step 2: Sort it",
+              "ctaLabel": "Try the sorting game",
+              "ctaHeadline": "Ready to test what you learned?",
+              "ctaSubtext": "Drop each object into the right bin."
+            }
+          }
+        },
+        {
+          "name": "Configure both phases through pass-through props",
+          "props": {
+            "torch": {
+              "additionalProps": {
+                "initialMaterial": "transparent"
+              }
+            },
+            "sorter": {
+              "additionalProps": {
+                "showTableOnComplete": true,
+                "successMessage": "Brilliant! You filled Table 6.4 correctly."
+              }
+            }
+          }
+        }
+      ]
+    },
+    "nestedTools": {
+      "torch": {
+        "toolName": "torch_material_viewer",
+        "version": "1.0.0",
+        "description": "Interactive torch-and-material stage that teaches transparent, translucent, and opaque materials. A torch on the left shines light to the right. A 3-position slider in the middle swaps between clear glass, butter paper, and a wooden board. A friend silhouette on the right shows the resulting view: clear, fuzzy, or blacked out. A live caption names the classification, and a 3-card rule strip keeps the definitions visible.",
+        "ncertChapter": "Curiosity Class 6, Chapter 6: Materials Around Us, Section 6.3.3",
+        "parameters": {
+          "width": {
+            "type": "number",
+            "default": 900,
+            "description": "Component max width in pixels (responsive — will shrink to container)"
+          },
+          "height": {
+            "type": "number",
+            "default": 640,
+            "description": "Minimum component height in pixels (auto on mobile)"
+          },
+          "initialMode": {
+            "type": "string",
+            "enum": ["learn", "practice", "real_world", "hands_on"],
+            "default": "learn",
+            "description": "Starting mode of the tool"
+          },
+          "showModeSelector": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show or hide the mode-selector tab bar"
+          },
+          "enabledModes": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["learn", "practice", "real_world", "hands_on"] },
+            "default": ["learn", "practice", "real_world", "hands_on"],
+            "description": "Which modes are visible in the selector"
+          },
+          "showNavigation": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show prev/next/reset buttons"
+          },
+          "showPlayPause": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the play/pause auto-advance button"
+          },
+          "showStepIndicator": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the step-progress dots"
+          },
+          "initialStep": {
+            "type": "number",
+            "default": 1,
+            "description": "Step ID to start on"
+          },
+          "filterSteps": {
+            "type": "array",
+            "items": { "type": "number" },
+            "description": "Only show these step IDs (filters within current mode)"
+          },
+          "animationSpeed": {
+            "type": "number",
+            "default": 1,
+            "description": "Animation speed multiplier (1 = normal, 2 = 2x faster)"
+          },
+          "autoPlayDuration": {
+            "type": "number",
+            "default": 9000,
+            "description": "Auto-advance delay in ms. Set to 0 to disable auto-advance."
+          },
+          "themeColor": {
+            "type": "string",
+            "default": "#4A4DC9",
+            "description": "Primary brand color (purple from design system)"
+          },
+          "darkMode": {
+            "type": "boolean",
+            "default": false,
+            "description": "Dark mode toggle (light mode follows design PDF tokens)"
+          }
+        },
+        "additionalProps": {
+          "initialMaterial": {
+            "type": "string",
+            "enum": ["transparent", "translucent", "opaque"],
+            "default": "transparent",
+            "description": "Which material to display first when the tool loads"
+          },
+          "availableMaterials": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["transparent", "translucent", "opaque"] },
+            "default": ["transparent", "translucent", "opaque"],
+            "description": "Restrict the slider to a subset of materials (e.g. only show 2 for a comparison question)"
+          },
+          "showRuleCard": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the bottom 3-card rule strip with definitions"
+          },
+          "showLightBeam": {
+            "type": "boolean",
+            "default": true,
+            "description": "Render the animated light cone from the torch"
+          },
+          "showCaption": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show the live classification caption (transparent / translucent / opaque)"
+          },
+          "autoCycle": {
+            "type": "boolean",
+            "default": false,
+            "description": "Automatically cycle through available materials on a timer (good for hands-off demos)"
+          },
+          "cycleInterval": {
+            "type": "number",
+            "default": 2500,
+            "description": "Milliseconds between auto-cycle material swaps (only when autoCycle is true)"
+          },
+          "studentName": {
+            "type": "string",
+            "description": "Optional student name for personalized captions (not used in default copy)"
+          }
+        },
+        "modes": {
+          "learn": {
+            "label": "Learn",
+            "description": "Guided walkthrough: torch intro, then transparent, translucent, opaque in sequence"
+          },
+          "practice": {
+            "label": "Practice",
+            "description": "Free interaction with the slider; user predicts before checking caption"
+          },
+          "real_world": {
+            "label": "Real World",
+            "description": "Connect classifications to everyday objects (windows, frosted glass, walls)"
+          },
+          "hands_on": {
+            "label": "Hands On",
+            "description": "Self-paced exploration with full slider control"
+          }
+        },
+        "steps": {
+          "1": { "title": "Meet the Torch", "mode": "learn", "type": "intro" },
+          "2": { "title": "Transparent — Clear Glass", "mode": "learn", "type": "explanation", "targetMaterial": "transparent" },
+          "3": { "title": "Translucent — Butter Paper", "mode": "learn", "type": "explanation", "targetMaterial": "translucent" },
+          "4": { "title": "Opaque — Wooden Board", "mode": "learn", "type": "explanation", "targetMaterial": "opaque" },
+          "5": { "title": "Try It Yourself", "mode": "hands_on", "type": "hands_on" },
+          "6": { "title": "Real World", "mode": "real_world", "type": "real_world" }
+        }
+      },
+      "sorter": {
+        "toolName": "materials_sorter_tool",
+        "version": "1.0.0",
+        "description": "Interactive drag-and-sort activity for NCERT Grade 6 Science, Chapter 6 (Materials Around Us), Activity 6.6. Students drag six labelled object tiles into three bins — Transparent, Translucent, or Opaque. Correct drops lock in green with a one-line reason; wrong drops bounce back with a contextual hint. When all six are placed correctly, Table 6.4 renders at the bottom with the three columns filled. A reset button replays the activity. Responsive: drag-and-drop on desktop, tap-to-select-then-tap-bin on mobile.",
+        "chapter": {
+          "subject": "Science",
+          "grade": 6,
+          "chapter_number": 6,
+          "chapter_name": "Materials Around Us",
+          "section": "6.3.3 Explore materials through which one can see or cannot see",
+          "activity": "Activity 6.6 — Let us classify",
+          "table": "Table 6.4 — Classification of objects"
+        },
+        "parameters": {
+          "width": {
+            "type": "number",
+            "default": 1100,
+            "description": "Maximum container width in pixels. The tool is fully responsive and will shrink below this width."
+          },
+          "height": {
+            "type": "number",
+            "default": "auto",
+            "description": "Height is content-driven by default; the layout adapts to viewport."
+          },
+          "themeColor": {
+            "type": "string",
+            "default": "#4A4DC9",
+            "description": "Primary accent (purple from design system). Used in headers, progress, and primary bins."
+          },
+          "darkMode": {
+            "type": "boolean",
+            "default": false,
+            "description": "Reserved for future dark theme. Currently the tool renders in the light Singularity theme."
+          }
+        },
+        "additionalProps": {
+          "objects": {
+            "type": "array",
+            "description": "Override the six default objects. Each item is the full sorter tile config (id, name, category, emoji, reason, hint).",
+            "items": {
+              "type": "object",
+              "required": ["id", "name", "category", "reason", "hint"],
+              "properties": {
+                "id": { "type": "string", "description": "Unique identifier, e.g. 'glass_tumbler'" },
+                "name": { "type": "string", "description": "Display label on the tile, e.g. 'Glass tumbler'" },
+                "category": {
+                  "type": "string",
+                  "enum": ["transparent", "translucent", "opaque"],
+                  "description": "The correct bin this item belongs in"
+                },
+                "emoji": { "type": "string", "description": "Single emoji shown on the tile, e.g. '🥃'" },
+                "reason": { "type": "string", "description": "One-line explanation shown when correctly placed. Keep under 80 characters." },
+                "hint": { "type": "string", "description": "Short hint shown when student drops the item on the wrong bin. Should nudge thinking without revealing the answer." }
+              }
+            }
+          },
+          "binLabels": {
+            "type": "object",
+            "description": "Override the labels of the three bins. Keys must be 'transparent', 'translucent', 'opaque'.",
+            "properties": {
+              "transparent": { "type": "string" },
+              "translucent": { "type": "string" },
+              "opaque": { "type": "string" }
+            }
+          },
+          "showHints": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show a contextual hint bubble when an item is dropped on the wrong bin."
+          },
+          "shuffleSeed": {
+            "type": "number",
+            "description": "Optional fixed seed for the tile shuffle, for reproducible ordering."
+          },
+          "enableTimer": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show and run the on-screen timer; included as a stat on completion."
+          },
+          "showTableOnComplete": {
+            "type": "boolean",
+            "default": true,
+            "description": "When true (default), Table 6.4 with all three columns filled is rendered at the bottom once every item is correctly placed."
+          },
+          "successMessage": {
+            "type": "string",
+            "default": "Brilliant! You filled Table 6.4 correctly.",
+            "description": "Message shown in the success banner and table subtitle on completion."
+          }
+        },
+        "defaultItems": [
+          { "id": "glass_tumbler", "name": "Glass tumbler", "category": "transparent", "emoji": "🥃", "reason": "Clear glass — you can see straight through it.", "hint": "Hold a glass up — can you read the words behind it clearly?" },
+          { "id": "butter_paper", "name": "Butter paper", "category": "translucent", "emoji": "📄", "reason": "Light passes through, but the view is blurry — not clear.", "hint": "Light gets through, but shapes look hazy. Not fully clear, not fully blocked." },
+          { "id": "eraser", "name": "Eraser", "category": "opaque", "emoji": "🩹", "reason": "No light passes through — completely blocks the view.", "hint": "Try shining a torch behind it. Does any light come through?" },
+          { "id": "frosted_glass", "name": "Frosted glass", "category": "translucent", "emoji": "🪟", "reason": "Blurry — light passes but no clear view.", "hint": "Light gets through, but you only see fuzzy outlines." },
+          { "id": "wooden_board", "name": "Wooden board", "category": "opaque", "emoji": "🪵", "reason": "Wood blocks all light — you cannot see through it.", "hint": "Wood is dense — light has no way through." },
+          { "id": "window_glass", "name": "Window glass", "category": "transparent", "emoji": "🪟", "reason": "A clear window — you see the outside view clearly.", "hint": "Think of a clean window pane. Can you see the garden through it?" }
+        ],
+        "interactions": {
+          "desktop": "HTML5 native drag-and-drop. Drag a tile, drop on a bin.",
+          "mobile": "Tap-to-select then tap-to-place. Tap a tile to highlight it, then tap a bin to drop it there.",
+          "correctDrop": "Tile flies into the bin, locks with green check + accent border + one-line reason. Glow pulse animation.",
+          "wrongDrop": "Bin briefly flashes red, the tile shakes and stays in the tray, and a hint bubble appears for ~3 seconds.",
+          "completion": "All six placed → success banner appears, confetti plays, Table 6.4 renders with all three columns filled. Each row staggers in.",
+          "reset": "Clears all placements and hints; tray refills with all six tiles in order."
+        }
+      }
+    },
+    "theme": {
+      "primary": "#4A4DC9",
+      "primaryDeep": "#533086",
+      "accent": "#FF7212",
+      "accentSoft": "#FC9145",
+      "lightPurple": "#C1C1EA",
+      "lightOrange": "#FFF3E4",
+      "bg": "#F5F5F5",
+      "fontFamily": "Poppins",
+      "source": "Singularity_tool_Design_1.pdf"
+    },
+    "responsive": {
+      "mobile": "< 560px — stepper collapses to numbered circles, CTA button goes full-width, both phases stack vertically.",
+      "tablet": "560px – 900px — compact horizontal layout for both phases.",
+      "desktop": "≥ 900px — full horizontal layout with stepper labels visible."
+    },
+    "agentGuidance": {
+      "whenToUse": [
+        "A Class 6 student is learning transparent / translucent / opaque and you want a single lesson that teaches the concept and then checks it",
+        "You want a guided learn-then-practice sequence rather than two separate activities",
+        "Section 6.3.3 / Activity 6.6 of the Curiosity textbook in one flow"
+      ],
+      "doNotUseWhen": [
+        "You only need the concept explanation (use the torch viewer alone)",
+        "You only need a quick formative check (use the sorter alone)",
+        "The topic is not light-transmission classification"
+      ],
+      "commonCalls": {
+        "default_lesson": {
+          "instructions_for_student": "Watch how light passes through each material, then sort the objects into the right bins.",
+          "props": {}
+        },
+        "hands_off_demo": {
+          "instructions_for_student": "Sit back and watch — the lesson moves into practice on its own.",
+          "props": { "additionalProps": { "autoAdvance": true, "autoAdvanceDelay": 1200 } }
+        },
+        "locked_sequence": {
+          "instructions_for_student": "Finish the lesson, then complete the sorting activity.",
+          "props": { "additionalProps": { "allowReview": false } }
+        }
+      }
+    }
+  }

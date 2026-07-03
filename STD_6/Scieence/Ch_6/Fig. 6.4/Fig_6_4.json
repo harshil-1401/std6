@@ -1,0 +1,192 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Object Sorter — Fig. 6.4 (Three-Pass Classifier)",
+    "instructions_for_student": "Sort the eight objects three times — once by shape, once by colour, once by material. Drag each tile into the correct bin. Wrong bins won't accept the tile. After each pass is complete, click 'Save This Pass'. When all three passes are saved, compare the side-panel boards and notice how the same 8 objects formed different groups each time!",
+  
+    "data": {
+      "toolName": "object_sorter_tool",
+      "parameters": {
+        "width": 960,
+        "height": 720,
+        "darkMode": false,
+        "themeColor": "#4A4DC9",
+  
+        "additionalProps": {
+          "tiles": [
+            { "id": "ball",    "label": "Ball",    "emoji": "⚽", "shape": "round", "colour": "green",  "material": "plant"  },
+            { "id": "crayon",  "label": "Crayon",  "emoji": "🖍️", "shape": "long",  "colour": "red",    "material": "wood"   },
+            { "id": "leaf",    "label": "Leaf",    "emoji": "🍃", "shape": "flat",  "colour": "green",  "material": "plant"  },
+            { "id": "coin",    "label": "Coin",    "emoji": "🪙", "shape": "round", "colour": "brown",  "material": "metal"  },
+            { "id": "button",  "label": "Button",  "emoji": "🔘", "shape": "round", "colour": "brown",  "material": "metal"  },
+            { "id": "pebble",  "label": "Pebble",  "emoji": "🪨", "shape": "flat",  "colour": "brown",  "material": "metal"  },
+            { "id": "feather", "label": "Feather", "emoji": "🪶", "shape": "long",  "colour": "brown",  "material": "plant"  },
+            { "id": "pencil",  "label": "Pencil",  "emoji": "✏️", "shape": "long",  "colour": "red",    "material": "wood"   }
+          ],
+          "passes": [
+            {
+              "key": "shape",
+              "label": "Shape",
+              "emoji": "🔷",
+              "bins": [
+                { "id": "round", "label": "Round",  "emoji": "⭕", "color": "#4A4DC9", "light": "#EEEEFF" },
+                { "id": "long",  "label": "Long",   "emoji": "📏", "color": "#FC9145", "light": "#FFF3E4" },
+                { "id": "flat",  "label": "Flat",   "emoji": "🟦", "color": "#533086", "light": "#F3EEF9" }
+              ]
+            },
+            {
+              "key": "colour",
+              "label": "Colour",
+              "emoji": "🎨",
+              "bins": [
+                { "id": "red",   "label": "Red",   "emoji": "🔴", "color": "#E53E3E", "light": "#FFF0F0" },
+                { "id": "green", "label": "Green", "emoji": "🟢", "color": "#16A34A", "light": "#F0FFF4" },
+                { "id": "brown", "label": "Brown", "emoji": "🟤", "color": "#92400E", "light": "#FEF3C7" }
+              ]
+            },
+            {
+              "key": "material",
+              "label": "Material",
+              "emoji": "🧱",
+              "bins": [
+                { "id": "wood",  "label": "Wood",  "emoji": "🪵", "color": "#A0522D", "light": "#FDF6EE" },
+                { "id": "metal", "label": "Metal", "emoji": "⚙️", "color": "#475569", "light": "#F8FAFC" },
+                { "id": "plant", "label": "Plant", "emoji": "🌿", "color": "#15803D", "light": "#F0FFF4" }
+              ]
+            }
+          ],
+  
+          "answerKey": {
+            "shape": {
+              "round": ["ball", "coin", "button"],
+              "long":  ["crayon", "feather", "pencil"],
+              "flat":  ["leaf", "pebble"]
+            },
+            "colour": {
+              "red":   ["crayon", "pencil"],
+              "green": ["ball", "leaf"],
+              "brown": ["coin", "button", "pebble", "feather"]
+            },
+            "material": {
+              "wood":  ["crayon", "pencil"],
+              "metal": ["coin", "button", "pebble"],
+              "plant": ["ball", "leaf", "feather"]
+            }
+          }
+        }
+      }
+    },
+  
+    "schema": {
+      "toolName": "object_sorter_tool",
+      "description": "Three-pass drag-and-drop sorter for NCERT Grade 6 Science Chapter 6 Activity 6.2. Students sort the same 8 objects three times by different properties (shape, colour, material) and compare the resulting groups.",
+      "version": "1.0.0",
+      "subject": "Science — Materials Around Us",
+      "grade": 6,
+      "chapter": "Chapter 6 — Activity 6.2 (Fig. 6.4)",
+      "textbook": "Curiosity | Textbook of Science | Grade 6 (NCERT, Reprint 2026-27)",
+  
+      "parameters": {
+        "width":  { "type": "number", "default": 960, "description": "Container max-width in px." },
+        "height": { "type": "number", "default": 720, "description": "Approximate height; layout is fluid." },
+        "darkMode": { "type": "boolean", "default": false },
+        "themeColor": { "type": "string", "default": "#4A4DC9" },
+  
+        "additionalProps": {
+          "type": "object",
+          "properties": {
+            "tiles": {
+              "type": "array",
+              "description": "The 8 fixed objects on stage. Each tile has shape / colour / material attributes that determine which bin is correct.",
+              "items": {
+                "type": "object",
+                "required": ["id","label","emoji","shape","colour","material"],
+                "properties": {
+                  "id":       { "type": "string" },
+                  "label":    { "type": "string" },
+                  "emoji":    { "type": "string" },
+                  "shape":    { "type": "string", "enum": ["round","long","flat"] },
+                  "colour":   { "type": "string", "enum": ["red","green","brown"] },
+                  "material": { "type": "string", "enum": ["wood","metal","plant"] }
+                }
+              }
+            },
+            "passes": {
+              "type": "array",
+              "description": "Three sort passes. Each defines a property key and three bins.",
+              "items": {
+                "type": "object",
+                "required": ["key","label","emoji","bins"],
+                "properties": {
+                  "key":   { "type": "string" },
+                  "label": { "type": "string" },
+                  "emoji": { "type": "string" },
+                  "bins": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "required": ["id","label","emoji","color","light"],
+                      "properties": {
+                        "id":    { "type": "string" },
+                        "label": { "type": "string" },
+                        "emoji": { "type": "string" },
+                        "color": { "type": "string", "description": "Hex accent color for this bin." },
+                        "light": { "type": "string", "description": "Hex light fill for drag-over state." }
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "answerKey": {
+              "type": "object",
+              "description": "Maps each pass key to a bin-id → tile-id-array mapping. Used internally to validate drops.",
+              "example": {
+                "shape": { "round": ["ball","coin","button"], "long": ["crayon","feather","pencil"], "flat": ["leaf","pebble"] }
+              }
+            }
+          }
+        }
+      }
+    },
+  
+    "agent_readme": {
+      "quick_reference": {
+        "trigger": "Student is doing Activity 6.2 (classification/grouping) from Chapter 6 NCERT Grade 6 Science",
+        "tool": "object_sorter_tool",
+        "core_concept": "Same 8 objects → 3 different classification schemes → 3 different groupings → illustrates that classification depends on the chosen property"
+      },
+  
+      "ui_flow": [
+        "1. Student picks a pass (Shape / Colour / Material) via pill selector",
+        "2. 8 tile chips appear on stage; student drags each to a bin",
+        "3. Wrong-bin drops are silently rejected (tile stays in stage)",
+        "4. When all 8 are placed, 'Save This Pass' button activates",
+        "5. On save → pass card appears in right panel; confetti fires",
+        "6. Student switches pass and repeats for the other two properties",
+        "7. After all 3 passes saved → comparison panel + learning summary appear"
+      ],
+  
+      "correct_answers": {
+        "shape":    { "round": ["Ball","Coin","Button"], "long": ["Crayon","Feather","Pencil"], "flat": ["Leaf","Pebble"] },
+        "colour":   { "red": ["Crayon","Pencil"], "green": ["Ball","Leaf"], "brown": ["Coin","Button","Pebble","Feather"] },
+        "material": { "wood": ["Crayon","Pencil"], "metal": ["Coin","Button","Pebble"], "plant": ["Ball","Leaf","Feather"] }
+      },
+  
+      "design_tokens": {
+        "primary":        "#4A4DC9",
+        "secondary":      "#533086",
+        "accent":         "#FC9145",
+        "highlight_cool": "#C1C1EA",
+        "highlight_warm": "#FFF3E4",
+        "font_heading":   "Baloo 2",
+        "font_body":      "Nunito"
+      },
+  
+      "customisation_tips": [
+        "Replace tiles[] with any 8 objects that have clear shape/colour/material attributes",
+        "Add a 4th pass (e.g. hardness: hard|soft) by extending passes[] and tile attributes",
+        "Change bin colors to match your school's design system",
+        "Set answerKey to match new tile attributes so drop-validation stays correct"
+      ]
+    }
+  }

@@ -1,0 +1,121 @@
+{
+  "toolId": "churning_butter_labeller",
+
+  "title": "Churned Curd: Which Layer Is Which?",
+  "description": "Watch curd being churned in a clay pot, then tag the butter and buttermilk layers to discover which component is lighter and which is heavier.",
+  "context": "Class 6 Science — Methods of Separation. When curd is churned, fat globules clump into butter (less dense) and rise to the top; the remaining watery buttermilk (denser) stays at the bottom. This tool replaces the 'churning' teacher explanation with a cutaway animated clay-pot demo followed by a region-labelling activity.",
+  "teachingNotes": "Predict-then-tag: ask the student to predict which layer is lighter before the animation plays, then let them tag each layer after the butter separates. Re-run to reinforce that density — not appearance of solidity — determines what floats. The misconception to surface and correct: 'butter looks heavy / solid, so it must sink.'",
+  "instructionsForStudent": "1. Press Play and watch the curd churn. 2. Before tagging, predict whether the top layer is the lighter or heavier component. 3. Tap the TOP layer and pick its tag. 4. Tap the BOTTOM layer and pick its tag. 5. Check your result and review why each layer is where it is.",
+
+  "subtype": "hotspot",
+  "conceptId": "churning_separation_density",
+  "relatedConceptIds": ["density_floats_sinks", "methods_of_separation", "fat_globules_butter"],
+  "module": "Methods of Separation in Everyday Life",
+
+  "placement": {
+    "beat": "Apply",
+    "where": "After explaining churning as a separation method; replaces or supplements the teacher describing why butter rises to the top."
+  },
+
+  "sharedState": {
+    "fields": ["phase", "stage", "cpIdx", "animProgress", "animComplete", "lockedTags", "score", "total", "operatorMode", "depth"]
+  },
+
+  "agentControl": {
+    "postmessage": {
+      "in":  "{ type: 'command', id, method, args }",
+      "out": [
+        "{ type: 'ready', toolId }",
+        "{ type: 'state', state }",
+        "{ type: 'event', name, detail }",
+        "{ type: 'response', id, result }"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name, value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "tap(regionId)",
+      "choose(optionId)",
+      "pickTag(tag)",
+      "startLabelling()",
+      "checkAnswers()"
+    ]
+  },
+
+  "studentControls": [
+    { "control": "Play button", "effect": "starts the churning animation; shows butter separating to the top" },
+    { "control": "Replay button", "effect": "replays the churning animation from the beginning" },
+    { "control": "Start tagging button", "effect": "enters the tagging phase after the animation finishes" },
+    { "control": "Predict options (Lighter / Heavier)", "effect": "locks a prediction about the top layer before tagging begins" },
+    { "control": "Tap the TOP or BOTTOM region in the pot", "effect": "opens the tag-chip picker for that layer" },
+    { "control": "Lighter component / Heavier component chips", "effect": "assigns a density label to the selected layer" },
+    { "control": "Review answers", "effect": "opens the per-checkpoint review with mini diagram and concept explanation" },
+    { "control": "Play again", "effect": "resets the tool to the starting state" }
+  ],
+
+  "validIds": {
+    "regions": ["top", "bottom"],
+    "tags": ["lighter", "heavier"],
+    "checkpointIds": ["predict", "top", "bottom"],
+    "predictOptions": ["Lighter than the rest", "Heavier than the rest"],
+    "predictOptionShortIds": ["lighter", "heavier"],
+    "highlightTargets": ["pot", "churner", "top", "bottom", "butterLayer", "buttermilkLayer"],
+    "operatorModes": ["ai", "student"],
+    "depths": ["lean", "full"]
+  },
+
+  "answerKey": {
+    "predictCorrectOptionId": "lighter",
+    "topLayerCorrectTag": "lighter",
+    "bottomLayerCorrectTag": "heavier",
+    "teacherNote": "Butter (top) is the lighter component; buttermilk (bottom) is the heavier component."
+  },
+
+  "props": {
+    "defaults": {
+      "operatorMode": "student",
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "device": "mobile",
+      "showModeToggle": true,
+      "showPlayPause": true
+    },
+    "additionalProps": {
+      "seed": 42
+    }
+  },
+
+  "events": [
+    "ready",
+    "operator_mode_changed",
+    "item_tapped",
+    "answer_checked",
+    "answer_correct",
+    "answer_incorrect",
+    "highlighted",
+    "completed",
+    "reset"
+  ],
+
+  "scientificFacts": [
+    "Butter is less dense than buttermilk, so it floats to the top when curd is churned.",
+    "Churning works by physically breaking the emulsion of fat in water; fat globules clump together and rise because fat is less dense than the watery liquid.",
+    "Density — not how solid something looks — determines whether it floats or sinks.",
+    "The watery liquid left after butter is skimmed off is called buttermilk (chhach); it is the denser component."
+  ],
+
+  "agentInstructions": {
+    "description": "<description>Shows a cutaway clay-pot churning animation and asks the student to tag the separated butter layer (lighter, top) and buttermilk layer (heavier, bottom) to build the concept that density — not apparent heaviness — determines which component floats.</description>",
+
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS call play() to start the churning animation before any tagging step. ALWAYS use highlight(target) with a value from highlightTargets (e.g. 'top', 'butterLayer') to point at a layer before calling tap(regionId). ALWAYS call tap('top') then pickTag('lighter'), then tap('bottom') then pickTag('heavier') in that order to demonstrate a complete correct sequence. ALWAYS ask the student what they OBSERVE after the animation and before revealing the answer. NEVER ask the student to operate the tool while operatorMode is 'ai'. NEVER call tap() before play() has run and animComplete is true.</teacher_tool_instruction>",
+
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS press Play first and watch the butter gather at the top. ALWAYS choose a prediction (Lighter or Heavier) before moving to the tagging step. ALWAYS tap the blinking region in the pot and pick a tag — try to explain WHY you chose it. NEVER skip the prediction step — the goal is to commit a guess first, then find out if you were right.</student_tool_instruction>",
+
+    "teacherRealInstruction": "<teacher_real_instruction>A cutaway-pot churning simulation for the Methods of Separation unit. Use it at the Apply beat after explaining that churning separates butter from curd. The key misconception to correct is that butter 'looks solid and heavy' — the tool makes the student commit to a density prediction before revealing the answer, which surfaces that misconception cleanly.</teacher_real_instruction>"
+  }
+}

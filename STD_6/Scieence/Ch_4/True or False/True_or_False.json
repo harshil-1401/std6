@@ -1,0 +1,179 @@
+{
+    "frontend_action": "show_interactive_tool",
+    "title": "Exploring Magnets — True or False Quiz",
+    "instructions_for_student": "Read each statement carefully and click True or False. Think back to what you observed in the experiments before answering. After all four statements, you'll see your final score with a review of each answer.",
+    "data": {
+      "toolName": "true_false_quiz_tool",
+      "parameters": {
+        "additionalProps": {
+          "celebrateOnComplete": true,
+          "quizData": {
+            "title": "True or False?",
+            "subtitle": "Read each statement carefully and click True or False. Think back to what you observed in the experiments!",
+            "statements": [
+              {
+                "id": 1,
+                "statement": "A magnet can be broken into pieces to obtain a single pole.",
+                "answer": false,
+                "explanation": "Correct! Even the tiniest broken piece always has both a North and a South pole.",
+                "reason": "This is FALSE. Breaking a magnet always produces new pairs of poles — you can never isolate a single pole."
+              },
+              {
+                "id": 2,
+                "statement": "Similar poles of a magnet repel each other.",
+                "answer": true,
+                "explanation": "Correct! Like poles (N–N or S–S) always push each other away — repulsion!",
+                "reason": "This is TRUE. Like poles repel; unlike poles attract — observed clearly in Activity 4.5."
+              },
+              {
+                "id": 3,
+                "statement": "Iron filings mostly stick in the middle of a bar magnet when brought near it.",
+                "answer": false,
+                "explanation": "Correct! The magnetic force is strongest at the poles (ends), so filings cluster there.",
+                "reason": "This is FALSE. Iron filings cluster at the two poles (ends), not in the middle — as Activity 4.2 showed."
+              },
+              {
+                "id": 4,
+                "statement": "A freely suspended bar magnet always aligns with the north-south direction.",
+                "answer": true,
+                "explanation": "Correct! Earth behaves like a giant magnet, pulling the suspended magnet to align N–S.",
+                "reason": "This is TRUE. Earth's magnetic field causes any freely suspended magnet to align north-south — the basis of a compass."
+              }
+            ]
+          }
+        }
+      }
+    },
+    "schema": {
+      "description": "Configuration schema for TrueFalseQuiz — an interactive one-at-a-time True/False quiz component. Themed with Poppins font and the Singularity design system palette (purple #533086, orange #FC9145, blue #4A4DC9).",
+      "parameters": {
+        "additionalProps": {
+          "type": "object",
+          "properties": {
+            "celebrateOnComplete": {
+              "type": "boolean",
+              "description": "Trigger a particle-burst celebration when a correct answer is selected.",
+              "default": true
+            },
+            "quizData": {
+              "type": "object",
+              "description": "Full quiz content. Override to customise for any chapter or topic.",
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "Main heading displayed at the top of the quiz."
+                },
+                "subtitle": {
+                  "type": "string",
+                  "description": "Instruction text shown below the heading."
+                },
+                "statements": {
+                  "type": "array",
+                  "description": "Array of statement objects shown one at a time.",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "number",
+                        "description": "Unique numeric ID for the statement."
+                      },
+                      "statement": {
+                        "type": "string",
+                        "description": "The declarative sentence the student evaluates."
+                      },
+                      "answer": {
+                        "type": "boolean",
+                        "description": "true if the statement is factually correct, false if it is incorrect."
+                      },
+                      "explanation": {
+                        "type": "string",
+                        "description": "Short positive confirmation shown when the student answers correctly."
+                      },
+                      "reason": {
+                        "type": "string",
+                        "description": "Brief corrective explanation shown when the student answers incorrectly. Should include the correct answer."
+                      }
+                    },
+                    "required": ["id", "statement", "answer", "explanation", "reason"]
+                  }
+                }
+              },
+              "required": ["title", "subtitle", "statements"]
+            }
+          }
+        }
+      }
+    },
+    "agent_readme": {
+      "overview": "TrueFalseQuiz shows statements one at a time. Students click True or False; the result is shown immediately with a colour-coded feedback box and a one-line explanation. After all statements, a score screen displays an animated score, star rating, per-statement summary, and a Try Again button.",
+      "design_system": {
+        "font": "Poppins (Google Fonts)",
+        "colors": {
+          "primary": "#533086",
+          "secondary": "#4A4DC9",
+          "accent_orange": "#FC9145",
+          "light_purple": "#C1C1EA",
+          "light_orange": "#FFF3E4",
+          "correct": "#10b981",
+          "incorrect": "#ef4444"
+        },
+        "no_external_deps": "Uses only React + lucide-react. No react-dom, no portals."
+      },
+      "quick_reference": {
+        "statements_per_quiz": "2–8 recommended",
+        "answer_field": "boolean — true means the statement is True, false means it is False",
+        "navigation": "one statement at a time; Next button appears after each answer"
+      },
+      "tool_call_examples": [
+        {
+          "description": "Default Chapter 4 Magnets quiz",
+          "call": { "toolName": "true_false_quiz_tool", "parameters": {} }
+        },
+        {
+          "description": "No celebration particles (assessment mode)",
+          "call": {
+            "toolName": "true_false_quiz_tool",
+            "parameters": { "additionalProps": { "celebrateOnComplete": false } }
+          }
+        },
+        {
+          "description": "Custom quiz for a different chapter",
+          "call": {
+            "toolName": "true_false_quiz_tool",
+            "parameters": {
+              "additionalProps": {
+                "celebrateOnComplete": true,
+                "quizData": {
+                  "title": "Light & Shadows — True or False?",
+                  "subtitle": "Think carefully before answering each statement.",
+                  "statements": [
+                    {
+                      "id": 1,
+                      "statement": "Transparent objects allow all light to pass through them.",
+                      "answer": true,
+                      "explanation": "Correct! Transparent materials like clear glass let light pass through completely.",
+                      "reason": "This is TRUE. Transparent objects transmit light without scattering."
+                    },
+                    {
+                      "id": 2,
+                      "statement": "A shadow is formed on the side facing the light source.",
+                      "answer": false,
+                      "explanation": "Correct! Shadows form on the opposite side from the light source.",
+                      "reason": "This is FALSE. Shadows form on the side away from the light, not the side facing it."
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      ],
+      "decision_tree": {
+        "chapter_review": "Use default parameters — 4 statements load automatically.",
+        "assessment_mode": "Set celebrateOnComplete: false.",
+        "different_topic": "Override quizData.statements with new content.",
+        "more_statements": "Extend the statements array; each needs id, statement, answer, explanation, reason.",
+        "fewer_statements": "Reduce the array; the progress dots and score adapt automatically."
+      }
+    }
+  }

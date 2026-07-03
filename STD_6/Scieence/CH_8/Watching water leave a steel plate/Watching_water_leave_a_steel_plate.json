@@ -1,0 +1,101 @@
+{
+    "toolName": "water_disappearing_act_tool",
+    "version": "1.0.0",
+    "description": "Interactive simulation of NCERT Class 6 Science Chapter 8, Activity 8.2 — a tablespoon of water on a steel plate evaporates over time, letting students predict, observe, flip the plate to rule out seepage, and conclude that liquid water becomes water vapour.",
+
+    "parameters": {
+        "initialMode": {
+            "type": "string",
+            "enum": ["investigate", "explore"],
+            "default": "investigate",
+            "description": "Starting mode: 'investigate' runs the predict/observe/flip/conclude experiment, 'explore' shows everyday evaporation examples"
+        },
+        "showModeSelector": {
+            "type": "boolean",
+            "default": true,
+            "description": "Show/hide the Investigate / Everyday examples tab switcher in the header"
+        },
+        "enabledModes": {
+            "type": "array",
+            "items": { "type": "string", "enum": ["investigate", "explore"] },
+            "default": ["investigate", "explore"],
+            "description": "Which modes appear in the mode selector"
+        },
+        "themeColor": {
+            "type": "string",
+            "default": "#4A4DC9",
+            "description": "Primary accent color (hex) used for buttons, progress bar, and highlights"
+        }
+    },
+
+    "additionalProps": {
+        "description": "Tool-specific dynamic content passed by the agent",
+        "schema": {
+            "totalMinutes": {
+                "type": "number",
+                "default": 30,
+                "description": "Total minutes the observation timeline represents, shown on the progress bar (0 min / midpoint / total) and as the elapsed-time chip"
+            },
+            "runSeconds": {
+                "type": "number",
+                "default": 18,
+                "description": "Real-world seconds the play/pause timer takes to animate from a full puddle to a completely dry plate"
+            },
+            "showVapour": {
+                "type": "boolean",
+                "default": true,
+                "description": "Show the rising steam/vapour wisps above the puddle while the timer plays"
+            },
+            "initialPhase": {
+                "type": "string",
+                "enum": ["predict", "observe", "flip", "conclude"],
+                "default": "predict",
+                "description": "Which step of the investigate flow to open on: Predict (make a guess), Observe (pour water, run the timer), Flip (check the underside for seepage), Conclude (summary of evaporation)"
+            }
+        },
+        "examples": {
+            "default_experiment": {
+                "totalMinutes": 30,
+                "runSeconds": 18,
+                "showVapour": true,
+                "initialPhase": "predict"
+            },
+            "fast_demo": {
+                "totalMinutes": 10,
+                "runSeconds": 6,
+                "showVapour": true,
+                "initialPhase": "observe"
+            },
+            "slow_realistic_timeline": {
+                "totalMinutes": 60,
+                "runSeconds": 30,
+                "showVapour": true,
+                "initialPhase": "predict"
+            },
+            "jump_straight_to_conclusion": {
+                "initialPhase": "conclude"
+            },
+            "no_vapour_visual": {
+                "showVapour": false,
+                "initialPhase": "observe"
+            }
+        }
+    },
+
+    "modes": {
+        "investigate": {
+            "phases": ["predict", "observe", "flip", "conclude"],
+            "description": "Step-by-step Activity 8.2 experiment: predict where the water goes, watch it evaporate from a poured puddle, flip the plate to confirm no seepage, then read the evaporation conclusion"
+        },
+        "explore": {
+            "description": "Tap through four everyday evaporation examples: drying puddles, wet clothes on a line, water on a hot pan, and hand sanitiser"
+        }
+    },
+
+    "stepSummary": {
+        "predict": { "title": "Make a prediction", "description": "Student picks where they think the water will go (seep through, turn to vapour, vanish, or stay the same)" },
+        "observe": { "title": "Observe at regular intervals", "description": "Spoon pours one tablespoon of water onto the plate; play the timer and watch the puddle shrink as vapour rises" },
+        "flip": { "title": "Did any water seep through?", "description": "Flip the plate over to show the underside is completely dry, ruling out seepage through the steel" },
+        "conclude": { "title": "What we found out", "description": "Summary: steel is not porous, the water turned into water vapour, and this process is called evaporation" }
+    }
+}
