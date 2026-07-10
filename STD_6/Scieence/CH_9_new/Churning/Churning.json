@@ -55,7 +55,7 @@
     { "control": "Tap the TOP or BOTTOM region in the pot", "effect": "opens the tag-chip picker for that layer" },
     { "control": "Lighter component / Heavier component chips", "effect": "assigns a density label to the selected layer" },
     { "control": "Review answers", "effect": "opens the per-checkpoint review with mini diagram and concept explanation" },
-    { "control": "Play again", "effect": "resets the tool to the starting state" }
+    { "control": "Finish button", "effect": "ends the activity and opens the finish screen with the score, stars earned, and a 'What you've learned' summary — this is the last step, there is no restart-the-whole-tool control" }
   ],
 
   "validIds": {
@@ -99,7 +99,8 @@
     "answer_incorrect",
     "highlighted",
     "completed",
-    "reset"
+    "reset",
+    "finished"
   ],
 
   "scientificFacts": [
@@ -112,10 +113,10 @@
   "agentInstructions": {
     "description": "<description>Shows a cutaway clay-pot churning animation and asks the student to tag the separated butter layer (lighter, top) and buttermilk layer (heavier, bottom) to build the concept that density — not apparent heaviness — determines which component floats.</description>",
 
-    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS call play() to start the churning animation before any tagging step. ALWAYS use highlight(target) with a value from highlightTargets (e.g. 'top', 'butterLayer') to point at a layer before calling tap(regionId). ALWAYS call tap('top') then pickTag('lighter'), then tap('bottom') then pickTag('heavier') in that order to demonstrate a complete correct sequence. ALWAYS ask the student what they OBSERVE after the animation and before revealing the answer. NEVER ask the student to operate the tool while operatorMode is 'ai'. NEVER call tap() before play() has run and animComplete is true.</teacher_tool_instruction>",
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS call play() to start the churning animation before any tagging step. ALWAYS use highlight(target) with a value from highlightTargets (e.g. 'top', 'butterLayer') to point at a layer before calling tap(regionId). ALWAYS call tap('top') then pickTag('lighter'), then tap('bottom') then pickTag('heavier') in that order to demonstrate a complete correct sequence. ALWAYS ask the student what they OBSERVE after the animation and before revealing the answer. NEVER ask the student to operate the tool while operatorMode is 'ai'. NEVER call tap() before play() has run and animComplete is true. NEVER expect a student Finish button in this mode — there is none while operatorMode is 'ai'; call reset() when you want to run the demo again.</teacher_tool_instruction>",
 
-    "studentToolInstruction": "<student_tool_instruction>ALWAYS press Play first and watch the butter gather at the top. ALWAYS choose a prediction (Lighter or Heavier) before moving to the tagging step. ALWAYS tap the blinking region in the pot and pick a tag — try to explain WHY you chose it. NEVER skip the prediction step — the goal is to commit a guess first, then find out if you were right.</student_tool_instruction>",
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS press Play first and watch the butter gather at the top. ALWAYS choose a prediction (Lighter or Heavier) before moving to the tagging step. ALWAYS tap the blinking region in the pot and pick a tag — try to explain WHY you chose it. ALWAYS press Finish once you have tagged both layers to see your score and a summary of what you learned. NEVER skip the prediction step — the goal is to commit a guess first, then find out if you were right.</student_tool_instruction>",
 
-    "teacherRealInstruction": "<teacher_real_instruction>A cutaway-pot churning simulation for the Methods of Separation unit. Use it at the Apply beat after explaining that churning separates butter from curd. The key misconception to correct is that butter 'looks solid and heavy' — the tool makes the student commit to a density prediction before revealing the answer, which surfaces that misconception cleanly.</teacher_real_instruction>"
+    "teacherRealInstruction": "<teacher_real_instruction>A cutaway-pot churning simulation for the Methods of Separation unit. Use it at the Apply beat after explaining that churning separates butter from curd. The key misconception to correct is that butter 'looks solid and heavy' — the tool makes the student commit to a density prediction before revealing the answer, which surfaces that misconception cleanly. The activity ends with a Finish button that shows the student's score and a 'what you've learned' summary; there is no restart-the-whole-tool option by design.</teacher_real_instruction>"
   }
 }

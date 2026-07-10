@@ -1,20 +1,25 @@
 {
     "toolId": "M6.S1.T1.C1.2D1",
-    "title": "Magnetic or Non-Magnetic?",
+
+    "title": "Magnetic or non-magnetic sorting tool",
+    "description": "The student meets everyday objects one at a time — an iron nail, a steel spoon, a glass marble, a wooden pencil and more. For each object they first guess whether it will cling to a magnet, then drag (or tap) a horseshoe magnet down onto the object to reveal the truth: magnetic objects leap up and stick to the poles, non-magnetic ones only wobble in place. Every tested object drops into a Magnetic or Non-magnetic tray, and once every object in the round has been guessed and tested, the student presses Finish to see how many guesses were right, a star rating, and a two-column results table of everything they sorted.",
+    "context": "Grade 6 Science, in the topic of magnetic and non-magnetic materials. This on-screen tool stands in for the classroom activity of testing everyday objects with a bar or horseshoe magnet to sort them into things that are attracted to a magnet and things that are not. It matters because it builds the core idea that magnetism is a property of the material an object is made of (mainly iron, steel, nickel and cobalt) and not of its size, shape or colour — a common early misconception. It fits into the lesson right after magnets and their poles have been introduced, as the hands-on classification activity that lets the student apply that idea to real objects.",
+    "teachingNotes": "Run it as predict-then-reveal: for each object, have the student commit a guess (magnetic or non-magnetic) before they test it with the magnet, then let the magnet reveal the real answer. Re-run across several objects so the student notices the pattern — nail, clip, key, spoon, pin, scissors, bolt, needle and fork (all iron/steel) always cling, while marble, coin, foil, wood, bell, ruler, eraser, bottle and pencil never do. Pre-empt the common misconception that size, weight or shininess decides magnetism (a big wooden block and a tiny steel pin are the clearest counter-example pair to point at). The idea to land: an object is magnetic only if it is made of iron, steel, nickel or cobalt.",
+    "instructionsForStudent": "Look at the object sitting on the table. First, tap 'Magnetic' or 'Not magnetic' to lock in your guess for that object. Then drag the horseshoe magnet down onto the object (or simply tap the object) to test it — watch whether it leaps up and clings to the magnet's poles or only wobbles in place. The object then drops into the matching tray. Repeat your guess-then-test for every object that appears. When every object has been tested, press the Finish button to see your score, your stars, and the full results table.",
+
     "subtype": "sorter",
     "conceptId": "M6.S1.T1.C1",
     "relatedConceptIds": [],
     "module": "Magnetic and Non-magnetic Materials",
     "curriculum": "NCERT Grade 6 · Science · Magnetic and Non-magnetic Materials",
-    "description": "Interactive drag-the-magnet sorting game. One everyday object sits on the table at a time; the student drags (or taps) a single horseshoe magnet onto it to test it. Iron and steel objects leap up and cling to the poles; everything else only wobbles and stays put. Each tested object drops into a Magnetic or Non-magnetic tray, and once all objects are tested the game shows a two-column Magnetic vs Non-magnetic results table with a replay button.",
-  
+
     "placement": {
       "beat": "Apply",
-      "where": "Replaces the classroom bar-magnet demo. The student tests each everyday object with the magnet and sorts it; the agent guides with highlight() and reads the emitted events. In ai_operated mode the agent can demonstrate by calling testObject()."
+      "where": "Replaces the classroom bar-magnet demo. The student predicts, then tests each everyday object with the magnet and sorts it; the agent guides with highlight() and reads the emitted events. In ai_operated mode the agent demonstrates the lean 2-item round by calling testObject() directly (predictions are the student's job, not the demo's)."
     },
-  
-    "sharedState": { "fields": ["operatorMode", "tested", "total", "current", "magnetic", "nonmagnetic", "done"] },
-  
+
+    "sharedState": { "fields": ["operatorMode", "depth", "tested", "total", "current", "pendingPrediction", "magnetic", "nonmagnetic", "finished"] },
+
     "agentControl": {
       "postmessage": {
         "in": "{type:'command', id, method, args}",
@@ -23,65 +28,78 @@
       "windowMethods": [
         "setParam(name,value)", "play()", "pause()", "reset()",
         "highlight(target)", "getState()", "setOperatorMode(mode)",
-        "testObject()"
+        "predict(guess)", "testObject()"
       ]
     },
-  
+
     "studentControls": [
-      { "control": "Drag the horseshoe magnet down onto the object", "effect": "tests the object; magnetic ones leap up and cling to the poles, non-magnetic ones only wobble" },
-      { "control": "Tap the object", "effect": "auto-moves the magnet onto it and tests it (mobile / accessibility friendly)" },
-      { "control": "Tap 'Play again' on the results screen", "effect": "reshuffles the objects and restarts the game" }
+      { "control": "Tap 'Magnetic' or 'Not magnetic'", "effect": "locks in a prediction for the current object before it can be tested" },
+      { "control": "Drag the horseshoe magnet down onto the object", "effect": "tests the object; magnetic ones leap up and cling to the poles, non-magnetic ones only wobble — this only works after a prediction is locked in" },
+      { "control": "Tap the object", "effect": "auto-moves the magnet onto it and tests it (mobile / accessibility friendly); also requires a prediction first" },
+      { "control": "Tap the Teacher | Your turn toggle", "effect": "switches between watching a short teacher demo and doing the full practice round" },
+      { "control": "Tap 'Finish' once every object is tested", "effect": "ends the round and opens the results screen with stars and what-you-learned" }
     ],
-  
-    "answerKey": {
+
+    "validIds": {
       "objects": ["nail", "clip", "key", "spoon", "pin", "scissors", "bolt", "needle", "fork", "marble", "copper", "foil", "wood", "bell", "ruler", "eraser", "bottle", "pencil"],
+      "predictionChoices": ["magnetic", "nonmagnetic"],
+      "highlightTargets": ["object", "magnet", "magneticTray", "nonMagneticTray", "predictMagnetButton", "predictNonMagnetButton"],
+      "operatorModes": ["ai", "student"],
+      "operatorModesNote": "ai = Teacher demo: collapses to ONE representative magnetic + ONE non-magnetic object (depth='lean'), hides the predict buttons and the draggable magnet's interactivity, shows a 'watch' caption, and the agent drives with testObject(); student = full practice: the whole object pool (depth='full'), predict-then-reveal required each round, ending with a student-only Finish button. Default 'student'."
+    },
+
+    "answerKey": {
       "magnetic": ["nail", "clip", "key", "spoon", "pin", "scissors", "bolt", "needle", "fork"],
       "nonMagnetic": ["marble", "copper", "foil", "wood", "bell", "ruler", "eraser", "bottle", "pencil"],
-      "highlightTargets": ["object", "magnet", "magneticTray", "nonMagneticTray"],
-      "operatorModes": ["ai", "student"],
-      "operatorModesNote": "ai = collapse to the focused demo view (draggable magnet + student hint hidden, 'watch' caption shown, agent drives via testObject()); student = full interactive controls. Default 'student'.",
-      "note": "The object being tested is always the current one; whether it clings is fixed by its 'magnetic' membership above — testObject() reveals the truth, the student cannot get a 'wrong' answer."
+      "note": "Whether an object clings is fixed by its 'magnetic' membership above and is never a guess by the tool itself — the STUDENT'S prediction (via predict()) is what gets scored against this list; testObject() always reveals the true physics."
     },
-  
+
     "props": {
-      "defaults": { "themeColor": "#7C2FE0", "operatorMode": "student", "gradeLevel": 6, "muted": false },
+      "defaults": { "themeColor": "#7C2FE0", "operatorMode": "student", "gradeLevel": 6, "muted": false, "showModeToggle": true },
       "additionalProps": { "seed": 42 }
     },
-  
-    "events": ["ready", "item_placed", "highlighted", "completed", "reset", "operator_mode_changed"],
-  
+
+    "events": ["ready", "predicted", "item_placed", "highlighted", "completed", "reset", "operator_mode_changed", "finished"],
+
     "eventDetails": {
+      "predicted": "detail: { itemId, guess:'magnetic'|'nonmagnetic' } — emitted when a prediction is locked in for the current object, BEFORE it is tested.",
       "item_placed": "detail: { itemId, name, material, magnetic:boolean, tray:'magnetic'|'nonmagnetic' } — emitted each time an object is tested and sorted.",
       "highlighted": "detail: { target } — emitted when the agent points at a named element.",
-      "completed": "detail: { total, magnetic:string[], nonmagnetic:string[] } — emitted when every object has been tested and the results table appears.",
-      "reset": "detail: { total } — emitted when the game restarts.",
-      "operator_mode_changed": "detail: { operatorMode:'ai'|'student' }."
+      "completed": "detail: { total, magnetic:string[], nonmagnetic:string[] } — emitted once every object in the round has been tested (before Finish is pressed).",
+      "reset": "detail: { total } — emitted when the round restarts (also fires when the mode toggle rebuilds the round at a new depth).",
+      "operator_mode_changed": "detail: { operatorMode:'ai'|'student', mode:'ai'|'student', depth:'lean'|'full' }.",
+      "finished": "detail: { evaluated:true, score, total, stars(0-3), breakdown:[{id,correct,chose}], interactions:{attempts,correctFirstTry,hintsUsed,itemsExplored,durationMs}, learned:string[] } — the uniform performance summary emitted ONCE when the student presses Finish (student mode only)."
     },
-  
+
     "scientificFacts": [
       "A magnet attracts only some materials — these are called magnetic materials.",
       "Iron, steel, nickel and cobalt are magnetic; they leap towards and cling to a magnet.",
       "Materials like glass, wood, plastic, rubber, copper, aluminium and brass are non-magnetic — a magnet does not attract them.",
       "Steel is mostly iron, which is why steel spoons, pins and scissors are attracted to a magnet."
     ],
-  
+
     "parameters": {
       "gradeLevel": {
         "type": "number",
         "enum": [6, 7, 8],
         "default": 6,
-        "description": "Tunes the celebration tier on the results screen: confetti amount, size of the 'Sorted!' heading, and replay wording (6 = 'Play again!', most playful; 7 = 'Play again'; 8 = 'Try again', most restrained). May also be supplied inside data.gradeLevel; the top-level prop wins."
+        "description": "Tunes the celebration tier on the finish screen: confetti amount and size of the score heading (6 = most playful; 8 = most restrained). May also be supplied inside data.gradeLevel; the top-level prop wins."
       },
       "operatorMode": {
         "type": "string",
         "enum": ["ai", "student"],
         "default": "student",
-        "description": "Host/platform-set. 'ai' collapses to the demo view (controls hidden, watch caption shown); 'student' shows the full interactive panel. Settable via prop, setParam('operatorMode', …) or setOperatorMode(mode)."
+        "description": "Host/platform-set. 'ai' collapses to a lean 2-item demo (predict buttons hidden, magnet locked to agent control, 'watch' caption shown); 'student' shows the full practice round with predict-then-reveal and the Finish button. Settable via prop, setParam('operatorMode', …) or setOperatorMode(mode); also mirrored/overridable via the on-screen Teacher | Your turn toggle."
       },
       "muted": {
         "type": "boolean",
         "default": false,
         "description": "Mutes the Web Audio cues. Also toggled by setParam('muted', boolean) and the in-header mute button."
+      },
+      "showModeToggle": {
+        "type": "boolean",
+        "default": true,
+        "description": "Shows/hides the clickable Teacher | Your turn segmented toggle. Set false to let the host lock the mode."
       },
       "seed": {
         "type": "number",
@@ -94,21 +112,21 @@
         "description": "Tool configuration merged over the built-in defaults via {...DEFAULT_CONFIG, ...data}. See the 'data' schema below."
       }
     },
-  
+
     "data": {
       "description": "Configuration merged over the defaults. Pass only the fields you want to change.",
       "schema": {
         "title": { "type": "string", "default": "Magnetic or Non-Magnetic?", "description": "Main heading shown in the gradient header." },
         "subtitle": { "type": "string", "default": "Test each object with the magnet — which ones cling?", "description": "Secondary line under the title." },
-        "instruction": { "type": "string", "default": "Drag the magnet down onto each object. Magnetic ones leap up and cling to the poles!", "description": "Instruction line shown above the play board (student mode). In ai mode a 'watch' caption is shown instead." },
+        "instruction": { "type": "string", "default": "Drag the magnet down onto each object. Magnetic ones leap up and cling to the poles!", "description": "Fallback instruction line; the live guess/test prompts override it in student mode, and the 'watch' caption overrides it in ai mode." },
         "gradeLevel": { "type": "number", "enum": [6, 7, 8], "default": 6, "description": "Celebration tier. The top-level gradeLevel prop, if provided, overrides this." },
         "objects": {
           "type": "array",
-          "description": "The pool of objects the student tests. Reshuffled into a well-mixed order (no long magnetic/non-magnetic runs) at the start of every game. Whether an object clings is driven solely by its 'magnetic' flag.",
+          "description": "The pool of objects the student tests. In student/full depth the whole pool is reshuffled into a well-mixed order (no long magnetic/non-magnetic runs); in ai/lean depth only one representative magnetic and one non-magnetic object are shown. Whether an object clings is driven solely by its 'magnetic' flag.",
           "items": {
             "type": "object",
             "properties": {
-              "id": { "type": "string", "description": "Unique identifier within the list (also the arg id used by highlight/answerKey)." },
+              "id": { "type": "string", "description": "Unique identifier within the list (also the arg id used by highlight/answerKey/validIds)." },
               "name": { "type": "string", "description": "Display name shown under the object and in the trays/results table." },
               "material": { "type": "string", "description": "Material label (informational), e.g. 'Iron', 'Glass', 'Brass (copper + zinc)'." },
               "magnetic": { "type": "boolean", "description": "true = leaps up and clings; false = only wobbles and is sorted as non-magnetic." },
@@ -141,7 +159,7 @@
       "examples": {
         "quick_round": {
           "title": "Will it stick?",
-          "instruction": "Drag the magnet onto each object to test it.",
+          "instruction": "Guess, then drag the magnet onto each object to test it.",
           "objects": [
             { "id": "nail", "name": "Iron Nail", "material": "Iron", "magnetic": true, "iconKey": "nail" },
             { "id": "key", "name": "Iron Key", "material": "Iron", "magnetic": true, "iconKey": "key" },
@@ -154,11 +172,11 @@
         "grade_8_restrained": {
           "gradeLevel": 8,
           "title": "Magnetic Materials Test",
-          "instruction": "Test each object with the magnet and record whether it is attracted."
+          "instruction": "Predict, then test each object with the magnet and record whether it is attracted."
         }
       }
     },
-  
+
     "iconKeys": {
       "type": "string",
       "description": "Built-in hand-drawn SVG artwork keys available for object.iconKey. No external images needed.",
@@ -166,10 +184,21 @@
       "non_magnetic_examples": ["marble", "copper", "foil", "wood", "bell", "ruler", "eraser", "bottle", "pencil"],
       "note": "iconKey only chooses the picture; the magnetic flag alone decides behaviour."
     },
-  
+
     "agentUsage": {
-      "ai_operated": "Set operatorMode 'ai' (controls hidden, 'watch' caption shown). Call testObject() to demonstrate testing the current object; narrate the item_placed event. Use highlight('object') / highlight('magneticTray') / highlight('nonMagneticTray') to point while explaining. reset() reshuffles and restarts.",
-      "student_operated": "Set operatorMode 'student' (default). The student drags or taps to test each object; watch the item_placed and completed events and coach. Use highlight(target) to nudge toward the magnet or a tray without doing the action.",
-      "files": { "component": "magnet_sort_game.tsx", "schema": "magnet_sort_game.json" }
+      "ai_operated": "Set operatorMode 'ai' (lean 2-item demo: predict UI hidden, magnet locked, 'watch' caption shown). Call testObject() to demonstrate testing the current object; narrate the item_placed event. Use highlight('object') / highlight('magneticTray') / highlight('nonMagneticTray') to point while explaining. reset() reshuffles and restarts. NEVER call predict() in this mode — predicting is the student's job.",
+      "student_operated": "Set operatorMode 'student' (default, full pool). The student predicts with the on-screen buttons, then drags or taps to test each object; watch the predicted, item_placed and completed events and coach. Use highlight(target) to nudge toward the magnet, a tray or a predict button without doing the action for them. The student presses Finish themselves; watch for the finished event to see their score.",
+      "files": { "component": "Magnetic_or_Non-Magnetic.tsx", "schema": "Magnetic_or_Non-Magnetic.json" }
+    },
+
+    "agentInstructions": {
+      "description":
+        "<description>Lets the student predict, then test, whether everyday objects (a nail, a spoon, a marble, a wooden pencil, and more) are attracted to a magnet, sorting each into a Magnetic or Non-magnetic tray.</description>",
+      "teacherToolInstruction":
+        "<teacher_tool_instruction>ALWAYS call setOperatorMode(\"ai\") first so the tool shows the short two-item demo. ALWAYS call testObject() to reveal whether the current object clings, and narrate what happened before moving on. ALWAYS use highlight(\"magneticTray\") or highlight(\"nonMagneticTray\") when pointing out where an object landed. NEVER call predict() in this mode — predicting is the student's job, not yours. NEVER ask the student to drag or tap the tool while operatorMode is \"ai\"; that is only for the student mode. ALWAYS ask the student what they think will happen BEFORE you call testObject(), then ask what they observed AFTER.</teacher_tool_instruction>",
+      "studentToolInstruction":
+        "<student_tool_instruction>ALWAYS guess \"Magnetic\" or \"Not magnetic\" for the object on the table before you test it. ALWAYS drag the horseshoe magnet down onto the object (or tap the object) once your guess is locked in, and watch whether it clings or only wobbles. ALWAYS keep testing every object that appears, one at a time. NEVER skip your guess — testing is locked until you predict. ALWAYS press Finish once every object has been tested, and be ready to explain WHY an object is or is not magnetic.</student_tool_instruction>",
+      "teacherRealInstruction":
+        "<teacher_real_instruction>A predict-then-reveal magnet-testing tool for the 'magnetic vs non-magnetic materials' lesson. Use it in place of the physical bar-magnet classroom demo, either to demonstrate (Teacher mode) or to let students practise sorting real objects themselves (Student mode) with a scored finish screen.</teacher_real_instruction>"
     }
-  }
+}

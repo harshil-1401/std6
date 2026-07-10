@@ -18,7 +18,7 @@
     },
   
     "sharedState": {
-      "fields": ["stage", "heating", "flameLevel", "saltAmount", "waterLevel", "boilProgress", "vaporRising", "saltVisible", "dishCooled", "prediction", "predictionCommitted", "temp", "operatorMode", "depth", "roundIndex", "totalRounds", "score", "completed"]
+      "fields": ["stage", "heating", "flameLevel", "saltAmount", "waterLevel", "boilProgress", "vaporRising", "saltVisible", "dishCooled", "prediction", "predictionCommitted", "temp", "operatorMode", "depth", "roundIndex", "totalRounds", "score", "completed", "finished"]
     },
   
     "agentControl": {
@@ -40,7 +40,8 @@
         "toggleLamp(on)",
         "setBoilProgress(value)",
         "coolDown()",
-        "nextRound()"
+        "nextRound()",
+        "finish()"
       ]
     },
   
@@ -52,7 +53,7 @@
       { "control": "Heat / Pause button", "effect": "starts or pauses the boiling so the water level falls and vapour rises" },
       { "control": "Cool the dish button", "effect": "stops heating and lets the dish cool so the dry salt can be safely revealed" },
       { "control": "Next mixture button", "effect": "moves on to the next practice mixture (with more salt) to compare the amount left" },
-      { "control": "Play again / Reset button", "effect": "restarts the activity from a fresh dish of salt solution" },
+      { "control": "Finish button (appears after the last mixture is revealed)", "effect": "ends the activity and opens the full-screen summary with a star rating and what you learned" },
       { "control": "Mute button", "effect": "toggles the sizzle and chime sounds on or off" }
     ],
   
@@ -87,6 +88,7 @@
       "answer_incorrect",
       "round_advanced",
       "completed",
+      "finished",
       "highlighted",
       "operator_mode_changed",
       "reset"
@@ -101,8 +103,8 @@
   
     "agentInstructions": {
       "description": "<description>Shows that heating a salt solution boils the water away as vapour and leaves solid salt behind. The student predicts what will remain, heats the dish, cools it, and reveals the salt — across one lean demo mixture (Teacher) or three practice mixtures with more salt each time (Student).</description>",
-      "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS ask the student to predict what will be left before you heat, then commit it with commitPrediction(choice) using only 'salt','nothing','water'. ALWAYS start the boil with setFlame('high') or play(), and narrate the falling water level and rising vapour. ALWAYS wait until the water is gone, then call coolDown() and highlight('salt_crystals') to reveal the solid salt. ALWAYS use highlight(target) with only dish, salt_solution, flame, lamp, gauze, tripod, salt_crystals, or predict. ALWAYS ask what the student OBSERVED (what left the dish, what stayed) before explaining. NEVER ask the student to tap or drag anything in this mode — YOU drive it.</teacher_tool_instruction>",
-      "studentToolInstruction": "<student_tool_instruction>ALWAYS predict what will be left — solid salt, nothing, or the water — before you light the flame. ALWAYS turn the flame on and watch the water bubble into vapour and the level fall. ALWAYS cool the dish once the water is gone, then check whether your prediction was right. ALWAYS try the next mixture with more salt and compare how much solid salt is left, and be ready to explain WHY the salt stays but the water leaves.</student_tool_instruction>",
+      "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS ask the student to predict what will be left before you heat, then commit it with commitPrediction(choice) using only 'salt','nothing','water'. ALWAYS start the boil with setFlame('high') or play(), and narrate the falling water level and rising vapour. ALWAYS wait until the water is gone, then call coolDown() and highlight('salt_crystals') to reveal the solid salt. ALWAYS use highlight(target) with only dish, salt_solution, flame, lamp, gauze, tripod, salt_crystals, or predict. ALWAYS ask what the student OBSERVED (what left the dish, what stayed) before explaining. NEVER ask the student to tap or drag anything in this mode — YOU drive it. NEVER call finish() — the Finish button and its summary only ever appear in student mode.</teacher_tool_instruction>",
+      "studentToolInstruction": "<student_tool_instruction>ALWAYS predict what will be left — solid salt, nothing, or the water — before you light the flame. ALWAYS turn the flame on and watch the water bubble into vapour and the level fall. ALWAYS cool the dish once the water is gone, then check whether your prediction was right. ALWAYS try the next mixture with more salt and compare how much solid salt is left, and be ready to explain WHY the salt stays but the water leaves. ALWAYS press Finish after the last mixture to see your stars and what you learned.</student_tool_instruction>",
       "teacherRealInstruction": "<teacher_real_instruction>An evaporation simulation for the 'boil the water away to recover the salt' beat. Use it in place of the live spirit-lamp demo: it heats a salt solution until the water evaporates and the solid salt is left in the dish, safely and repeatably.</teacher_real_instruction>"
     },
   

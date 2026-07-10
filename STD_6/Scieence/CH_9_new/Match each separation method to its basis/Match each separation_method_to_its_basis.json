@@ -1,21 +1,27 @@
 {
     "toolId": "WISEFISH.2D1",
-    "title": "Wise Fish: Match the Separation Method",
+
+    "title": "Matching separation methods to their basis",
+    "description": "The student hooks a fish that names a separation method (handpicking, threshing, winnowing, sieving, evaporation, sedimentation, decantation, filtration, churning, magnetic separation, condensation) and then taps the description slip that explains the basis on which that method works. A correct pair pops with confetti and settles into a 'Caught' tray; a wrong pair shakes and offers a hint. Once every method is paired the student presses Finish to see a star rating and a short summary of what the activity taught.",
+    "context": "Grade 6 Science, Separation of Substances. Real mixtures (paddy, muddy river water, milk) are separated using different methods, and each method works because of a specific physical difference between the parts of the mixture — size, weight, magnetism, or whether a substance dissolves and can be evaporated or condensed back. This tool is a matching activity that follows the hands-on demonstrations of each individual method: instead of watching one method at a time, the student now reviews the whole set together and pairs each method's name with the reason it works, consolidating the chapter before moving to a written exercise or assessment.",
+    "teachingNotes": "Run this after the individual method demonstrations (handpicking, threshing, winnowing, sieving, evaporation/condensation, sedimentation/decantation, filtration, churning, magnetic separation) have each been shown once, so the student is matching names they already recognise to reasons they have already seen. Encourage the student to read the description slip fully before choosing — many pairs share surface words (e.g. 'settles', 'separates') and the common misconception is matching on a shared keyword rather than the actual physical basis. If the student is stuck, use highlight() to point at the hooked fish or a candidate slip rather than making the match for them — let them reason it out. Debrief on the idea that a mixture can only be separated because its parts differ in some physical property, and that the right method depends on which property differs.",
+    "instructionsForStudent": "1) Look at the fish tank on the left — each fish is the name of one separation method. 2) Tap a fish to hook it; it becomes your selected method. 3) Read the description slips in the tank on the right and tap the one that explains why that method works. 4) A correct pair pops with confetti and moves to the 'Caught' tray; a wrong pair shakes and shows a short hint — try another slip. 5) Repeat until every method is paired. 6) Press the Finish button to see your score, your stars, and what you have learned.",
+
     "subtype": "matching",
     "conceptId": "SEPARATION.METHODS",
     "relatedConceptIds": ["MIXTURES", "SOLUBILITY", "STATES_OF_MATTER"],
     "module": "Separation of substances",
-  
+
     "placement": {
       "beat": "Practice",
-      "where": "Replaces the match-the-columns worksheet. The student pairs each separation method with the sentence that describes it; the teacher watches the emitted events and points with highlight() when the student is stuck."
+      "where": "Replaces the match-the-columns worksheet. The student pairs each separation method with the sentence that describes its basis; the teacher mostly watches the emitted events and uses highlight() to point when the student is stuck, rather than making matches itself."
     },
-  
-    "sharedState": { "fields": ["selected", "matched", "attempts", "streak", "remaining", "complete"] },
-  
+
+    "sharedState": { "fields": ["selected", "matched", "attempts", "streak", "remaining", "complete", "finished", "operatorMode", "depth", "hintsUsed"] },
+
     "agentControl": {
       "postmessage": {
-        "in": "{type:'command', id, method, args}",
+        "in":  "{type:'command', id, method, args}",
         "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
       },
       "windowMethods": [
@@ -25,20 +31,25 @@
         "reset()",
         "highlight(target)",
         "getState()",
+        "setOperatorMode(mode)",
         "select(methodId)",
-        "match(methodId,descriptionId)"
+        "match(methodId,descriptionId)",
+        "clearMatch(methodId)",
+        "checkMatches()"
       ]
     },
-  
+
     "studentControls": [
       { "control": "Tap a fish (a method) in the left tank", "effect": "hooks that method; a fishing hook drops and the mascot reacts" },
-      { "control": "Tap a description slip in the right tank", "effect": "tries to match it to the hooked method — correct pops with confetti, wrong shakes and shows a hint" },
+      { "control": "Tap a description slip in the right tank", "effect": "tries to match it to the hooked method — correct pops with confetti and settles into the Caught tray, wrong shakes and shows a hint" },
       { "control": "Tap the speaker button", "effect": "mutes or unmutes the sound cues" },
       { "control": "Tap the sun/moon button", "effect": "switches between light and dark mode" },
-      { "control": "Tap Reset (or Play again)", "effect": "clears all matches and reshuffles the slips" }
+      { "control": "Tap Reset", "effect": "clears all current matches and reshuffles the slips, without ending the activity" },
+      { "control": "Tap the Teacher / Your turn toggle", "effect": "switches between a short lean demo (Teacher, 4 methods) and the full practice set (Your turn / Student, all 11 methods)" },
+      { "control": "Tap Finish", "effect": "ends the activity and opens the results screen with stars and what-you-learned (student mode only, appears after the student has started matching)" }
     ],
-  
-    "answerKey": {
+
+    "validIds": {
       "methods": [
         "handpicking", "threshing", "winnowing", "sieving", "evaporation",
         "sedimentation", "decantation", "filtration", "churning",
@@ -49,6 +60,21 @@
         "sedimentation", "decantation", "filtration", "churning",
         "magnetic_separation", "condensation"
       ],
+      "leanSetMethods": ["handpicking", "winnowing", "evaporation", "magnetic_separation"],
+      "highlightTargets": [
+        "handpicking", "threshing", "winnowing", "sieving", "evaporation",
+        "sedimentation", "decantation", "filtration", "churning",
+        "magnetic_separation", "condensation",
+        "desc:handpicking", "desc:threshing", "desc:winnowing", "desc:sieving", "desc:evaporation",
+        "desc:sedimentation", "desc:decantation", "desc:filtration", "desc:churning",
+        "desc:magnetic_separation", "desc:condensation",
+        "tank_methods", "tank_descriptions", "progress", "mute", "theme", "reset", "modeToggle", "finish"
+      ],
+      "operatorModes": ["ai", "student"],
+      "note": "match(methodId, descriptionId) is a positional call — a fish id is ALWAYS the first arg, the slip id ALWAYS the second. A description slip's id is prefixed 'desc:' ONLY when used as a highlight() target; pass the bare id (no prefix) to match()/clearMatch()."
+    },
+
+    "answerKey": {
       "correctMatches": {
         "handpicking": "handpicking",
         "threshing": "threshing",
@@ -64,49 +90,65 @@
       },
       "note": "A method fish and its correct description slip share the same id. match(methodId, descriptionId) is correct only when methodId === descriptionId."
     },
-  
-    "highlightTargets": {
-      "methods": "any id from answerKey.methods highlights that fish, e.g. highlight('winnowing')",
-      "descriptions": "prefix an answerKey id with 'desc:' to highlight the slip, e.g. highlight('desc:winnowing')",
-      "regions": ["tank_methods", "tank_descriptions", "progress", "mute", "reset"]
-    },
-  
+
     "props": {
-      "defaults": { "themeColor": "#4A4DC9", "darkMode": false, "muted": false },
+      "defaults": { "themeColor": "#4A4DC9", "darkMode": false, "muted": false, "operatorMode": "student", "device": "mobile" },
       "additionalProps": {
         "seed": 42,
         "showHints": true,
         "animationSpeed": 1,
-        "pairs": null
+        "pairs": null,
+        "showModeToggle": true
       }
     },
-  
+
     "events": [
       "ready",
       "method_selected",
       "answer_checked",
       "answer_correct",
       "answer_incorrect",
+      "pair_matched",
+      "pair_incorrect",
       "item_placed",
+      "all_matched",
       "completed",
-      "reset"
+      "reset",
+      "operator_mode_changed",
+      "finished"
     ],
-  
+
     "eventDetail": {
       "ready": "{ toolId, total }",
       "method_selected": "{ methodId }",
-      "answer_checked": "{ methodId, descriptionId, correct }",
+      "answer_checked": "{ methodId, descriptionId, correct } — or, from checkMatches(): { total, matched, remaining }",
       "answer_correct": "{ methodId }",
       "answer_incorrect": "{ methodId, descriptionId }",
-      "item_placed": "{ itemId, matched, total }",
+      "pair_matched": "{ leftId, rightId }",
+      "pair_incorrect": "{ leftId, rightId }",
+      "item_placed": "{ itemId, matched, total, cleared? }",
+      "all_matched": "{ total, attempts, accuracy }",
       "completed": "{ total, attempts, correct, accuracy }",
-      "reset": "{}"
+      "reset": "{}",
+      "operator_mode_changed": "{ mode, depth }",
+      "finished": "{ evaluated:true, score, total, stars, breakdown:[{id,correct}], interactions:{attempts,correctFirstTry,hintsUsed,itemsExplored,durationMs}, learned:[...] }"
     },
-  
+
     "scientificFacts": [
       "A mixture can be separated because its parts differ — in size, weight, magnetism, or whether they dissolve.",
       "Winnowing works because husk is lighter than grain, so moving air carries the husk further away.",
       "Filtration separates an insoluble solid from a liquid; evaporation separates a solid that was dissolved in it.",
       "Sedimentation lets a heavier insoluble solid settle, and decantation then pours off the clear liquid above it."
-    ]
+    ],
+
+    "agentInstructions": {
+      "description":
+        "<description>A matching activity where the student pairs each separation method (handpicking, threshing, winnowing, sieving, evaporation, sedimentation, decantation, filtration, churning, magnetic separation, condensation) with the sentence describing the physical basis that makes it work.</description>",
+      "teacherToolInstruction":
+        "<teacher_tool_instruction>ALWAYS treat this as a Practice tool the STUDENT does, not one you demonstrate end-to-end. ALWAYS drive it with setOperatorMode(\"ai\") ONLY to show ONE example pair using select(methodId) then match(methodId,descriptionId) with the SAME id (e.g. select(\"winnowing\") then match(\"winnowing\",\"winnowing\")) so the student sees the mechanic once. NEVER call match with a methodId different from the descriptionId to fake a wrong answer. ALWAYS switch to setOperatorMode(\"student\") right after the one demo pair so the student does the rest themselves. In student mode ALWAYS use highlight(target) — a method id, a \"desc:\"+id target, or a region like \"tank_methods\" — to point at the next fish or the right slip when the student is stuck; NEVER call match() or select() for the student in this mode. ALWAYS react to the '[2D tool …]' notes from pair_matched, pair_incorrect and finished. NEVER call checkMatches() to reveal answers before the student attempts every pair.</teacher_tool_instruction>",
+      "studentToolInstruction":
+        "<student_tool_instruction>ALWAYS tap a fish first to hook a method, then tap the description slip you think matches it. ALWAYS read the whole description before choosing — several slips share similar words, so decide by the actual reason the method works, not by one matching word. NEVER worry about a wrong pair: it shakes, gives you a hint, and lets you try again. ALWAYS try to pair every method, then press Finish to see your stars and what you have learned.</student_tool_instruction>",
+      "teacherRealInstruction":
+        "<teacher_real_instruction>A matching activity for the 'separation methods and their basis' Practice beat. Use it after each method has been individually demonstrated, as a consolidation exercise before a written recap or assessment.</teacher_real_instruction>"
+    }
   }

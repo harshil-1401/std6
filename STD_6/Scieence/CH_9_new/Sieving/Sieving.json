@@ -1,18 +1,24 @@
 {
     "toolId": "sieve_matching_board",
-    "title": "Match the Sieve",
+
+    "title": "Sieve size-matching board",
+    "description": "The student is shown three mixtures — atta with bran, rice with small stones, and sand with pebbles — one at a time, and must pick the sieve whose hole size matches each mixture before watching a realistic sifting animation reveal whether the smaller pieces truly fall through while the larger pieces stay on top; a fourth, non-sieveable case (tea leaves in liquid tea) is used elsewhere to test the 'sieving won't work' idea.",
+    "context": "Grade 6 Science, Separation of Substances. This tool renders the everyday kitchen and farm scene of sieving on-screen: shaking a mixture over a mesh so the smaller pieces fall through the holes while the bigger pieces are trapped above, exactly as a cook sieves flour or a farmer sieves grain from stones. It matters because sieving is the standard method for separating two solids that differ in particle size, and students must learn to judge which sieve (very fine, medium or coarse) is right for a given pair of particle sizes, and to recognise that sieving only works for solid-solid mixtures, never a solid dissolved or suspended in a liquid. It sits in the 'apply what you've learned' part of the chapter, after sieving has been introduced and demonstrated, letting the student practise choosing the correct sieve unaided.",
+    "teachingNotes": "Run this as a practice-and-coach activity: introduce the goal once, then let the student work through the three mixtures at their own pace rather than quizzing them step by step. For each mixture, the student first predicts which sieve fits by tapping an option; a correct pick plays the full sifting animation and unlocks a plain-language explanation, while a wrong pick shows a targeted hint that names the misconception (e.g. picking 'no sieve fits' for a solid-solid pair, or a hole-size sieve for the tea case) without giving the answer away. Use highlight() to nudge toward the next mixture or the right hole-size sieve rather than picking for the student. Pre-empt the common misconception that 'sieving works for everything' or that hole size doesn't matter — reinforce that the holes must be big enough to release the smaller particles yet small enough to trap the larger ones, and that a liquid mixture defeats sieving entirely because the size-matching idea simply does not apply to it. The idea to land: sieving separates solids of different sizes by matching mesh hole-size to particle size, and it fails when one part of the mixture is a liquid.",
+    "instructionsForStudent": "1) Watch the demo animation of sand and pebbles being sieved through a coarse mesh to see how sieving works. 2) Tap 'Let's start' to begin the first mixture. 3) Look at the mixture shown (its two parts and their relative sizes) and tap the sieve option you think will separate it correctly. 4) If you're right, watch the sifting animation play out and read why it works; if you're wrong, read the hint and try again. 5) Move to the next mixture using the progress dots or the 'Next example' button, and repeat until all three mixtures are solved. 6) Once every mixture is solved, tap 'Finish' to see your results and what you've learned.",
+
     "subtype": "matching",
     "conceptId": "M6.SEP.SIEVE",
     "relatedConceptIds": ["M6.SEP.HANDPICKING", "M6.SEP.WINNOWING", "M6.SEP.FILTRATION"],
     "module": "Separation of Substances",
-  
+
     "placement": {
       "beat": "Apply",
-      "where": "After introducing sieving, the student picks the correct sieve for each solid-solid mixture, one at a time. The agent points at the next mixture or the right hole-size with highlight() and reacts to the emitted events; it never picks for the student."
+      "where": "After introducing sieving, the student picks the correct sieve for each solid-solid mixture, one at a time. The agent points at the next mixture or the right hole-size with highlight() and reacts to the emitted events; it never picks for the student in student mode. In Teacher mode the tool shows the exact same full content as Student mode (the intro/demo screen and all three mixtures) — the agent walks through all three with select()+pickSieve(), then calls reset() to give the student a fresh, unsolved run before calling setOperatorMode('student') to hand the tool over."
     },
-  
-    "sharedState": { "fields": ["phase", "currentMixture", "picks", "solved", "total", "done"] },
-  
+
+    "sharedState": { "fields": ["phase", "currentMixture", "picks", "solved", "total", "operatorMode", "depth", "muted", "finished"] },
+
     "agentControl": {
       "postmessage": {
         "in": "{type:'command', id, method, args}",
@@ -25,45 +31,61 @@
         "reset()",
         "highlight(target)",
         "getState()",
+        "setOperatorMode(mode)",
         "start()",
         "select(mixtureId)",
         "next()",
         "prev()",
-        "pickSieve(mixtureId,sieveId)"
+        "pickSieve(mixtureId,sieveId)",
+        "finish()"
       ]
     },
-  
+
     "studentControls": [
       { "control": "Tap 'Let's start'", "effect": "Moves from the intro/demo into the walkthrough of the mixtures." },
       { "control": "Tap a sieve option", "effect": "Picks that sieve for the mixture on screen. The correct one plays the sifting animation and marks the mixture solved; a wrong one shows a targeted hint." },
       { "control": "Tap a progress dot", "effect": "Jumps to that mixture (only ones already reached or solved)." },
       { "control": "Tap 'Watch again'", "effect": "Replays the sifting animation for the solved mixture." },
-      { "control": "Tap 'Previous' / 'Next example' / 'Play again'", "effect": "Moves between mixtures, or restarts the whole activity." }
+      { "control": "Tap 'Previous' / 'Next example'", "effect": "Moves between mixtures already reached." },
+      { "control": "Tap the Teacher | Your turn toggle", "effect": "Switches between the teacher's demo view (same full content — the intro screen and all three mixtures — but tap controls hidden, driven by the agent) and the full student practice view (all mixtures, controls shown)." },
+      { "control": "Tap the mute icon", "effect": "Mutes or unmutes the tap/correct/wrong/finish sound cues." },
+      { "control": "Tap 'Finish' (appears once every mixture is solved)", "effect": "Ends the activity and opens the star finish screen with a 'What you have learned' summary." }
     ],
-  
-    "answerKey": {
+
+    "validIds": {
       "mixtures": ["atta", "rice", "sand"],
       "sieves": ["veryFine", "medium", "coarse", "none"],
-      "correct": { "atta": "veryFine", "rice": "medium", "sand": "coarse" },
-      "note": "'none' (the 'Sieving Won't Work' card) is a distractor: it is wrong for all three, because each mixture is a solid-solid mix that a sieve CAN separate."
+      "highlightTargets": [
+        "atta", "rice", "sand",
+        "veryFine", "medium", "coarse", "none",
+        "card", "sim",
+        "startButton", "replayButton", "prevButton", "nextButton", "finishButton",
+        "modeToggle", "muteButton"
+      ],
+      "operatorModes": ["ai", "student"]
     },
-  
-    "highlightTargets": [
-      "atta", "rice", "sand",
-      "veryFine", "medium", "coarse", "none",
-      "card", "sim",
-      "startButton", "replayButton", "prevButton", "nextButton"
-    ],
-  
+
+    "answerKey": {
+      "correct": { "atta": "veryFine", "rice": "medium", "sand": "coarse" },
+      "note": "'none' (the 'Sieving Won't Work' card) is a distractor: it is wrong for all three, because each mixture is a solid-solid mix that a sieve CAN separate. The fourth mixture in the data set, 'tea' (a solid-liquid mixture whose correct card IS 'none'), is excluded from this walkthrough's scored set — it is available via validIds.mixtures... note: only atta/rice/sand are scored in this tool's Apply activity."
+    },
+
     "props": {
-      "defaults": { "gradeLevel": 6 },
+      "defaults": {
+        "gradeLevel": 6,
+        "operatorMode": "student",
+        "muted": false,
+        "showModeToggle": true,
+        "darkMode": false,
+        "device": "mobile"
+      },
       "additionalProps": {
         "width": 800,
         "height": 600,
         "data": { "config": { "mixtures": "optional Mixture[] override", "options": "optional SieveOption[] override" } }
       }
     },
-  
+
     "events": [
       "ready",
       "example_selected",
@@ -71,22 +93,37 @@
       "answer_correct",
       "answer_incorrect",
       "completed",
+      "operator_mode_changed",
+      "finished",
       "reset"
     ],
-  
+
     "eventDetail": {
       "example_selected": "{ mixtureId }",
       "answer_checked": "{ mixtureId, sieveId, correct }",
       "answer_correct": "{ mixtureId, sieveId }",
       "answer_incorrect": "{ mixtureId, sieveId, hint }",
       "completed": "{ score, total }",
+      "operator_mode_changed": "{ operatorMode, depth }",
+      "finished": "{ evaluated, score, total, stars, breakdown:[{id,correct,chose}], interactions:{attempts,correctFirstTry,hintsUsed,itemsExplored,durationMs}, learned:[...] }",
       "reset": "{}"
     },
-  
+
     "scientificFacts": [
       "Sieving separates a solid mixture whose pieces are different sizes.",
       "The smaller pieces fall through the holes while the larger pieces stay on top.",
       "The mesh has to match the mixture: holes small enough to trap the big pieces, but big enough to let the small pieces through.",
       "A liquid mixture cannot be sieved - the liquid runs straight through, so you filter it instead."
-    ]
+    ],
+
+    "agentInstructions": {
+      "description":
+        "<description>Shows the student picking the correctly sized sieve (very fine, medium, or coarse) for each of three solid-solid mixtures, then watching a realistic sifting animation confirm whether the smaller pieces fall through while the larger pieces stay on top.</description>",
+      "teacherToolInstruction":
+        "<teacher_tool_instruction>ALWAYS call setOperatorMode(\"ai\") before driving — Teacher mode shows the FULL tool content, identical to Student mode (the intro/demo screen, then all three mixtures atta, rice and sand), it only hides the tappable controls so the agent drives instead. Walk through the intro screen first, then for EACH of the three mixtures in turn use select(mixtureId) to bring it on screen and pickSieve(mixtureId,sieveId) with the correct sieve from answerKey.correct to demonstrate the match, letting the sifting animation play out fully before speaking. NEVER stop after demonstrating only one mixture — all three must be shown. ALWAYS use highlight(target) to point at the mixture or the sieve option you want the student to notice, using only ids from validIds. NEVER call pickSieve with a sieveId other than the one in answerKey.correct for that mixture when demonstrating — that would model a wrong answer. NEVER ask the student to tap the sieve options or the Finish button in this mode. ALWAYS ask a thinking question about what the student OBSERVED (what fell through, what stayed) before moving to the next mixture, and NEVER reveal the reasoning behind an upcoming mixture before the student has seen the demo for it. Once all three mixtures have been demonstrated, ALWAYS call reset() (so the mixtures reshuffle and are unsolved again) before calling setOperatorMode(\"student\") to hand the tool to the student for their own independent practice run.</teacher_tool_instruction>",
+      "studentToolInstruction":
+        "<student_tool_instruction>ALWAYS look at the two parts of the mixture and their relative sizes before picking a sieve — try to reason out the hole size rather than guessing. ALWAYS read the hint if your pick is wrong and use it to choose again; NEVER skip a mixture without solving it, since 'Next example' and 'Finish' stay locked until it is solved. ALWAYS watch the full sifting animation after a correct pick and check that what you predicted (which part falls through, which stays) actually happens. ALWAYS tap 'Finish' once every mixture is solved to see your result.</student_tool_instruction>",
+      "teacherRealInstruction":
+        "<teacher_real_instruction>A sieve size-matching practice tool for the 'separation by sieving' beat in Separation of Substances. Use it after demonstrating sieving, so students practise matching mesh hole-size to particle size across three mixtures (flour/bran, rice/stones, sand/pebbles) and get immediate, animated feedback on each choice.</teacher_real_instruction>"
+    }
   }

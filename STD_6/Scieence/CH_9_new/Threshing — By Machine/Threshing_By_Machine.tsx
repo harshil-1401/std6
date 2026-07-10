@@ -1,14 +1,36 @@
-import React, { useState, useRef, useEffect, useCallback, memo } from "react";
+import React, { useState, useRef, useEffect, useCallback, memo, useMemo } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 
 /* =========================================================================
    Threshing By Machine   (Class 6 Science · Curiosity)
    Singularity design language. Fixed to byMachine method only.
+
+   Compliance: 2D_PROMPT 5.md
+     ✓ ready signal on mount after listener attached
+     ✓ {type:'command'} handler with apiRef (no stale closures)
+     ✓ getState() returns AND emits {type:'state',state}
+     ✓ highlight(target) for all nameable canvas elements + buttons
+     ✓ Teacher|Student segmented toggle (§6.1) — showModeToggle prop
+     ✓ lean/full depth per operatorMode (§6.2) — lean=2 steps, full=4 steps
+     ✓ operatorMode via props / setParam / setOperatorMode / on-screen toggle
+     ✓ depth reflected in getState() and operator_mode_changed event
+     ✓ Web Audio sound cues; muted prop; mute toggle button
+     ✓ framer-motion for step-card, mode toggle, and finish-screen motion (§7.2/§8)
+     ✓ play()/pause()/reset()/step() drive the REAL visible animation via an
+       imperative explorer ref (agent verbs produce the same result the student sees)
+     ✓ Finish button (student mode only) → full-screen "What you have learned"
+       finish screen (non-evaluating tool ⇒ no star, §6.3) + uniform `finished` event
+     ✓ All windowMethods exist on api; all events listed in JSON
    ========================================================================= */
 
-// ============================ Types ============================
+// ─── constants ────────────────────────────────────────────────────────────────
+const TOOL_ID = "threshing_by_machine";
+const emit = (m: any) => { try { window.parent.postMessage(m, "*"); } catch { } };
 
-// Single method: By Machine
-type MethodType = "byHand" | "byMachine";
+// ─── types ────────────────────────────────────────────────────────────────────
+type MethodType   = "byHand" | "byMachine";
+type OperatorMode = "ai" | "student";
+type Depth        = "lean" | "full";
 
 interface StepDetails {
   currentStep: number;
@@ -17,141 +39,135 @@ interface StepDetails {
   currentMode: string;
 }
 
+// ⭐ The uniform `finished` event detail (§6.3). This tool only lets the student
+// OBSERVE the machine — there is no right/wrong judged — so evaluated is always
+// false and score/stars/breakdown are omitted, per the non-evaluating contract.
+interface FinishDetail {
+  evaluated: false;
+  interactions: {
+    attempts: number;
+    hintsUsed: number;
+    replaysUsed: number;
+    itemsExplored: string[];
+    durationMs: number;
+  };
+  learned: string[];
+}
+
 interface ThreshingToolProps {
   props?: {
     width?: number;
     height?: number;
     showPlayPause?: boolean;
-    // Agent config can also be nested here.
+    operatorMode?: OperatorMode;
+    muted?: boolean;
+    showModeToggle?: boolean;
+    device?: "mobile" | "smartboard";
     additionalProps?: {
-      showSectionNav?: boolean;
       showPlayPause?: boolean;
+      operatorMode?: OperatorMode;
+      muted?: boolean;
     };
   };
   setStepDetails?: (s: StepDetails) => void;
-  stopAutoNext?: boolean;
-  setStopAutoNext?: (v: boolean) => void;
 }
 
-interface IconProps {
-  size?: number;
-  style?: React.CSSProperties;
-}
+interface IconProps { size?: number; style?: React.CSSProperties; }
 
-// ============================ Inline icons ============================
-// Self-contained, lucide-style stroke icons. No external imports => no #130.
-
+// ─── Inline icons ─────────────────────────────────────────────────────────────
 const baseSvg = (size: number, style?: React.CSSProperties): React.SVGProps<SVGSVGElement> => ({
-  width: size,
-  height: size,
-  viewBox: "0 0 24 24",
-  fill: "none",
-  stroke: "currentColor",
-  strokeWidth: 2,
-  strokeLinecap: "round",
-  strokeLinejoin: "round",
-  style,
-  "aria-hidden": true,
+  width: size, height: size, viewBox: "0 0 24 24", fill: "none",
+  stroke: "currentColor", strokeWidth: 2,
+  strokeLinecap: "round", strokeLinejoin: "round",
+  style, "aria-hidden": true,
 } as React.SVGProps<SVGSVGElement>);
 
-const ChevronLeft = ({ size = 20, style }: IconProps) => (
-  <svg {...baseSvg(size, style)}><path d="M15 18l-6-6 6-6" /></svg>
-);
-const ChevronRight = ({ size = 20, style }: IconProps) => (
-  <svg {...baseSvg(size, style)}><path d="M9 18l6-6-6-6" /></svg>
-);
-const RotateCcw = ({ size = 20, style }: IconProps) => (
-  <svg {...baseSvg(size, style)}>
-    <path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" />
-  </svg>
-);
-const Play = ({ size = 20, style }: IconProps) => (
-  <svg {...baseSvg(size, style)}><path d="M6 4l14 8-14 8z" fill="currentColor" stroke="none" /></svg>
-);
-const Pause = ({ size = 20, style }: IconProps) => (
-  <svg {...baseSvg(size, style)}>
-    <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none" />
-    <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none" />
-  </svg>
-);
+const ChevronLeft  = ({ size = 20, style }: IconProps) => <svg {...baseSvg(size, style)}><path d="M15 18l-6-6 6-6" /></svg>;
+const ChevronRight = ({ size = 20, style }: IconProps) => <svg {...baseSvg(size, style)}><path d="M9 18l6-6-6-6" /></svg>;
+const RotateCcw    = ({ size = 20, style }: IconProps) => <svg {...baseSvg(size, style)}><path d="M3 12a9 9 0 1 0 3-6.7L3 8" /><path d="M3 3v5h5" /></svg>;
+const Play         = ({ size = 20, style }: IconProps) => <svg {...baseSvg(size, style)}><path d="M6 4l14 8-14 8z" fill="currentColor" stroke="none" /></svg>;
+const Pause        = ({ size = 20, style }: IconProps) => <svg {...baseSvg(size, style)}><rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none" /><rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor" stroke="none" /></svg>;
+const SoundIcon    = ({ size = 18, style }: IconProps) => <svg {...baseSvg(size, style)}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07" /></svg>;
+const MuteIcon     = ({ size = 18, style }: IconProps) => <svg {...baseSvg(size, style)}><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" /><line x1="23" y1="9" x2="17" y2="15" /><line x1="17" y1="9" x2="23" y2="15" /></svg>;
 
-// ============================ Colors ============================
-
+// ─── Colors ───────────────────────────────────────────────────────────────────
 const C = {
-  primary: "#4A4DC9",
-  primaryDark: "#533086",
-  primaryHover: "#6E70D8",
-  orange: "#FF7212",
-  orangeDark: "#E85D00",
-  orange2: "#FC9145",
-  lavender: "#C1C1EA",
-  lavenderSoft: "#F1F1FB",
-  cream: "#FFF3E4",
-  ink: "#1A1A2E",
-  gray700: "#4E4E4E",
-  gray400: "#CACACA",
-  gray200: "#EBEBEB",
-  gray100: "#F5F5F5",
-  white: "#FFFFFF",
-  green: "#16A34A",
-  red: "#E53E3E",
-  teal: "#0891b2",
-  amber: "#F59E0B",
-  sky: "#EAF6FF",
-  skyLow: "#F6FCFF",
-  grass: "#9CCB6A",
-  grassDark: "#7FB24E",
-  soil: "#CBA66B",
-  wood: "#9B6A3C",
-  woodDark: "#774E29",
-  crop: "#E0A82E",
-  cropLight: "#F2C94C",
-  cropDark: "#A87A1A",
-  grain: "#E8B23A",
-  grainDk: "#C0871C",
-  skin: "#E7B98C",
-  shirt: "#3E78C9",
-  shirtDk: "#2D5DA0",
-  pants: "#3B4A66",
-  machine: "#5C6B7A",
-  machineDk: "#3D4A57",
-  machineHi: "#0891b2",
-  windowDark: "#1F2B33",
-  sack: "#CBA06A",
-  sackDk: "#9E7A44",
-  straw: "#D8C38A",
-  strawDk: "#B79E5E",
+  primary: "#4A4DC9", primaryDark: "#533086", primaryHover: "#6E70D8",
+  orange: "#FF7212", orangeDark: "#E85D00", orange2: "#FC9145",
+  lavender: "#C1C1EA", lavenderSoft: "#F1F1FB", cream: "#FFF3E4",
+  ink: "#1A1A2E", gray700: "#4E4E4E", gray400: "#CACACA",
+  gray200: "#EBEBEB", gray100: "#F5F5F5", white: "#FFFFFF",
+  green: "#16A34A", red: "#E53E3E", teal: "#0891b2",
+  amber: "#F59E0B", sky: "#EAF6FF", skyLow: "#F6FCFF",
+  grass: "#9CCB6A", grassDark: "#7FB24E", soil: "#CBA66B",
+  wood: "#9B6A3C", woodDark: "#774E29", crop: "#E0A82E",
+  cropLight: "#F2C94C", cropDark: "#A87A1A",
+  grain: "#E8B23A", grainDk: "#C0871C", skin: "#E7B98C",
+  shirt: "#3E78C9", shirtDk: "#2D5DA0", pants: "#3B4A66",
+  machine: "#5C6B7A", machineDk: "#3D4A57", machineHi: "#0891b2",
+  windowDark: "#1F2B33", sack: "#CBA06A", sackDk: "#9E7A44",
+  straw: "#D8C38A", strawDk: "#B79E5E",
 };
-
 const FONT = "Poppins, system-ui, sans-serif";
 
-// ============================ Design-system button ============================
+// ─── Web Audio ────────────────────────────────────────────────────────────────
+function useAudio(muted: boolean) {
+  const ctxRef = useRef<AudioContext | null>(null);
+  const ensure = useCallback(() => {
+    if (!ctxRef.current) ctxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+    if (ctxRef.current.state === "suspended") ctxRef.current.resume();
+    return ctxRef.current;
+  }, []);
 
+  const play = useCallback((freq: number, type: OscillatorType, dur: number, vol = 0.18) => {
+    if (muted) return;
+    try {
+      const ac = ensure(); const o = ac.createOscillator(); const g = ac.createGain();
+      o.connect(g); g.connect(ac.destination);
+      o.frequency.value = freq; o.type = type;
+      g.gain.setValueAtTime(vol, ac.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime + dur);
+      o.start(); o.stop(ac.currentTime + dur);
+    } catch { }
+  }, [muted, ensure]);
+
+  const step = useCallback(() => play(480, "sine", 0.11, 0.13), [play]);
+
+  const done = useCallback(() => {
+    if (muted) return;
+    [[523, 0], [659, 0.12], [784, 0.24], [1047, 0.38]].forEach(([f, t]) => {
+      try {
+        const ac = ensure(); const o = ac.createOscillator(); const g = ac.createGain();
+        o.connect(g); g.connect(ac.destination);
+        o.frequency.value = f; o.type = "sine";
+        const st = ac.currentTime + t;
+        g.gain.setValueAtTime(0, st);
+        g.gain.linearRampToValueAtTime(0.26, st + 0.04);
+        g.gain.exponentialRampToValueAtTime(0.001, st + 0.30);
+        o.start(st); o.stop(st + 0.30);
+      } catch { }
+    });
+  }, [muted, ensure]);
+
+  return { step, done };
+}
+
+// ─── Design-system button ─────────────────────────────────────────────────────
 type BtnVariant = "contained" | "highlight" | "outlined" | "text";
 
 function UIButton({
-  children, onClick, variant = "contained", disabled = false, size = "md",
-  full = false, ariaLabel, ariaPressed,
+  children, onClick, variant = "contained", disabled = false,
+  size = "md", full = false, ariaLabel, ariaPressed, highlighted,
 }: {
-  children: React.ReactNode;
-  onClick?: () => void;
-  variant?: BtnVariant;
-  disabled?: boolean;
-  size?: "sm" | "md";
-  full?: boolean;
-  ariaLabel?: string;
-  ariaPressed?: boolean;
+  children: React.ReactNode; onClick?: () => void; variant?: BtnVariant;
+  disabled?: boolean; size?: "sm" | "md"; full?: boolean;
+  ariaLabel?: string; ariaPressed?: boolean; highlighted?: boolean;
 }) {
   const [hover, setHover] = useState(false);
   const [press, setPress] = useState(false);
-  const h = !disabled && hover;
-  const p = !disabled && press;
+  const h = !disabled && hover; const p = !disabled && press;
 
-  let bg = "transparent";
-  let color: string = C.primary;
-  let border = "none";
-  let shadow = "none";
-
+  let bg = "transparent", color: string = C.primary, border = "none", shadow = "none";
   if (variant === "contained") {
     bg = disabled ? C.gray200 : p ? C.primaryDark : h ? C.primaryHover : C.primary;
     color = disabled ? C.gray400 : C.white;
@@ -163,92 +179,94 @@ function UIButton({
   } else if (variant === "outlined") {
     bg = disabled ? C.white : p ? C.lavender : h ? C.lavenderSoft : C.white;
     color = disabled ? C.gray400 : C.primary;
-    border = `2px solid ${disabled ? C.gray200 : C.primary}`;
+    border = `2px solid ${disabled ? C.gray200 : highlighted ? C.orange : C.primary}`;
   } else {
     bg = p ? "#EDEDF8" : h ? C.gray100 : "transparent";
     color = disabled ? C.gray400 : C.primary;
   }
 
   return (
-    <button
-      type="button"
-      onClick={disabled ? undefined : onClick}
-      disabled={disabled}
-      aria-label={ariaLabel}
-      aria-pressed={ariaPressed}
+    <button type="button" onClick={disabled ? undefined : onClick} disabled={disabled}
+      aria-label={ariaLabel} aria-pressed={ariaPressed}
       onMouseEnter={() => setHover(true)}
       onMouseLeave={() => { setHover(false); setPress(false); }}
-      onMouseDown={() => setPress(true)}
-      onMouseUp={() => setPress(false)}
+      onMouseDown={() => setPress(true)} onMouseUp={() => setPress(false)}
       style={{
-        display: full ? "flex" : "inline-flex",
-        width: full ? "100%" : undefined,
-        alignItems: "center",
-        justifyContent: "center",
-        gap: 8,
-        padding: size === "sm" ? "9px 18px" : "12px 24px",
-        borderRadius: 9999,
-        border,
-        background: bg,
-        color,
-        boxShadow: shadow,
-        fontFamily: FONT,
-        fontWeight: 600,
-        fontSize: size === "sm" ? 14 : 16,
-        lineHeight: 1,
+        display: full ? "flex" : "inline-flex", width: full ? "100%" : undefined,
+        alignItems: "center", justifyContent: "center", gap: 8,
+        padding: size === "sm" ? "9px 18px" : "12px 24px", borderRadius: 9999,
+        border, background: bg, color,
+        boxShadow: highlighted ? `0 0 0 3px ${C.orange}, ${shadow}` : shadow,
+        fontFamily: FONT, fontWeight: 600, fontSize: size === "sm" ? 14 : 16, lineHeight: 1,
         cursor: disabled ? "default" : "pointer",
         transform: p ? "translateY(1px)" : "none",
         transition: "background .15s, box-shadow .15s, transform .1s, border-color .15s",
         whiteSpace: "nowrap",
-      }}
-    >
+      }}>
       {children}
     </button>
   );
 }
 
-// ============================ Content data ============================
+// ─── Teacher | Student toggle ─────────────────────────────────────────────────
+function ModeToggle({ mode, onChange, highlighted }: {
+  mode: OperatorMode; onChange: (m: OperatorMode) => void; highlighted?: boolean;
+}) {
+  return (
+    <div style={{
+      display: "inline-flex", borderRadius: 12, padding: 4, gap: 4,
+      background: "rgba(0,0,0,0.06)",
+      border: `1px solid ${highlighted ? C.orange : "rgba(0,0,0,0.08)"}`,
+      boxShadow: highlighted ? `0 0 0 2px ${C.orange}55, 0 0 14px ${C.orange}44` : "none",
+      transition: "box-shadow .25s",
+    }}>
+      {(["ai", "student"] as const).map(m => {
+        const sel = mode === m;
+        return (
+          <button key={m} type="button" onClick={() => onChange(m)}
+            style={{
+              padding: "7px 14px", borderRadius: 9, border: "none", cursor: "pointer",
+              fontFamily: FONT, fontWeight: 700, fontSize: 13,
+              background: sel
+                ? `linear-gradient(135deg, ${C.primaryDark}, ${C.primary})`
+                : "transparent",
+              color: sel ? C.white : C.gray700,
+              transition: "all .2s",
+              display: "flex", alignItems: "center", gap: 5, whiteSpace: "nowrap",
+            }}>
+            {m === "ai" ? "👩‍🏫 Teacher" : "🙋 Your turn"}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
 
-const HAND_STEPS = [
-  { title: "The harvested crop", text: "After the crop is cut, the grain is still stuck to the dried stalks. We need to knock it loose." },
-  { title: "Lift the bundle", text: "The farmer gathers a bundle (a sheaf) and raises it high above a hard surface." },
-  { title: "Beat it — that's threshing!", text: "He beats the bundle against the surface again and again. The grain pops off the stalks and falls." },
-  { title: "Slow and tiring", text: "Bit by bit a small pile of grain builds up. Doing a whole field by hand takes many people and a lot of time." },
-];
-
+// ─── Content data ─────────────────────────────────────────────────────────────
 const MACHINE_STEPS = [
-  { title: "The threshing machine", text: "A power-driven machine does the same job. A bundle of crop waits beside the feeding mouth (the hopper)." },
-  { title: "Feed it in", text: "The stalks are pushed into the hopper at the top of the machine." },
+  { title: "The threshing machine",          text: "A power-driven machine does the same job. A bundle of crop waits beside the feeding mouth (the hopper)." },
+  { title: "Feed it in",                     text: "The stalks are pushed into the hopper at the top of the machine." },
   { title: "The drum spins — that's threshing!", text: "Inside, a fast-spinning drum beats the stalks. Grain is knocked loose and the light straw is thrown out." },
-  { title: "Fast and easy", text: "Clean grain pours into the sack while straw piles up on the side. One machine threshes a whole field quickly." },
+  { title: "Fast and easy",                  text: "Clean grain pours into the sack while straw piles up on the side. One machine threshes a whole field quickly." },
 ];
 
-interface BoardCard { id: string; text: string; side: MethodType; reason: string; hint: string; }
-
-const BOARD_CARDS: BoardCard[] = [
-  { id: "kg10", text: "Faster for just 10 kg", side: "byHand", reason: "For a tiny amount, a few minutes of beating beats setting up a machine.", hint: "Think about the amount — would you start a big machine for only 10 kg?" },
-  { id: "cheap", text: "Cheaper for a small farm", side: "byHand", reason: "No machine to buy, rent, or fuel — your hands cost nothing.", hint: "Which method costs money to buy and run?" },
-  { id: "nofuel", text: "Works without any fuel", side: "byHand", reason: "It runs on muscle power — no diesel or electricity needed.", hint: "Which one needs fuel or electricity to spin its drum?" },
-  { id: "field", text: "Threshes a whole field in a day", side: "byMachine", reason: "The powered drum knocks grain off huge bundles very fast.", hint: "For a giant amount, which one keeps up all day?" },
-  { id: "easy", text: "Easy — barely any effort", side: "byMachine", reason: "The motor does the beating, so the worker only feeds the crop in.", hint: "Which one leaves you tired at the end of the day?" },
-];
-
-// ============================ Helpers ============================
-
+// ─── Helpers ──────────────────────────────────────────────────────────────────
 const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-const easeInCubic = (t: number) => t * t * t;
 const clamp = (v: number, a: number, b: number) => Math.max(a, Math.min(b, v));
-const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const lerp  = (a: number, b: number, t: number) => a + (b - a) * t;
 
 const useResponsive = () => {
-  const [w, setW] = useState(800);
+  const [dims, setDims] = useState({ w: 800, h: 700 });
   useEffect(() => {
-    const onResize = () => setW(window.innerWidth);
-    window.addEventListener("resize", onResize);
-    onResize();
+    const onResize = () => setDims({ w: window.innerWidth, h: window.innerHeight });
+    window.addEventListener("resize", onResize); onResize();
     return () => window.removeEventListener("resize", onResize);
   }, []);
-  return { w, isMobile: w < 576 };
+  const { w, h } = dims;
+  // §8.1 — the tight 844×390 mobile-app frame: landscape AND short. Recompose to a
+  // two-pane (canvas | text+controls) layout instead of only shrinking a single column.
+  const isCompactLandscape = w > h && h <= 460;
+  return { w, h, isMobile: w < 576, isCompactLandscape };
 };
 
 interface Particle {
@@ -256,103 +274,96 @@ interface Particle {
   settled: boolean; r: number; rot: number; kind: "grain" | "straw";
 }
 
-// small inline panel illustrations (already SVG components — no external deps)
-function FarmerLogIcon({ size = 42 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden>
-      <rect x="6" y="44" width="34" height="13" rx="4" fill={C.woodDark} />
-      <rect x="6" y="44" width="34" height="5" rx="2.5" fill={C.wood} />
-      <circle cx="44" cy="20" r="6" fill={C.skin} />
-      <path d="M37 17a7 7 0 0 1 14 0z" fill={C.cropDark} />
-      <rect x="40" y="26" width="9" height="20" rx="4" fill={C.shirt} />
-      <rect x="40" y="44" width="4" height="13" rx="2" fill={C.pants} />
-      <rect x="45" y="44" width="4" height="13" rx="2" fill={C.pants} />
-      <path d="M41 30 L26 40" stroke={C.skin} strokeWidth="3.4" strokeLinecap="round" />
-      <g stroke={C.crop} strokeWidth="2.6" strokeLinecap="round">
-        <path d="M26 40 L16 47" /><path d="M26 40 L18 49" /><path d="M26 40 L21 50" />
-      </g>
-    </svg>
-  );
-}
-
-function ThresherIcon({ size = 42 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 64 64" fill="none" aria-hidden>
-      <rect x="8" y="22" width="42" height="26" rx="5" fill={C.machine} />
-      <rect x="8" y="42" width="42" height="6" rx="3" fill={C.machineDk} />
-      <path d="M14 22 l8 -8 h8 l-4 8 z" fill={C.machineDk} />
-      <circle cx="30" cy="34" r="9" fill={C.windowDark} />
-      <g stroke={C.cropLight} strokeWidth="2.2" strokeLinecap="round">
-        <path d="M30 34 L30 26" /><path d="M30 34 L37 38" /><path d="M30 34 L23 38" />
-      </g>
-      <circle cx="18" cy="50" r="5" fill={C.machineDk} />
-      <circle cx="42" cy="50" r="5" fill={C.machineDk} />
-      <path d="M50 40 l8 4" stroke={C.amber} strokeWidth="3" strokeLinecap="round" />
-    </svg>
-  );
+// ⭐ Imperative handle so the ROOT component's agent api (play/pause/reset/step)
+// can drive the REAL on-screen animation — not just emit an event (§3.4 rule 1).
+export interface ExplorerHandle {
+  next: () => void;
+  back: () => void;
+  replay: () => void;
+  setPlaying: (p: boolean) => void;
+  resetAll: () => void;
+  getInfo: () => { step: number; total: number; playing: boolean; title: string; isLast: boolean };
 }
 
 /* =====================================================================
-   SECTION 1 — TOOLS  (animated demonstrations on a canvas)
-   Encapsulated so its animation hooks only run while this section is shown.
+   ToolsExplorer — canvas animation scene (byMachine only)
    ===================================================================== */
 
 const ToolsExplorer = memo(function ToolsExplorer({
-  isMobile, showPlayPause, onReport,
+  isMobile, showPlayPause, depth, isAI, highlights, isCompactLandscape, audio, onReport, onStepChange, onReplay, onReady,
 }: {
-  isMobile: boolean;
-  showPlayPause: boolean;
+  isMobile: boolean; showPlayPause: boolean; depth: Depth;
+  isAI: boolean; highlights: Set<string>; isCompactLandscape: boolean;
+  audio: ReturnType<typeof useAudio>;
   onReport?: (s: StepDetails) => void;
+  onStepChange?: (step: number, total: number, isLast: boolean) => void;
+  onReplay?: () => void;
+  onReady?: (handle: ExplorerHandle) => void;
 }) {
-  const { w: winW } = useResponsive();
-  const method: MethodType = "byMachine" as MethodType;
-  const [stepIdx, setStepIdx] = useState(0);
+  const method: MethodType = "byMachine";
+
+  // Show all steps in both Teacher and Student modes
+  const visibleSteps = MACHINE_STEPS;
+  const totalSteps   = visibleSteps.length;
+
+  const [stepIdx,   setStepIdx]   = useState(0);
   const [isPlaying, setIsPlaying] = useState(true);
-  const [dims, setDims] = useState({ w: 720, h: 380 });
+  const [dims,      setDims]      = useState({ w: 720, h: 380 });
 
-  const wrapRef = useRef<HTMLDivElement | null>(null);
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rafRef = useRef<number | null>(null);
-  const timeRef = useRef(0);
-  const lastTsRef = useRef(0);
-  const prevSwingRef = useRef(0);
-  const grainsRef = useRef<Particle[]>([]);
-  const strawRef = useRef<Particle[]>([]);
-  const dustRef = useRef<{ x: number; y: number; t: number } | null>(null);
-  const machineGrainCountRef = useRef(0);
-  const machineStrawCountRef = useRef(0);
-  const machineSpawnAccRef = useRef(0);
-  const sceneWRef = useRef(720);
-  const sceneHRef = useRef(380);
+  const wrapRef    = useRef<HTMLDivElement | null>(null);
+  const canvasRef  = useRef<HTMLCanvasElement | null>(null);
+  const rafRef     = useRef<number | null>(null);
+  const timeRef    = useRef(0);
+  const lastTsRef  = useRef(0);
+  const grainsRef  = useRef<Particle[]>([]);
+  const strawRef   = useRef<Particle[]>([]);
+  const machineGrainCountRef  = useRef(0);
+  const machineStrawCountRef  = useRef(0);
+  const machineSpawnAccRef    = useRef(0);
+  const sceneWRef  = useRef(720);
+  const sceneHRef  = useRef(380);
 
-  // pile-full thresholds — once reached, no more grain/straw is added
   const MACHINE_GRAIN_FULL = 110;
   const MACHINE_STRAW_FULL = 70;
-  const HAND_GRAIN_FULL = 64;
 
-  const steps = method === "byHand" ? HAND_STEPS : MACHINE_STEPS;
-  const totalSteps = steps.length;
-
-  useEffect(() => {
-    onReport?.({ currentStep: stepIdx + 1, totalSteps, isPaused: !isPlaying, currentMode: `tools:${method}` });
-  }, [stepIdx, totalSteps, isPlaying, method, onReport]);
+  // Clamp step to visible range when depth shrinks
+  const safeStep = Math.min(stepIdx, totalSteps - 1);
 
   useEffect(() => {
-    const cw = wrapRef.current?.clientWidth ?? 720;
-    const w = clamp(cw, 280, 920);
-    const h = clamp(w * 0.55, 230, 420);
-    setDims({ w, h });
-  }, [winW, method]);
+    onReport?.({
+      currentStep: safeStep + 1, totalSteps,
+      isPaused: !isPlaying, currentMode: `tools:${method}`,
+    });
+    onStepChange?.(safeStep, totalSteps, safeStep === totalSteps - 1);
+  }, [safeStep, totalSteps, isPlaying, onReport, onStepChange]);
+
+  // Measure the canvas wrapper's ACTUAL rendered size. It is flex-sized to whatever space
+  // is left after the header, step card, controls and Finish button claim theirs, so the
+  // scene always fits and nothing below the canvas is ever pushed off-screen (§8/§8.1).
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el) return;
+    const measure = () => {
+      const cw = el.clientWidth;
+      const ch = el.clientHeight;
+      if (cw > 0 && ch > 0) setDims({ w: clamp(cw, 200, 1800), h: clamp(ch, 110, 1000) });
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isCompactLandscape]);
 
   useEffect(() => {
-    timeRef.current = 0; lastTsRef.current = 0; prevSwingRef.current = 0;
-    if (stepIdx < 3) {
+    timeRef.current = 0; lastTsRef.current = 0;
+    if (safeStep < 3) {
       grainsRef.current = []; strawRef.current = [];
-      machineGrainCountRef.current = 0; machineStrawCountRef.current = 0; machineSpawnAccRef.current = 0;
+      machineGrainCountRef.current = 0; machineStrawCountRef.current = 0;
+      machineSpawnAccRef.current = 0;
     }
-  }, [method, stepIdx]);
+  }, [safeStep]);
 
-  // ---------- drawing helpers ----------
+  // ── drawing helpers ──────────────────────────────────────────────────────────
   const roundRect = (ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) => {
     const rr = Math.min(r, w / 2, h / 2);
     ctx.beginPath();
@@ -374,26 +385,29 @@ const ToolsExplorer = memo(function ToolsExplorer({
     ctx.fillStyle = C.grassDark; ctx.fillRect(0, groundY, W, 6);
   };
 
-  const pill = (ctx: CanvasRenderingContext2D, x: number, y: number, text: string, s: number, color: string = C.ink, bg: string = C.white) => {
+  const pill = (
+    ctx: CanvasRenderingContext2D, x: number, y: number, text: string,
+    s: number, color = C.ink, bg = C.white, glowColor?: string,
+  ) => {
     const fs = Math.round(12 * s + 2);
-    ctx.font = `600 ${fs}px ${FONT}`;
-    ctx.textBaseline = "middle"; ctx.textAlign = "left";
-    const padX = 9 * s;
-    const w = ctx.measureText(text).width + padX * 2;
-    const h = fs + 10 * s;
-    // keep the whole pill inside the canvas so text is never clipped
+    ctx.font = `600 ${fs}px ${FONT}`; ctx.textBaseline = "middle"; ctx.textAlign = "left";
+    const padX = 9 * s; const w = ctx.measureText(text).width + padX * 2; const h = fs + 10 * s;
     const W = sceneWRef.current; const H = sceneHRef.current; const m = 6;
     const cx = w + 2 * m >= W ? W / 2 : clamp(x, w / 2 + m, W - w / 2 - m);
     const cy = clamp(y, h / 2 + m, H - h / 2 - m);
     const rx = cx - w / 2; const ry = cy - h / 2;
     ctx.save();
-    ctx.shadowColor = "rgba(0,0,0,0.12)"; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2;
+    if (glowColor) { ctx.shadowColor = glowColor; ctx.shadowBlur = 14; }
+    else { ctx.shadowColor = "rgba(0,0,0,0.12)"; ctx.shadowBlur = 6; ctx.shadowOffsetY = 2; }
     ctx.fillStyle = bg; roundRect(ctx, rx, ry, w, h, 8 * s); ctx.fill();
     ctx.restore();
     ctx.fillStyle = color; ctx.fillText(text, rx + padX, cy + 0.5);
   };
 
-  const arrow = (ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number, color: string, s: number, width = 4) => {
+  const arrow = (
+    ctx: CanvasRenderingContext2D, x1: number, y1: number, x2: number, y2: number,
+    color: string, s: number, width = 4,
+  ) => {
     ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = width * s; ctx.lineCap = "round";
     ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
     const ang = Math.atan2(y2 - y1, x2 - x1); const ah = 10 * s;
@@ -423,14 +437,12 @@ const ToolsExplorer = memo(function ToolsExplorer({
     const perp = a + Math.PI / 2;
     for (let k = 0; k < 4; k++) {
       const p = L * (0.68 + 0.09 * k);
-      const cx = hx + Math.cos(a) * p; const cy = hy + Math.sin(a) * p;
+      const cx2 = hx + Math.cos(a) * p; const cy2 = hy + Math.sin(a) * p;
       const off = (3.4 - k * 0.45) * s;
       for (const side of [-1, 1]) {
-        const ox = cx + Math.cos(perp) * off * side; const oy = cy + Math.sin(perp) * off * side;
-        ctx.fillStyle = C.cropLight;
-        ctx.beginPath(); ctx.ellipse(ox, oy, 3.6 * s, 2.3 * s, a, 0, Math.PI * 2); ctx.fill();
-        ctx.fillStyle = C.grainDk;
-        ctx.beginPath(); ctx.ellipse(ox, oy, 1.4 * s, 1 * s, a, 0, Math.PI * 2); ctx.fill();
+        const ox = cx2 + Math.cos(perp) * off * side; const oy = cy2 + Math.sin(perp) * off * side;
+        ctx.fillStyle = C.cropLight; ctx.beginPath(); ctx.ellipse(ox, oy, 3.6 * s, 2.3 * s, a, 0, Math.PI * 2); ctx.fill();
+        ctx.fillStyle = C.grainDk;  ctx.beginPath(); ctx.ellipse(ox, oy, 1.4 * s, 1 * s, a, 0, Math.PI * 2); ctx.fill();
       }
     }
     ctx.fillStyle = C.cropLight;
@@ -450,61 +462,16 @@ const ToolsExplorer = memo(function ToolsExplorer({
       const f = i / (n - 1) - 0.5; const a = angle + f * 0.5;
       drawEar(ctx, hx, hy, a, L, s);
     }
-    ctx.fillStyle = C.woodDark;
-    ctx.beginPath();
+    ctx.fillStyle = C.woodDark; ctx.beginPath();
     ctx.arc(hx + Math.cos(angle) * L * 0.34, hy + Math.sin(angle) * L * 0.34, 5 * s, 0, Math.PI * 2);
     ctx.fill();
-  };
-
-  type Pose = "hold" | "beat" | "tired";
-  const drawFarmer = (ctx: CanvasRenderingContext2D, fx: number, gy: number, s: number, armAngle: number, pose: Pose) => {
-    const shoulderY = gy - 100 * s; const hipY = gy - 50 * s; const headR = 15 * s;
-    const slouch = pose === "tired" ? 6 * s : 0; const sy = shoulderY + slouch;
-    ctx.strokeStyle = C.pants; ctx.lineWidth = 12 * s; ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(fx - 3 * s, hipY); ctx.lineTo(fx - 16 * s, gy - 2);
-    ctx.moveTo(fx + 5 * s, hipY); ctx.lineTo(fx + 18 * s, gy - 2);
-    ctx.stroke();
-    ctx.fillStyle = C.shirt; roundRect(ctx, fx - 16 * s, sy, 32 * s, 56 * s, 12 * s); ctx.fill();
-    ctx.fillStyle = C.shirtDk; roundRect(ctx, fx - 16 * s, sy + 38 * s, 32 * s, 9 * s, 4 * s); ctx.fill();
-    const headY = sy - 17 * s;
-    ctx.fillStyle = C.skin; ctx.beginPath(); ctx.arc(fx, headY, headR, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = C.cropDark;
-    ctx.beginPath(); ctx.ellipse(fx, headY - headR * 0.7, headR * 1.5, headR * 0.42, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.beginPath(); ctx.arc(fx, headY - headR * 0.55, headR * 0.85, Math.PI, Math.PI * 2); ctx.fill();
-    const lSh = fx - 13 * s; const rSh = fx + 13 * s;
-    if (pose === "tired") {
-      ctx.strokeStyle = C.skin; ctx.lineWidth = 9 * s;
-      ctx.beginPath();
-      ctx.moveTo(rSh, sy + 6 * s); ctx.lineTo(fx + 2 * s, headY - 2 * s);
-      ctx.moveTo(lSh, sy + 6 * s); ctx.lineTo(lSh - 8 * s, sy + 40 * s);
-      ctx.stroke();
-      ctx.fillStyle = "#5BC0EB";
-      ctx.beginPath();
-      ctx.arc(fx + 20 * s, headY - 6 * s, 3.4 * s, 0, Math.PI * 2);
-      ctx.arc(fx + 24 * s, headY + 4 * s, 2.6 * s, 0, Math.PI * 2);
-      ctx.fill();
-      return { gripX: fx, gripY: sy };
-    }
-    const armLen = 56 * s;
-    const gripX = (lSh + rSh) / 2 + Math.cos(armAngle) * armLen;
-    const gripY = sy + 4 * s + Math.sin(armAngle) * armLen;
-    ctx.strokeStyle = C.skin; ctx.lineWidth = 9 * s; ctx.lineCap = "round";
-    ctx.beginPath();
-    ctx.moveTo(lSh, sy + 6 * s); ctx.lineTo(gripX, gripY);
-    ctx.moveTo(rSh, sy + 6 * s); ctx.lineTo(gripX, gripY);
-    ctx.stroke();
-    ctx.fillStyle = C.skin; ctx.beginPath(); ctx.arc(gripX, gripY, 6 * s, 0, Math.PI * 2); ctx.fill();
-    return { gripX, gripY };
   };
 
   const drawGrainPile = (ctx: CanvasRenderingContext2D) => {
     for (const g of grainsRef.current) {
       ctx.save(); ctx.translate(g.x, g.y); ctx.rotate(g.rot);
-      ctx.fillStyle = C.grain;
-      ctx.beginPath(); ctx.ellipse(0, 0, g.r, g.r * 1.5, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = C.grainDk;
-      ctx.beginPath(); ctx.ellipse(0, 0, g.r * 0.42, g.r * 0.8, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = C.grain; ctx.beginPath(); ctx.ellipse(0, 0, g.r, g.r * 1.5, 0, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = C.grainDk; ctx.beginPath(); ctx.ellipse(0, 0, g.r * 0.42, g.r * 0.8, 0, 0, Math.PI * 2); ctx.fill();
       ctx.restore();
     }
   };
@@ -516,22 +483,6 @@ const ToolsExplorer = memo(function ToolsExplorer({
       ctx.beginPath(); ctx.moveTo(-st.r, 0); ctx.lineTo(st.r, 0); ctx.stroke();
       ctx.restore();
     }
-  };
-
-  const farmerGrip = (fx: number, gy: number, s: number, armAngle: number) => {
-    const sy = gy - 100 * s; const armLen = 56 * s;
-    return { gripX: fx + Math.cos(armAngle) * armLen, gripY: sy + 4 * s + Math.sin(armAngle) * armLen };
-  };
-
-  const spawnGrainsAtBundle = (tipX: number, tipY: number) => {
-    for (let i = 0; i < 8; i++) {
-      grainsRef.current.push({
-        x: tipX + (Math.random() - 0.5) * 24, y: tipY + (Math.random() - 0.5) * 10,
-        vx: (Math.random() - 0.5) * 150, vy: -80 - Math.random() * 90,
-        settled: false, r: 2.8 + Math.random() * 1.3, rot: Math.random() * Math.PI, kind: "grain",
-      });
-    }
-    if (grainsRef.current.length > 320) grainsRef.current.splice(0, grainsRef.current.length - 320);
   };
 
   const hash01 = (n: number) => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
@@ -546,104 +497,40 @@ const ToolsExplorer = memo(function ToolsExplorer({
     ctx.beginPath(); ctx.ellipse(cx, gy - 3 * s, mw * 0.96, 7 * s, 0, 0, Math.PI * 2); ctx.fill();
     ctx.strokeStyle = C.strawDk; ctx.lineWidth = 1.5; ctx.lineCap = "round";
     for (let i = 0; i < 46; i++) {
-      const hx = cx + (hash01(i + 1) * 2 - 1) * mw * 0.94; const maxH = dome(hx);
+      const hx2 = cx + (hash01(i + 1) * 2 - 1) * mw * 0.94; const maxH = dome(hx2);
       if (maxH <= 4 * s) continue;
-      const hy = gy - 3 * s - hash01(i + 50) * maxH;
+      const hy2 = gy - 3 * s - hash01(i + 50) * maxH;
       const ang = (hash01(i + 99) - 0.5) * 1.5 - Math.PI / 2; const len = (5 + hash01(i + 7) * 8) * s;
-      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + Math.cos(ang) * len, hy + Math.sin(ang) * len); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(hx2, hy2); ctx.lineTo(hx2 + Math.cos(ang) * len, hy2 + Math.sin(ang) * len); ctx.stroke();
     }
     ctx.strokeStyle = C.cropLight; ctx.globalAlpha = 0.5;
     for (let i = 0; i < 16; i++) {
-      const hx = cx + (hash01(i + 200) * 2 - 1) * mw * 0.82; const maxH = dome(hx);
+      const hx2 = cx + (hash01(i + 200) * 2 - 1) * mw * 0.82; const maxH = dome(hx2);
       if (maxH <= 4 * s) continue;
-      const hy = gy - 3 * s - hash01(i + 250) * maxH;
-      ctx.beginPath(); ctx.moveTo(hx, hy); ctx.lineTo(hx + 4 * s, hy - 7 * s); ctx.stroke();
+      const hy2 = gy - 3 * s - hash01(i + 250) * maxH;
+      ctx.beginPath(); ctx.moveTo(hx2, hy2); ctx.lineTo(hx2 + 4 * s, hy2 - 7 * s); ctx.stroke();
     }
     ctx.globalAlpha = 1;
   };
 
   const drawCropHeap = (ctx: CanvasRenderingContext2D, cx: number, gy: number, s: number) => {
-    for (let r = 0; r < 3; r++) {
-      const y = gy - 9 * s - r * 12 * s; const cols = 3 - (r === 2 ? 1 : 0);
+    for (let r2 = 0; r2 < 3; r2++) {
+      const y2 = gy - 9 * s - r2 * 12 * s; const cols = 3 - (r2 === 2 ? 1 : 0);
       for (let c = 0; c < cols; c++) {
-        const x = cx + (c - (cols - 1) / 2) * 22 * s + (r % 2) * 6 * s;
-        drawBundle(ctx, x + 24 * s, y, Math.PI, 48 * s, 1, s);
+        const x2 = cx + (c - (cols - 1) / 2) * 22 * s + (r2 % 2) * 6 * s;
+        drawBundle(ctx, x2 + 24 * s, y2, Math.PI, 48 * s, 1, s);
       }
     }
   };
 
-  const drawHandScene = (ctx: CanvasRenderingContext2D, W: number, H: number, step: number, t: number) => {
-    const groundY = H * 0.82; const s = clamp(W / 760, 0.7, 1.12);
-    sceneWRef.current = W; sceneHRef.current = H;
-    drawBackground(ctx, W, H, groundY);
-    const bx = W * 0.4; const blockW = 108 * s; const blockH = 52 * s; const blockTopY = groundY - blockH;
-    ctx.fillStyle = C.woodDark; roundRect(ctx, bx - blockW / 2, blockTopY, blockW, blockH, 10 * s); ctx.fill();
-    ctx.fillStyle = C.wood; roundRect(ctx, bx - blockW / 2, blockTopY, blockW, 16 * s, 8 * s); ctx.fill();
-    ctx.strokeStyle = C.woodDark; ctx.lineWidth = 2;
-    for (let i = 1; i < 4; i++) { const lx = bx - blockW / 2 + (blockW * i) / 4; ctx.beginPath(); ctx.moveTo(lx, blockTopY + 16 * s); ctx.lineTo(lx, blockTopY + blockH); ctx.stroke(); }
-    const fx = W * 0.56; const Lb = 74 * s;
-    let armAngle = (158 * Math.PI) / 180; let pose: Pose = "hold"; let grainAmount = 1;
-    if (step === 0) { armAngle = (158 * Math.PI) / 180; }
-    else if (step === 1) { const u = easeOutCubic(clamp(t / 0.8, 0, 1)); armAngle = (lerp(158, 250, u) * Math.PI) / 180; }
-    else if (step === 2) {
-      pose = "beat"; const cyc = 1.0; const u = (t % cyc) / cyc; let deg: number;
-      if (u < 0.5) deg = lerp(158, 250, easeOutCubic(u / 0.5));
-      else if (u < 0.72) deg = lerp(250, 158, easeInCubic((u - 0.5) / 0.22));
-      else deg = 158;
-      armAngle = (deg * Math.PI) / 180;
-      // the bundle empties as its grain joins the pile; once full, no grain is left
-      const filled = clamp(grainsRef.current.length / HAND_GRAIN_FULL, 0, 1);
-      const handFull = grainsRef.current.length >= HAND_GRAIN_FULL;
-      grainAmount = lerp(1, 0, filled);
-      if (!handFull && prevSwingRef.current < 0.72 && u >= 0.72) {
-        const { gripX, gripY } = farmerGrip(fx, groundY, s, armAngle);
-        const tipX = gripX + Math.cos(armAngle) * Lb; const tipY = gripY + Math.sin(armAngle) * Lb;
-        spawnGrainsAtBundle(tipX, tipY); dustRef.current = { x: tipX, y: tipY, t: 0 };
-      }
-      prevSwingRef.current = u;
-    } else { pose = "tired"; }
-    if (step < 3) drawGrainPile(ctx);
-    if (step === 3) {
-      // bare, threshed-out stalks set aside (straw)
-      const sx = bx - blockW * 1.05; ctx.save(); ctx.translate(sx, groundY - 6 * s);
-      drawBundle(ctx, 0, 0, Math.PI, 60 * s, 0, s); ctx.restore();
-      // a tidy heap of the grain that was knocked loose
-      const hw = 54 * s, hh = 27 * s, hcx = bx, hgy = groundY - 2;
-      const dome = (x: number) => hh * (1 - Math.pow((x - hcx) / hw, 2));
-      ctx.fillStyle = "rgba(0,0,0,0.06)"; ctx.beginPath(); ctx.ellipse(hcx, hgy, hw * 0.96, 5 * s, 0, 0, Math.PI * 2); ctx.fill();
-      ctx.fillStyle = C.grain; ctx.beginPath(); ctx.moveTo(hcx - hw, hgy);
-      for (let i = 0; i <= 24; i++) { const xx = hcx - hw + (2 * hw * i) / 24; ctx.lineTo(xx, hgy - Math.max(dome(xx), 0)); }
-      ctx.lineTo(hcx + hw, hgy); ctx.closePath(); ctx.fill();
-      ctx.fillStyle = C.grainDk;
-      for (let i = 0; i < 24; i++) { const gx = hcx + (hash01(i + 3) * 2 - 1) * hw * 0.82; const mh = dome(gx); if (mh < 4 * s) continue; const gy = hgy - 3 * s - hash01(i + 31) * mh; ctx.beginPath(); ctx.ellipse(gx, gy, 1.5 * s, 2.3 * s, 0, 0, Math.PI * 2); ctx.fill(); }
-    }
-    const { gripX, gripY } = drawFarmer(ctx, fx, groundY, s, armAngle, pose);
-    if (step < 3) drawBundle(ctx, gripX, gripY, armAngle, Lb, grainAmount, s);
-    if (dustRef.current && step === 2) {
-      const d = dustRef.current; d.t += 0.05;
-      if (d.t < 1) {
-        const rad = 6 + d.t * 26 * s; ctx.globalAlpha = (1 - d.t) * 0.5; ctx.fillStyle = "#D9CBA8";
-        for (let k = 0; k < 5; k++) { const a = (k / 5) * Math.PI * 2; ctx.beginPath(); ctx.arc(d.x + Math.cos(a) * rad, d.y + Math.sin(a) * rad * 0.6, 5 * s, 0, Math.PI * 2); ctx.fill(); }
-        ctx.globalAlpha = 1;
-      }
-    }
-    if (step === 2) {
-      ctx.strokeStyle = "rgba(74,77,201,0.35)"; ctx.lineWidth = 3 * s; ctx.setLineDash([6 * s, 6 * s]);
-      const sh = { x: fx, y: groundY - 104 * s };
-      ctx.beginPath(); ctx.arc(sh.x, sh.y, 58 * s, (160 * Math.PI) / 180, (250 * Math.PI) / 180, false); ctx.stroke();
-      ctx.setLineDash([]);
-    }
-    if (step === 0) pill(ctx, gripX + Math.cos(armAngle) * Lb, gripY - 36 * s, "grain stuck to the stalks", s, C.cropDark);
-    else if (step === 1) { arrow(ctx, fx + 6 * s, groundY - 150 * s, fx + 6 * s, groundY - 178 * s, C.primary, s); pill(ctx, fx + 6 * s, groundY - 200 * s, "lift it up high", s, C.primary); }
-    else if (step === 2) { pill(ctx, bx, blockTopY - 48 * s, "beat it — that's threshing!", s, C.orangeDark); pill(ctx, bx - blockW * 0.55, groundY - 30 * s, "grain falls off", s, C.green); }
-    else if (step === 3) { pill(ctx, bx, groundY - 60 * s, "grain", s, C.grainDk); pill(ctx, bx - blockW * 1.05, groundY - 38 * s, "empty stalks", s, C.strawDk); pill(ctx, fx, groundY - 156 * s, "slow & tiring", s, C.gray700); }
-  };
-
-  const spawnMachineParticles = (groundY: number, s: number, bodyX: number, bodyW: number, bodyTop: number, sackX: number, strawX: number) => {
+  const spawnMachineParticles = (
+    groundY: number, s: number, bodyX: number, bodyW: number,
+    bodyTop: number, sackX: number, strawX: number,
+  ) => {
     const g = 1000; machineSpawnAccRef.current += 1;
     const grainRoom = (machineGrainCountRef.current + grainsRef.current.length) < MACHINE_GRAIN_FULL;
     const strawRoom = (machineStrawCountRef.current + strawRef.current.length) < MACHINE_STRAW_FULL;
-    if (!grainRoom && !strawRoom) return; // sack + straw pile both full: nothing more to add
+    if (!grainRoom && !strawRoom) return;
     const sackTopG = groundY - 76 * s;
     if (grainRoom) {
       for (let n = 0; n < 2; n++) {
@@ -666,31 +553,61 @@ const ToolsExplorer = memo(function ToolsExplorer({
   };
 
   const drawMachineScene = (ctx: CanvasRenderingContext2D, W: number, H: number, step: number, t: number) => {
-    const groundY = H * 0.82; const s = clamp(W / 900, 0.6, 1.0);
+    const groundY = H * 0.82; const s = clamp(Math.min(W / 900, H / 360), 0.6, 1.0);
     sceneWRef.current = W; sceneHRef.current = H;
     drawBackground(ctx, W, H, groundY);
-    const bodyW = 230 * s; const bodyH = 116 * s; const bodyX = W * 0.28; const bodyTop = groundY - bodyH - 30 * s;
+
+    // highlight targets
+    const hlMachine = highlights.has("machine") || highlights.has("body");
+    const hlDrum    = highlights.has("drum");
+    const hlHopper  = highlights.has("hopper");
+    const hlSack    = highlights.has("sack") || highlights.has("grainSack");
+    const hlStraw   = highlights.has("strawPile") || highlights.has("straw");
+    const hlBundle  = highlights.has("bundle") || highlights.has("crop");
+
+    const bodyW = 230 * s; const bodyH = 116 * s; const bodyX = W * 0.28;
+    const bodyTop = groundY - bodyH - 30 * s;
     const sackX = bodyX + bodyW + 44 * s; const sackW = 66 * s; const sackTop = groundY - 76 * s;
     const strawX = Math.min(bodyX + bodyW + 214 * s, W - 60 * s);
     const strawFill = clamp(machineStrawCountRef.current / MACHINE_STRAW_FULL, 0, 1);
-    if (strawFill > 0.02) { const mw = 44 * s + strawFill * 66 * s; const mh = 26 * s + strawFill * 72 * s; drawStrawStack(ctx, strawX, groundY, mw, mh, s); }
+
+    // straw pile
+    if (strawFill > 0.02) {
+      const mw = 44 * s + strawFill * 66 * s; const mh = 26 * s + strawFill * 72 * s;
+      if (hlStraw) { ctx.save(); ctx.shadowColor = C.orange; ctx.shadowBlur = 18; drawStrawStack(ctx, strawX, groundY, mw, mh, s); ctx.restore(); }
+      else drawStrawStack(ctx, strawX, groundY, mw, mh, s);
+    }
+
+    // wheels
     ctx.fillStyle = C.machineDk;
     [bodyX + 40 * s, bodyX + bodyW - 40 * s].forEach((wx) => {
       ctx.beginPath(); ctx.arc(wx, groundY - 6 * s, 22 * s, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = C.gray400; ctx.beginPath(); ctx.arc(wx, groundY - 6 * s, 8 * s, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = C.machineDk;
     });
+
+    // machine body
     const shake = step === 2 ? Math.sin(t * 40) * 1.6 * s : 0;
     ctx.save(); ctx.translate(0, shake);
+    if (hlMachine) { ctx.shadowColor = C.orange; ctx.shadowBlur = 20; }
     ctx.fillStyle = C.machine; roundRect(ctx, bodyX, bodyTop, bodyW, bodyH, 14 * s); ctx.fill();
     ctx.fillStyle = C.machineDk; roundRect(ctx, bodyX, bodyTop + bodyH - 16 * s, bodyW, 16 * s, 8 * s); ctx.fill();
     ctx.fillStyle = C.machineHi; roundRect(ctx, bodyX + 12 * s, bodyTop + 12 * s, bodyW - 24 * s, 7 * s, 4 * s); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // hopper
     const hopX = bodyX + 20 * s; const hopTopY = bodyTop - 46 * s; const hopW = 80 * s;
+    if (hlHopper) { ctx.shadowColor = C.orange; ctx.shadowBlur = 16; }
     ctx.fillStyle = C.machineDk;
     ctx.beginPath(); ctx.moveTo(hopX, hopTopY); ctx.lineTo(hopX + hopW, hopTopY); ctx.lineTo(hopX + hopW - 16 * s, bodyTop + 4 * s); ctx.lineTo(hopX + 14 * s, bodyTop + 4 * s); ctx.closePath(); ctx.fill();
     ctx.fillStyle = C.windowDark; ctx.beginPath(); ctx.ellipse(hopX + hopW / 2, hopTopY + 3 * s, hopW / 2 - 4 * s, 5 * s, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // drum
     const drumCx = bodyX + bodyW * 0.56; const drumCy = bodyTop + bodyH * 0.46; const drumR = 32 * s;
+    if (hlDrum) { ctx.shadowColor = C.orange; ctx.shadowBlur = 18; }
     ctx.fillStyle = C.windowDark; ctx.beginPath(); ctx.arc(drumCx, drumCy, drumR + 7 * s, 0, Math.PI * 2); ctx.fill();
+    ctx.shadowBlur = 0;
     const rot = step >= 1 ? t * (step === 2 ? 11 : 2.2) : 0;
     ctx.save(); ctx.translate(drumCx, drumCy); ctx.rotate(rot);
     ctx.strokeStyle = C.cropLight; ctx.lineWidth = 4.5 * s; ctx.lineCap = "round";
@@ -698,13 +615,21 @@ const ToolsExplorer = memo(function ToolsExplorer({
     ctx.fillStyle = C.machineHi; ctx.beginPath(); ctx.arc(0, 0, 7 * s, 0, Math.PI * 2); ctx.fill();
     ctx.restore();
     if (step === 2) spinArrows(ctx, drumCx, drumCy, drumR + 14 * s, C.amber, s);
-    ctx.restore();
+    ctx.restore(); // end shake
+
+    // spout
     const spoutTipX = sackX - 4 * s; const spoutTipY = sackTop - 10 * s;
     ctx.strokeStyle = C.machineDk; ctx.lineWidth = 10 * s; ctx.lineCap = "round";
     ctx.beginPath(); ctx.moveTo(bodyX + bodyW - 6 * s, bodyTop + bodyH * 0.5); ctx.lineTo(spoutTipX + 2 * s, spoutTipY); ctx.stroke();
+
+    // sack
+    if (hlSack) { ctx.save(); ctx.shadowColor = C.orange; ctx.shadowBlur = 18; }
     ctx.fillStyle = C.sack; roundRect(ctx, sackX - sackW / 2, sackTop, sackW, groundY - sackTop - 2, 14 * s); ctx.fill();
     ctx.fillStyle = C.sackDk; roundRect(ctx, sackX - sackW / 2 - 4 * s, sackTop - 7 * s, sackW + 8 * s, 16 * s, 8 * s); ctx.fill();
     ctx.fillStyle = C.windowDark; ctx.beginPath(); ctx.ellipse(sackX, sackTop + 1 * s, sackW / 2 - 7 * s, 6 * s, 0, 0, Math.PI * 2); ctx.fill();
+    if (hlSack) ctx.restore();
+
+    // grain fill in sack
     const grainFill = clamp(machineGrainCountRef.current / MACHINE_GRAIN_FULL, 0, 1);
     const grainFullVis = grainFill >= 1;
     const strawFullVis = strawFill >= 1;
@@ -716,52 +641,70 @@ const ToolsExplorer = memo(function ToolsExplorer({
       ctx.fillStyle = C.grainDk;
       for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.ellipse(sackX + (i - 2) * 8 * s, topY - 1 * s, 2 * s, 3 * s, 0, 0, Math.PI * 2); ctx.fill(); }
     }
-    // pour stream only while actively threshing and the sack still has room
+    // grain stream
     if (step === 2 && !grainFullVis) {
       const surfTopY = lerp(groundY - 8 * s, sackTop - 10 * s, grainFill);
       ctx.fillStyle = C.grain; ctx.beginPath();
       ctx.moveTo(spoutTipX - 4 * s, spoutTipY); ctx.lineTo(spoutTipX + 4 * s, spoutTipY);
       ctx.lineTo(sackX + 5 * s, surfTopY); ctx.lineTo(sackX - 5 * s, surfTopY); ctx.closePath(); ctx.fill();
     }
+
     drawGrainPile(ctx); drawStrawFlying(ctx);
     drawCropHeap(ctx, bodyX - 30 * s, groundY, s);
+
+    // bundle at hopper
     const hopMouthX = hopX + hopW / 2;
-    if (step === 0) drawBundle(ctx, hopMouthX - 40 * s, hopTopY - 50 * s, (218 * Math.PI) / 180, 76 * s, 1, s);
-    else if (step === 1) { const u = easeOutCubic(clamp(t / 1.1, 0, 1)); const bxp = lerp(hopMouthX - 40 * s, hopMouthX, u); const byp = lerp(hopTopY - 50 * s, hopTopY + 2 * s, u); drawBundle(ctx, bxp, byp, (lerp(218, 256, u) * Math.PI) / 180, lerp(76, 44, u) * s, 1, s); }
-    else { const bob = Math.sin(t * 3) * 4 * s; drawBundle(ctx, hopMouthX, hopTopY - 2 * s + bob, (250 * Math.PI) / 180, 46 * s, 1, s); }
-    if (step <= 1) { arrow(ctx, hopMouthX - 30 * s, hopTopY - 20 * s, hopMouthX - 2 * s, hopTopY + 2 * s, C.primary, s, 5); pill(ctx, hopMouthX - 6 * s, hopTopY - 52 * s, "stalks go in", s, C.primary); }
+    if (step === 0) {
+      if (hlBundle) { ctx.save(); ctx.shadowColor = C.orange; ctx.shadowBlur = 16; }
+      drawBundle(ctx, hopMouthX - 40 * s, hopTopY - 50 * s, (218 * Math.PI) / 180, 76 * s, 1, s);
+      if (hlBundle) ctx.restore();
+    } else if (step === 1) {
+      const u = easeOutCubic(clamp(t / 1.1, 0, 1));
+      const bxp = lerp(hopMouthX - 40 * s, hopMouthX, u); const byp = lerp(hopTopY - 50 * s, hopTopY + 2 * s, u);
+      if (hlBundle) { ctx.save(); ctx.shadowColor = C.orange; ctx.shadowBlur = 16; }
+      drawBundle(ctx, bxp, byp, (lerp(218, 256, u) * Math.PI) / 180, lerp(76, 44, u) * s, 1, s);
+      if (hlBundle) ctx.restore();
+    } else {
+      const bob = Math.sin(t * 3) * 4 * s;
+      drawBundle(ctx, hopMouthX, hopTopY - 2 * s + bob, (250 * Math.PI) / 180, 46 * s, 1, s);
+    }
+
+    // labels
+    if (step <= 1) {
+      arrow(ctx, hopMouthX - 30 * s, hopTopY - 20 * s, hopMouthX - 2 * s, hopTopY + 2 * s, C.primary, s, 5);
+      pill(ctx, hopMouthX - 6 * s, hopTopY - 52 * s, "stalks go in", s, C.primary,  C.white, hlHopper ? C.orange : undefined);
+    }
     const tight = W < 520;
     if (step === 2) {
       if (!strawFullVis) {
         const oxD = bodyX + bodyW - 6 * s; const oyD = bodyTop + 2 * s; ctx.fillStyle = "#D9C9A3";
         for (let i = 0; i < 14; i++) {
           const ph = (t * 0.5 + i / 14) % 1;
-          const px = lerp(oxD, strawX, ph) + Math.sin(i * 2.1) * 9 * s;
-          const py = lerp(oyD, groundY - 96 * s, ph) - Math.sin(ph * Math.PI) * 58 * s;
+          const px2 = lerp(oxD, strawX, ph) + Math.sin(i * 2.1) * 9 * s;
+          const py2 = lerp(oyD, groundY - 96 * s, ph) - Math.sin(ph * Math.PI) * 58 * s;
           const rr = (9 + ph * 30) * s; ctx.globalAlpha = 0.16 * (1 - ph) + 0.04;
-          ctx.beginPath(); ctx.arc(px, py, rr, 0, Math.PI * 2); ctx.fill();
+          ctx.beginPath(); ctx.arc(px2, py2, rr, 0, Math.PI * 2); ctx.fill();
         }
         ctx.globalAlpha = 1;
       }
-      // straw thrown up & out — arrow kept high so it never crosses the labels
       arrow(ctx, bodyX + bodyW - 10 * s, bodyTop - 4 * s, bodyX + bodyW + 92 * s, bodyTop - 44 * s, C.amber, s, 4);
-      pill(ctx, bodyX + bodyW * 0.78, bodyTop - 80 * s, "drum beats the crop", s, C.machineDk);
-      // on narrow canvases the sack & straw pile are close, so stack the labels and shorten them
-      pill(ctx, strawX, groundY - (tight ? 144 : 120) * s, tight ? "straw" : "straw (light)", s, C.strawDk);
-      pill(ctx, sackX, groundY - (tight ? 96 : 104) * s, tight ? "grain" : "grain (heavy)", s, C.grainDk);
+      pill(ctx, bodyX + bodyW * 0.78, bodyTop - 80 * s, "drum beats the crop", s, C.machineDk, C.white, hlDrum ? C.orange : undefined);
+      pill(ctx, strawX, groundY - (tight ? 144 : 120) * s, tight ? "straw" : "straw (light)", s, C.strawDk, C.white, hlStraw ? C.orange : undefined);
+      pill(ctx, sackX,  groundY - (tight ? 96  : 104) * s, tight ? "grain" : "grain (heavy)", s, C.grainDk, C.white, hlSack  ? C.orange : undefined);
     }
     if (step === 3) {
       pill(ctx, bodyX + bodyW * 0.5, bodyTop - 64 * s, "done — fast & easy", s, "#1B7A43", "#E9F7EF");
-      pill(ctx, strawX, groundY - (tight ? 144 : 120) * s, "straw", s, C.strawDk);
-      pill(ctx, sackX, groundY - (tight ? 96 : 104) * s, tight ? "grain" : "clean grain", s, C.grainDk);
+      pill(ctx, strawX, groundY - (tight ? 144 : 120) * s, "straw",       s, C.strawDk);
+      pill(ctx, sackX,  groundY - (tight ? 96  : 104) * s, tight ? "grain" : "clean grain", s, C.grainDk);
     }
   };
 
-  const updateParticles = (dt: number, W: number, H: number, curMethod: MethodType) => {
+  const updateParticles = (dt: number, W: number, H: number) => {
     const groundY = H * 0.82; const g = 1000; const grainFloor = groundY - 6;
-    if (curMethod === "byMachine" && stepIdx === 2) {
-      const s = clamp(W / 900, 0.6, 1.0);
-      const bodyW = 230 * s; const bodyX = W * 0.28; const bodyH = 116 * s; const bodyTop = groundY - bodyH - 30 * s;
+    if (safeStep === 2) {
+      const s = clamp(Math.min(W / 900, H / 360), 0.6, 1.0);
+      const bodyW = 230 * s; const bodyX = W * 0.28; const bodyH = 116 * s;
+      const bodyTop = groundY - bodyH - 30 * s;
       const sackX = bodyX + bodyW + 44 * s; const strawX = Math.min(bodyX + bodyW + 214 * s, W - 60 * s);
       spawnMachineParticles(groundY, s, bodyX, bodyW, bodyTop, sackX, strawX);
     }
@@ -769,16 +712,14 @@ const ToolsExplorer = memo(function ToolsExplorer({
     for (const p of grainsRef.current) {
       if (p.settled) { keepG.push(p); continue; }
       p.vy += g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += dt * 4;
-      if (p.y >= grainFloor) {
-        if (curMethod === "byMachine") { machineGrainCountRef.current += 1; }
-        else { p.y = grainFloor - Math.random() * 4; p.vx = 0; p.vy = 0; p.settled = true; keepG.push(p); }
-      } else keepG.push(p);
+      if (p.y >= grainFloor) { machineGrainCountRef.current += 1; }
+      else keepG.push(p);
     }
     grainsRef.current = keepG;
     const keepS: Particle[] = [];
     for (const p of strawRef.current) {
       p.vy += g * dt; p.x += p.vx * dt; p.y += p.vy * dt; p.rot += dt * 5;
-      if (p.y >= groundY - 4) machineStrawCountRef.current += 1;
+      if (p.y >= H * 0.82 - 4) machineStrawCountRef.current += 1;
       else keepS.push(p);
     }
     strawRef.current = keepS;
@@ -792,12 +733,10 @@ const ToolsExplorer = memo(function ToolsExplorer({
     if (canvas.width !== W * dpr || canvas.height !== H * dpr) { canvas.width = W * dpr; canvas.height = H * dpr; }
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     ctx.clearRect(0, 0, W, H);
-    (ctx as unknown as { imageSmoothingEnabled: boolean }).imageSmoothingEnabled = true;
-    const t = timeRef.current;
-    if (method === "byHand") drawHandScene(ctx, W, H, stepIdx, t);
-    else drawMachineScene(ctx, W, H, stepIdx, t);
+    (ctx as any).imageSmoothingEnabled = true;
+    drawMachineScene(ctx, W, H, safeStep, timeRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [dims, method, stepIdx]);
+  }, [dims, safeStep, highlights]);
 
   useEffect(() => {
     renderFrame();
@@ -807,88 +746,476 @@ const ToolsExplorer = memo(function ToolsExplorer({
       if (!lastTsRef.current) lastTsRef.current = ts;
       const dt = Math.min((ts - lastTsRef.current) / 1000, 0.05);
       lastTsRef.current = ts; timeRef.current += dt;
-      updateParticles(dt, dims.w, dims.h, method);
+      updateParticles(dt, dims.w, dims.h);
       renderFrame();
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);
     return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isPlaying, method, stepIdx, dims, renderFrame]);
+  }, [isPlaying, safeStep, dims, renderFrame]);
 
-  const next = () => { if (stepIdx < totalSteps - 1) { setStepIdx((i) => i + 1); setIsPlaying(true); } };
-  const back = () => { if (stepIdx > 0) { setStepIdx((i) => i - 1); setIsPlaying(true); } };
-  const replay = () => { timeRef.current = 0; grainsRef.current = []; strawRef.current = []; machineGrainCountRef.current = 0; machineStrawCountRef.current = 0; setIsPlaying(true); };
+  const goNext   = useCallback(() => { setStepIdx(s => { const n = Math.min(s, totalSteps - 1); return n < totalSteps - 1 ? n + 1 : n; }); setIsPlaying(true); audio.step(); }, [totalSteps, audio]);
+  const goBack   = useCallback(() => { setStepIdx(s => (s > 0 ? s - 1 : s)); setIsPlaying(true); }, []);
+  const doReplay = useCallback(() => {
+    timeRef.current = 0; grainsRef.current = []; strawRef.current = [];
+    machineGrainCountRef.current = 0; machineStrawCountRef.current = 0;
+    machineSpawnAccRef.current = 0; setIsPlaying(true);
+  }, []);
+  // The student-facing "Replay" button also reports a replay was used (finish summary);
+  // the agent's resetAll() reuses the same particle-clear logic without double-counting it.
+  const handleReplayClick = useCallback(() => { doReplay(); onReplay?.(); }, [doReplay, onReplay]);
+  const resetAll = useCallback(() => { setStepIdx(0); doReplay(); }, [doReplay]);
 
+  // ⭐ Expose real control to the ROOT agent api — play()/pause()/reset()/step()
+  // call THESE, so the agent produces the exact same visible result as the student.
+  // Handed up via a plain onReady callback (re-registered whenever the closures it
+  // captures change) instead of forwardRef/useImperativeHandle.
+  useEffect(() => {
+    onReady?.({
+      next: goNext,
+      back: goBack,
+      replay: doReplay,
+      setPlaying: (p: boolean) => setIsPlaying(p),
+      resetAll,
+      getInfo: () => ({ step: safeStep, total: totalSteps, playing: isPlaying, title: visibleSteps[safeStep]?.title ?? "", isLast: safeStep === totalSteps - 1 }),
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goNext, goBack, doReplay, resetAll, safeStep, totalSteps, isPlaying, visibleSteps, onReady]);
 
-  return (
-    <div>
-      {/* canvas */}
-      <div ref={wrapRef} style={{ marginTop: 14, borderRadius: 18, overflow: "hidden", background: C.white, boxShadow: "0 4px 16px rgba(0,0,0,.06)" }}>
-        <canvas ref={canvasRef} role="img" aria-label={`Animated demonstration of threshing ${method === "byHand" ? "by hand" : "by machine"}: ${steps[stepIdx].title}`} style={{ width: "100%", height: dims.h, display: "block" }} />
-      </div>
+  const stepData = visibleSteps[safeStep];
+  const hlCanvas = highlights.has("canvas") || highlights.has("demo");
+  const hlNext   = highlights.has("nextBtn");
+  const hlBack   = highlights.has("backBtn");
 
-      {/* progress dots */}
-      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: 14 }}>
-        {steps.map((_, i) => (
-          <div key={i} style={{ width: i === stepIdx ? 26 : 9, height: 9, borderRadius: 9999, background: i === stepIdx ? C.primary : C.gray400, transition: "all .2s" }} />
+  const canvasBlock = (
+    <div ref={wrapRef} style={{
+      marginTop: isCompactLandscape ? 0 : 14, borderRadius: 18, overflow: "hidden",
+      background: C.white, boxSizing: "border-box",
+      flex: isCompactLandscape ? "1.4 1 0" : "1 1 auto",
+      minWidth: 0, minHeight: isCompactLandscape ? 0 : 140,
+      boxShadow: hlCanvas
+        ? `0 0 0 3px ${C.orange}, 0 4px 16px rgba(0,0,0,.06)`
+        : "0 4px 16px rgba(0,0,0,.06)",
+      transition: "box-shadow .3s",
+    }}>
+      <canvas ref={canvasRef} role="img"
+        aria-label={`Animated demonstration: ${stepData.title}`}
+        style={{ width: "100%", height: "100%", display: "block" }} />
+    </div>
+  );
+
+  const textControlsBlock = (
+    <div style={{ display: "flex", flexDirection: "column", minWidth: 0, flex: isCompactLandscape ? "1 1 0" : "0 0 auto" }}>
+      {/* Step description card */}
+      <AnimatePresence mode="wait">
+        <motion.div key={safeStep}
+          initial={{ opacity: 0, y: 10, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ type: "spring", stiffness: 260, damping: 24 }}
+          style={{
+            marginTop: isCompactLandscape ? 0 : 14, padding: isCompactLandscape ? "10px 14px" : "16px 20px",
+            borderRadius: 16, background: C.white, border: `1px solid ${C.gray200}`, boxSizing: "border-box",
+          }}>
+          <div style={{ fontWeight: 700, color: C.primary, fontSize: 12, textTransform: "uppercase", letterSpacing: 0.8, marginBottom: 4 }}>
+            Step {safeStep + 1} of {totalSteps}
+          </div>
+          <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: isMobile || isCompactLandscape ? 16 : 22, color: C.ink, marginBottom: 4 }}>
+            {stepData.title}
+          </div>
+          <div style={{ color: C.gray700, fontSize: isCompactLandscape ? 12.5 : 15, lineHeight: 1.55 }}>{stepData.text}</div>
+        </motion.div>
+      </AnimatePresence>
+
+      {/* Progress dots */}
+      <div style={{ display: "flex", gap: 8, justifyContent: "center", marginTop: isCompactLandscape ? 8 : 14 }}>
+        {visibleSteps.map((_, i) => (
+          <motion.div key={i} layout style={{
+            width: i === safeStep ? 26 : 9, height: 9, borderRadius: 9999,
+            background: i === safeStep ? C.primary : C.gray400,
+          }} transition={{ type: "spring", stiffness: 400, damping: 30 }} />
         ))}
       </div>
 
-      {/* controls */}
-      <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: 14, flexWrap: "wrap" }}>
-        <UIButton onClick={back} variant="outlined" size={isMobile ? "sm" : "md"} disabled={stepIdx === 0} ariaLabel="Previous step"><ChevronLeft size={20} /> Back</UIButton>
-        <UIButton onClick={next} variant="contained" size={isMobile ? "sm" : "md"} disabled={stepIdx === totalSteps - 1} ariaLabel="Next step">Next <ChevronRight size={20} /></UIButton>
-      </div>
+      {/* Controls — hidden in AI mode */}
+      {!isAI && (
+        <div style={{ display: "flex", gap: 10, justifyContent: "center", marginTop: isCompactLandscape ? 8 : 14, flexWrap: "wrap" }}>
+          <UIButton onClick={goBack} variant="outlined" size={isMobile || isCompactLandscape ? "sm" : "md"} disabled={safeStep === 0} ariaLabel="Previous step" highlighted={hlBack}>
+            <ChevronLeft size={20} /> Back
+          </UIButton>
+          {showPlayPause && (
+            <UIButton onClick={() => setIsPlaying(p => !p)} variant="outlined" size={isMobile || isCompactLandscape ? "sm" : "md"} ariaLabel={isPlaying ? "Pause" : "Play"}>
+              {isPlaying ? <Pause size={18} /> : <Play size={18} />}
+            </UIButton>
+          )}
+          <UIButton onClick={goNext} variant="contained" size={isMobile || isCompactLandscape ? "sm" : "md"} disabled={safeStep === totalSteps - 1} ariaLabel="Next step" highlighted={hlNext}>
+            Next <ChevronRight size={20} />
+          </UIButton>
+          {safeStep === totalSteps - 1 && (
+            <UIButton onClick={handleReplayClick} variant="text" size={isMobile || isCompactLandscape ? "sm" : "md"} ariaLabel="Replay">
+              <RotateCcw size={16} /> Replay
+            </UIButton>
+          )}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div style={{
+      display: "flex", flexDirection: isCompactLandscape ? "row" : "column",
+      gap: isCompactLandscape ? 12 : 0, alignItems: "stretch",
+      flex: "1 1 auto", minHeight: 0,
+    }}>
+      {canvasBlock}
+      {textControlsBlock}
     </div>
   );
 });
 
-
 /* =====================================================================
-   Root component — Tools only
+   Root component
    ===================================================================== */
 
-function ThreshingByMachine({ props = {}, setStepDetails }: ThreshingToolProps) {
-  const ap = props.additionalProps ?? {};
-  const showPlayPause = ap.showPlayPause ?? props.showPlayPause ?? true;
-  const maxWidth = props.width ?? 940;
-  const minHeight = props.height ?? 0;
-  const { isMobile } = useResponsive();
+function ThreshingByMachine({ props: p = {}, setStepDetails }: ThreshingToolProps) {
+  const ap = p.additionalProps ?? {};
+  const showPlayPause  = ap.showPlayPause ?? p.showPlayPause ?? true;
+  const maxWidth       = p.width ?? 1180;
+  const minHeight      = p.height ?? 0;
+  const showModeToggle = p.showModeToggle ?? true;
+  const { isMobile, isCompactLandscape } = useResponsive();
 
-  // inject fonts + keyframes once
+  const [operatorMode, setOperatorModeState] = useState<OperatorMode>(
+    ap.operatorMode ?? p.operatorMode ?? "student"
+  );
+  const [muted,      setMuted]      = useState(p.muted ?? false);
+  const [highlights, setHighlights] = useState<Set<string>>(new Set());
+  const [finished,      setFinished]      = useState(false);
+  const [finishSummary, setFinishSummary] = useState<FinishDetail | null>(null);
+  const [atLastStep,    setAtLastStep]    = useState(false);
+
+  const audio  = useAudio(muted);
+  const isAI   = operatorMode === "ai";
+  const depth: Depth = "full";
+
+  // ── session tracking for the Finish/finished performance summary (§6.3) ──
+  const explorerRef        = useRef<ExplorerHandle | null>(null);
+  const startTimeRef        = useRef<number>(Date.now());
+  const hintsUsedRef         = useRef(0);
+  const replaysUsedRef      = useRef(0);
+  const visitedStepsRef     = useRef<Set<number>>(new Set([0]));
+  const lastStepInfoRef     = useRef({ step: 0, total: MACHINE_STEPS.length, isLast: false });
+
+  // Sync external prop changes
+  useEffect(() => { if (p.operatorMode) setOperatorModeState(p.operatorMode); }, [p.operatorMode]);
+  useEffect(() => { if (p.muted !== undefined) setMuted(p.muted); }, [p.muted]);
+
+  const applyOperatorMode = useCallback((m: OperatorMode) => {
+    const v = m === "ai" ? "ai" : "student";
+    setOperatorModeState(v);
+    emit({ type: "event", name: "operator_mode_changed", detail: { operatorMode: v, depth: "full" } });
+  }, []);
+
+  const hlTarget = useCallback((target?: string) => {
+    if (!target) return;
+    hintsUsedRef.current += 1;
+    setHighlights(new Set([target]));
+    setTimeout(() => setHighlights(prev => { const n = new Set(prev); n.delete(target); return n; }), 2800);
+    emit({ type: "event", name: "highlighted", detail: { target } });
+  }, []);
+
+  // Track which steps the student/agent has actually seen, for the finish summary.
+  const handleStepChange = useCallback((step: number, total: number, isLast: boolean) => {
+    visitedStepsRef.current.add(step);
+    lastStepInfoRef.current = { step, total, isLast };
+    setAtLastStep(isLast);
+    if (isLast) emit({ type: "event", name: "completed", detail: { totalSteps: total } });
+  }, []);
+
+  // ⭐ Finish (student mode only) — ends the activity and opens the uniform
+  // full-screen "What you have learned" finish screen. This tool only lets the
+  // student OBSERVE the machine (no right/wrong judged) → non-evaluating, no star (§6.3).
+  const handleFinish = useCallback(() => {
+    const visited = Array.from(visitedStepsRef.current).sort((a, b) => a - b)
+      .map(i => MACHINE_STEPS[i]?.title).filter(Boolean) as string[];
+    const detail: FinishDetail = {
+      evaluated: false,
+      interactions: {
+        attempts: visitedStepsRef.current.size,
+        hintsUsed: hintsUsedRef.current,
+        replaysUsed: replaysUsedRef.current,
+        itemsExplored: visited,
+        durationMs: Date.now() - startTimeRef.current,
+      },
+      learned: [
+        "A threshing machine uses a fast-spinning drum to beat harvested stalks loose.",
+        "Grain is heavy and falls into the sack, while light straw is thrown out to the side.",
+        "Machine threshing separates grain and straw in one fast pass — much quicker than by hand.",
+      ],
+    };
+    setFinishSummary(detail);
+    setFinished(true);
+    audio.done();
+    emit({ type: "event", name: "finished", detail });
+  }, [audio]);
+
+  const handleCloseFinish = useCallback(() => setFinished(false), []);
+
+  // Agent API — every verb below produces the SAME visible result the student would
+  // see (§3.4 rule 1): play/pause/reset/step drive the real explorer via its ref.
+  const api = useMemo(() => ({
+    setParam: (name: string, value: any) => {
+      if (name === "operatorMode") applyOperatorMode(value);
+      else if (name === "muted") setMuted(Boolean(value));
+      emit({ type: "event", name: "param_changed", detail: { name, value } });
+    },
+    play: () => {
+      explorerRef.current?.setPlaying(true);
+      emit({ type: "event", name: "play", detail: { playing: true } });
+    },
+    pause: () => {
+      explorerRef.current?.setPlaying(false);
+      emit({ type: "event", name: "pause", detail: { playing: false } });
+    },
+    reset: () => {
+      explorerRef.current?.resetAll();
+      visitedStepsRef.current = new Set([0]);
+      hintsUsedRef.current = 0; replaysUsedRef.current = 0;
+      startTimeRef.current = Date.now();
+      setFinished(false); setFinishSummary(null);
+      emit({ type: "event", name: "reset", detail: {} });
+    },
+    highlight: (target?: string) => hlTarget(target),
+    getState: () => {
+      const info = explorerRef.current?.getInfo();
+      const state = {
+        operatorMode, depth, muted, toolId: TOOL_ID,
+        currentStep: (info?.step ?? 0) + 1, totalSteps: info?.total ?? MACHINE_STEPS.length,
+        isPlaying: info?.playing ?? true, finished,
+      };
+      emit({ type: "state", state });
+      return state;
+    },
+    setOperatorMode: (m: OperatorMode) => applyOperatorMode(m),
+    step: (direction?: string) => {
+      const dir = direction === "back" ? "back" : "next";
+      if (dir === "back") explorerRef.current?.back(); else explorerRef.current?.next();
+      const info = explorerRef.current?.getInfo();
+      emit({ type: "event", name: "step_requested", detail: { direction: dir, currentStep: (info?.step ?? 0) + 1, totalSteps: info?.total } });
+    },
+  }), [operatorMode, depth, muted, finished, applyOperatorMode, hlTarget]);
+
+  const apiRef = useRef(api); apiRef.current = api;
+
+  // Command listener + ready signal
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      const d: any = e.data;
+      if (!d || d.type !== "command") return;
+      const fn = (apiRef.current as any)[d.method];
+      let result;
+      try { if (typeof fn === "function") result = fn(...(d.args || [])); } catch { }
+      emit({ type: "response", id: d.id, result });
+    };
+    window.addEventListener("message", onMsg);
+    emit({ type: "ready", toolId: TOOL_ID });
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
+  // Inject fonts + keyframes + a global box-sizing reset (§8 no-scroll gotchas:
+  // a content-box width:100%/min-height:100% box with padding grows past its
+  // parent and spawns a phantom scrollbar — so force border-box everywhere here).
   useEffect(() => {
     const style = document.createElement("style");
     style.id = "th-machine-styles";
     style.textContent = `
       @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&display=swap');
-      @keyframes thFadeUp { from { opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
-      @keyframes thPop { 0%{transform:scale(0);} 70%{transform:scale(1.15);} 100%{transform:scale(1);} }
-      @keyframes thFall { to { transform: translateY(120vh) rotate(540deg); opacity:0; } }
+      .th-root, .th-root *, .th-root *::before, .th-root *::after { box-sizing: border-box; }
+      @keyframes thFadeUp  { from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);} }
       @keyframes thScaleIn { from{transform:scale(.7);opacity:0;} to{transform:scale(1);opacity:1;} }
-      @keyframes thShake { 0%,100%{transform:translateX(0);} 20%{transform:translateX(-7px);} 40%{transform:translateX(6px);} 60%{transform:translateX(-4px);} 80%{transform:translateX(3px);} }
-      @keyframes thLock { 0%{transform:scale(.85);opacity:.5;} 60%{transform:scale(1.06);} 100%{transform:scale(1);opacity:1;} }
-      @media (prefers-reduced-motion: reduce) {
-        .th-root *, .th-root *::before, .th-root *::after { animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important; }
+      @media (prefers-reduced-motion:reduce){
+        .th-root *,.th-root *::before,.th-root *::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;}
       }
     `;
     document.head.appendChild(style);
-    return () => { const e = document.getElementById("th-machine-styles"); if (e && e.parentNode) e.parentNode.removeChild(e); };
+    return () => { const e = document.getElementById("th-machine-styles"); if (e) e.remove(); };
   }, []);
 
+  const hlToggle = highlights.has("modeToggle");
+  const hlFinish = highlights.has("finishBtn");
+
   return (
-    <div className="th-root" style={{ fontFamily: FONT, maxWidth, minHeight: minHeight || undefined, margin: "0 auto", padding: isMobile ? 12 : 18, background: C.gray100, borderRadius: 24, color: C.ink }}>
-      {/* Header */}
-      <div style={{ background: `linear-gradient(135deg, ${C.primaryDark}, ${C.primary})`, borderRadius: 18, padding: isMobile ? "16px 18px" : "20px 26px", color: C.white }}>
-        <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: isMobile ? 24 : 30, lineHeight: 1.1 }}>Threshing — By Machine</div>
-        <div style={{ opacity: 0.9, fontSize: isMobile ? 14 : 16, marginTop: 4 }}>Separating grain from stalks with a powered thresher</div>
+    <div className="th-root" style={{
+      fontFamily: FONT, width: "100%", maxWidth: `min(96%, ${maxWidth}px)`,
+      minHeight: minHeight || undefined, height: "100dvh", maxHeight: "100dvh", overflow: "hidden",
+      margin: "0 auto", padding: isMobile || isCompactLandscape ? 10 : 18,
+      background: C.gray100, borderRadius: 24, color: C.ink,
+      boxSizing: "border-box", display: "flex", flexDirection: "column",
+    }}>
+
+      {/* ── Header ── */}
+      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: 8, flexShrink: 0 }}>
+        <div style={{
+          flex: 1, minWidth: 160,
+          background: `linear-gradient(135deg, ${C.primaryDark}, ${C.primary})`,
+          borderRadius: 18, padding: isCompactLandscape ? "8px 14px" : isMobile ? "16px 18px" : "20px 26px", color: C.white,
+        }}>
+          <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: isCompactLandscape ? 16 : isMobile ? 22 : 28, lineHeight: 1.1 }}>
+            Threshing — By Machine
+          </div>
+          {!isCompactLandscape && (
+            <div style={{ opacity: 0.9, fontSize: isMobile ? 13 : 15, marginTop: 4 }}>
+              Separating grain from stalks with a powered thresher
+            </div>
+          )}
+        </div>
+
+        {/* Controls */}
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginTop: 2 }}>
+          {showModeToggle && (
+            <ModeToggle mode={operatorMode} onChange={applyOperatorMode} highlighted={hlToggle} />
+          )}
+          <button type="button" onClick={() => setMuted(m => !m)} title={muted ? "Unmute" : "Mute"}
+            style={{
+              background: C.white, border: `1px solid ${C.gray200}`, borderRadius: 10,
+              padding: "8px 10px", cursor: "pointer", display: "flex", color: C.gray700,
+              boxShadow: "0 2px 6px rgba(0,0,0,.07)", minWidth: 24, minHeight: 24,
+            }}>
+            {muted ? <MuteIcon size={17} /> : <SoundIcon size={17} />}
+          </button>
+        </div>
       </div>
 
+      {/* AI watch banner */}
+      <AnimatePresence>
+        {isAI && (
+          <motion.div
+            initial={{ opacity: 0, height: 0, marginTop: 0 }}
+            animate={{ opacity: 1, height: "auto", marginTop: 10 }}
+            exit={{ opacity: 0, height: 0, marginTop: 0 }}
+            style={{
+              padding: "10px 18px", borderRadius: 12, overflow: "hidden",
+              background: "#FFFBF0", border: `1px solid ${C.amber}44`,
+              color: "#7a5a00", fontWeight: 700, fontSize: 13.5,
+              display: "flex", alignItems: "center", gap: 8, flexShrink: 0,
+            }}>
+            👩‍🏫 Your teacher is demonstrating — watch each step. You will get a turn.
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Tools section body */}
-      <div style={{ marginTop: 8 }}>
-        <ToolsExplorer isMobile={isMobile} showPlayPause={showPlayPause} onReport={setStepDetails} />
+      {/* Body */}
+      <div style={{ marginTop: 10, flex: "1 1 auto", minHeight: 0, overflow: "auto", display: "flex", flexDirection: "column" }}>
+        <ToolsExplorer
+          onReady={(h) => { explorerRef.current = h; }}
+          isMobile={isMobile} showPlayPause={showPlayPause}
+          depth={depth} isAI={isAI} highlights={highlights} isCompactLandscape={isCompactLandscape}
+          audio={audio}
+          onReport={setStepDetails}
+          onStepChange={handleStepChange}
+          onReplay={() => { replaysUsedRef.current += 1; }}
+        />
+
+        {/* ⭐ Finish — student mode only, and only once the student reaches the last
+            step (step 4). No "Play Again" loop anywhere: reset() remains an agent-only
+            verb (§3.3); Replay above only restarts THIS step's particle animation. */}
+        {!isAI && atLastStep && (
+          <div style={{ display: "flex", justifyContent: "center", marginTop: isCompactLandscape ? 8 : 16, flexShrink: 0 }}>
+            <UIButton onClick={handleFinish} variant="highlight" size={isMobile || isCompactLandscape ? "sm" : "md"}
+              ariaLabel="Finish and see what you have learned" highlighted={hlFinish} disabled={finished}>
+              {finished ? "Finished ✓" : "Finish 🏁"}
+            </UIButton>
+          </div>
+        )}
       </div>
+
+      {/* ⭐ Uniform full-screen finish/completion screen (§6.3/§7.4) — non-evaluating
+          tool ⇒ NO star, "What you have learned" only. */}
+      <AnimatePresence>
+        {finished && finishSummary && (
+          <FinishOverlay summary={finishSummary} onClose={handleCloseFinish} />
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+/* =====================================================================
+   Finish screen — full-viewport celebratory overlay (§7.4/§6.3)
+   Non-evaluating tool: no stars/score, "What you have learned" only.
+   ===================================================================== */
+
+function FinishOverlay({ summary, onClose }: { summary: FinishDetail; onClose: () => void }) {
+  const particles = useMemo(() => Array.from({ length: 34 }, (_, i) => ({
+    id: i,
+    x: Math.random() * 100,
+    delay: Math.random() * 0.7,
+    dur: 2.1 + Math.random() * 1.3,
+    size: 6 + Math.random() * 10,
+    color: [C.primary, C.orange, C.grain, C.green, C.cropLight][i % 5],
+    square: i % 3 === 0,
+  })), []);
+
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, pointerEvents: "none" }} aria-live="polite">
+      {particles.map(pt => (
+        <motion.div key={pt.id}
+          initial={{ y: "-8vh", x: `${pt.x}vw`, opacity: 0, rotate: 0 }}
+          animate={{ y: "110vh", opacity: [0, 1, 1, 0], rotate: 360 }}
+          transition={{ duration: pt.dur, delay: pt.delay, ease: "easeIn" }}
+          style={{
+            position: "absolute", top: 0, width: pt.size, height: pt.size,
+            borderRadius: pt.square ? 3 : "50%", background: pt.color,
+          }} />
+      ))}
+
+      <motion.div
+        initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+        style={{
+          position: "absolute", inset: 0, background: "rgba(26,26,46,0.55)",
+          backdropFilter: "blur(3px)", pointerEvents: "auto",
+          display: "flex", alignItems: "center", justifyContent: "center", padding: 20,
+        }}>
+        <motion.div
+          initial={{ scale: 0.7, opacity: 0, y: 30 }}
+          animate={{ scale: 1, opacity: 1, y: 0 }}
+          exit={{ scale: 0.85, opacity: 0 }}
+          transition={{ type: "spring", stiffness: 240, damping: 22 }}
+          style={{
+            background: C.white, borderRadius: 24, padding: "28px 30px", maxWidth: 460, width: "100%",
+            maxHeight: "86dvh", overflow: "auto", boxShadow: "0 24px 60px rgba(0,0,0,.35)",
+            textAlign: "center", position: "relative", boxSizing: "border-box",
+          }}>
+          <button onClick={onClose} aria-label="Close finish screen" style={{
+            position: "absolute", top: 12, right: 12, border: "none", background: "transparent",
+            cursor: "pointer", fontSize: 20, color: C.gray700, minWidth: 24, minHeight: 24,
+          }}>✕</button>
+
+          <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
+            style={{ fontSize: 42 }}>🌾✨</motion.div>
+          <div style={{ fontFamily: "'DM Serif Display', serif", fontSize: 24, color: C.ink, marginTop: 6 }}>
+            Well explored!
+          </div>
+          <div style={{ color: C.gray700, fontSize: 14, marginTop: 6 }}>Here's what you have learned:</div>
+
+          <ul style={{ textAlign: "left", marginTop: 14, paddingLeft: 20, display: "flex", flexDirection: "column", gap: 8 }}>
+            {summary.learned.map((line, i) => (
+              <motion.li key={i}
+                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.25 + i * 0.12 }}
+                style={{ fontSize: 14.5, color: C.ink, lineHeight: 1.5 }}>
+                {line}
+              </motion.li>
+            ))}
+          </ul>
+
+          <div style={{ marginTop: 16, fontSize: 12, color: C.gray700, opacity: 0.85 }}>
+            You explored {summary.interactions.itemsExplored.length} of the steps
+            {summary.interactions.hintsUsed > 0 ? ` and used ${summary.interactions.hintsUsed} hint${summary.interactions.hintsUsed === 1 ? "" : "s"}` : ""}.
+          </div>
+        </motion.div>
+      </motion.div>
     </div>
   );
 }

@@ -1,13 +1,17 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 /* ============================================================================
    Sun-Drying Salt Drops simulator  ·  toolId M2.S6.T7.C15.2D1
-   Class 6 Science (Methods of Separation, Activity 9.2). A step-by-step guided
+   Class 6 Science, Methods of Separation in Everyday Life. A step-by-step guided
    activity: place drops of salt water on dark paper, choose the salt amount,
    predict, then dry in the sun and watch the water recede and evaporate while an
    irregular white salt crust forms exactly where the drops were.
    Step flow: one step is shown at a time; completing it reveals the next.
-   Agent-control: §3 window.postMessage contract.  Deps: react only.
+   Trials accumulate across "Try another salt amount" re-runs; pressing the
+   student-only Finish button ends the activity and emits the uniform
+   `finished` event with a star rating + "what you have learned" summary.
+   Agent-control: §3 window.postMessage contract.  Deps: react + framer-motion.
    ==========================================================================*/
 
 const TOOL_ID = 'M2.S6.T7.C15.2D1';
@@ -27,6 +31,15 @@ const STEP_LABELS = ['Add drops', 'Salt amount', 'Predict', 'Dry it', 'Result'];
 
 type Drop = { id: number; px: number; py: number; seed: number };
 type Prediction = 'salt' | 'nothing' | null;
+type RoundRecord = { saltAmount: number; prediction: Prediction; correct: boolean };
+
+interface FinishSummary {
+  evaluated: true;
+  score: number; total: number; stars: number;
+  breakdown: { id: string; correct: boolean; chose: Prediction }[];
+  interactions: { attempts: number; correctFirstTry: number; hintsUsed: number; itemsExplored: string[]; durationMs: number };
+  learned: string[];
+}
 
 interface State {
   step: number;                // 0..4
@@ -38,6 +51,7 @@ interface State {
   revealForced: boolean;
   operatorMode: 'ai' | 'student';
   darkMode: boolean;
+  finished: boolean;
 }
 interface SunDryAdditionalProps { initialSaltAmount?: number; presetDrops?: { x: number; y: number }[] }
 
@@ -49,20 +63,26 @@ const ease = (t: number) => (t < 0.5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) /
 function Tool(props: any = {}) {
   const themeColor: string = props?.themeColor || C.primary;
   const showModeToggle: boolean = props?.showModeToggle !== false;
+  const device: 'mobile' | 'smartboard' = props?.device === 'smartboard' ? 'smartboard' : 'mobile';
   const ap: SunDryAdditionalProps = props?.additionalProps || {};
   const [st, setSt] = useState<State>(() => ({
     step: 0, drops: [], saltAmount: clamp(Math.round(ap.initialSaltAmount ?? 2), 1, 3),
     dryProgress: 0, drying: false, prediction: null, revealForced: false,
     operatorMode: props?.operatorMode === 'ai' ? 'ai' : 'student',
     darkMode: !!props?.darkMode,
+    finished: false,
   }));
   const [hl, setHl] = useState<string | null>(null);
+  const [finishSummary, setFinishSummary] = useState<FinishSummary | null>(null);
   const muted = useRef<boolean>(!!props?.muted);
   const dropId = useRef(1);
   const doneFired = useRef(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
   const hlTimer = useRef<number | null>(null);
   const stRef = useRef(st); stRef.current = st;
+  const roundsRef = useRef<RoundRecord[]>([]);
+  const hintsUsedRef = useRef(0);
+  const startTimeRef = useRef<number>(Date.now());
 
   /* ------------------------------ audio -------------------------------- */
   const actx = useRef<AudioContext | null>(null);
@@ -107,12 +127,14 @@ function Tool(props: any = {}) {
     return () => cancelAnimationFrame(raf);
   }, [st.drying]);
 
-  /* completion (fire once) */
+  /* completion (fire once per trial) */
   useEffect(() => {
     if (st.dryProgress >= 1 && !doneFired.current) {
       doneFired.current = true; cue('done');
       setStep(4);
-      emit({ type: 'event', name: 'completed', detail: { correct: st.prediction === 'salt', saltAmount: st.saltAmount, patches: st.drops.length } });
+      const correct = st.prediction === 'salt';
+      roundsRef.current = [...roundsRef.current, { saltAmount: st.saltAmount, prediction: st.prediction, correct }];
+      emit({ type: 'event', name: 'completed', detail: { correct, saltAmount: st.saltAmount, patches: st.drops.length } });
     }
   }, [st.dryProgress, st.prediction, st.saltAmount, st.drops.length, cue, setStep]);
 
@@ -169,16 +191,59 @@ function Tool(props: any = {}) {
 
   const reset = useCallback(() => {
     doneFired.current = false;
-    setSt((s) => ({ ...s, step: 0, drops: [], saltAmount: 2, dryProgress: 0, drying: false, prediction: null, revealForced: false }));
+    roundsRef.current = []; hintsUsedRef.current = 0; startTimeRef.current = Date.now();
+    setFinishSummary(null);
+    setSt((s) => ({ ...s, step: 0, drops: [], saltAmount: 2, dryProgress: 0, drying: false, prediction: null, revealForced: false, finished: false }));
     emit({ type: 'event', name: 'reset', detail: {} }); cue('ui');
   }, [cue]);
 
   const doHighlight = useCallback((target: string) => {
     setHl(target);
+    hintsUsedRef.current += 1;
     if (hlTimer.current) window.clearTimeout(hlTimer.current);
     hlTimer.current = window.setTimeout(() => setHl(null), 2600);
     emit({ type: 'event', name: 'highlight', detail: { target } });
   }, []);
+
+  /* ── another trial: re-run with a different salt amount, keeping the same drops (§6.3 — a
+     localized "try this one again", NOT a whole-tool replay) ── */
+  const tryAnother = useCallback(() => {
+    doneFired.current = false;
+    setSt((s) => ({ ...s, step: 1, prediction: null, dryProgress: 0, drying: false, revealForced: false }));
+    emit({ type: 'event', name: 'step_changed', detail: { step: 1, label: STEP_LABELS[1] } });
+    cue('ui');
+  }, [cue]);
+
+  /* ── the uniform Finish button — student mode only, ends the activity (§6.3) ── */
+  const doFinish = useCallback(() => {
+    if (stRef.current.finished) return; // idempotent-safe
+    const rounds = roundsRef.current;
+    const total = rounds.length || 1;
+    const score = rounds.filter((r) => r.correct).length;
+    const stars = rounds.length === 0 ? 0 : score === rounds.length ? 3 : score >= Math.ceil(rounds.length / 2) ? 2 : 1;
+    const detail: FinishSummary = {
+      evaluated: true,
+      score, total: rounds.length || total,
+      stars,
+      breakdown: rounds.map((r, i) => ({ id: `trial${i + 1}_amount${r.saltAmount}`, correct: r.correct, chose: r.prediction })),
+      interactions: {
+        attempts: rounds.length,
+        correctFirstTry: rounds[0]?.correct ? 1 : 0,
+        hintsUsed: hintsUsedRef.current,
+        itemsExplored: Array.from(new Set(rounds.map((r) => `salt${r.saltAmount}`))),
+        durationMs: Date.now() - startTimeRef.current,
+      },
+      learned: [
+        'Only the water in salt water can evaporate — it turns into vapour and leaves the paper.',
+        'The dissolved salt cannot evaporate, so it stays behind as a small white residue.',
+        'Evaporation can separate a solid that is dissolved in a liquid.',
+      ],
+    };
+    setFinishSummary(detail);
+    setSt((s) => ({ ...s, finished: true }));
+    cue('done');
+    emit({ type: 'event', name: 'finished', detail });
+  }, [cue]);
 
   const setMode = useCallback((m: string) => {
     const mode: 'ai' | 'student' = m === 'ai' ? 'ai' : 'student';
@@ -193,10 +258,12 @@ function Tool(props: any = {}) {
       ...s, stepLabel: STEP_LABELS[s.step], depth, stepCount: s.operatorMode === 'ai' ? 0 : STEP_LABELS.length,
       waterRemaining: 1 - ease(s.dryProgress), saltPatchesVisible: s.dryProgress > 0.4,
       correct: s.dryProgress >= 1 ? s.prediction === 'salt' : null, muted: muted.current,
+      roundsCount: roundsRef.current.length, correctRounds: roundsRef.current.filter((r) => r.correct).length,
+      hintsUsed: hintsUsedRef.current, finishSummary,
     };
     emit({ type: 'state', state });
     return state;
-  }, []);
+  }, [finishSummary]);
 
   /* ------------------------- agent API + listener ---------------------- */
   const api = {
@@ -207,6 +274,8 @@ function Tool(props: any = {}) {
     setDryProgress: (v: number) => setDry(Number(v)),
     setSalt: (v: number) => setSalt(Number(v)),
     commitPrediction: (choice: string) => commit(choice as Prediction),
+    tryAnother,
+    finish: doFinish,
   };
   const apiRef = useRef(api); apiRef.current = api;
 
@@ -228,6 +297,12 @@ function Tool(props: any = {}) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ap.presetDrops]);
+
+  /* keep in sync if the host changes the mode via props after mount (§6.1) */
+  useEffect(() => {
+    if (props.operatorMode && props.operatorMode !== stRef.current.operatorMode) setMode(props.operatorMode);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.operatorMode]);
 
   /* --------------------------- pointer -> drop ------------------------- */
   const onPaperDown = (e: React.PointerEvent) => {
@@ -254,15 +329,15 @@ function Tool(props: any = {}) {
   const glow = (t: string) => (hl === t ? { boxShadow: `0 0 0 3px ${C.orange}, 0 0 16px 3px ${C.orange}66`, borderRadius: 16 } : undefined);
 
   return (
-    <div className={`sd-root ${st.darkMode ? 'dark' : ''}`} style={{ ['--tc' as any]: themeColor }}>
+    <div className={`sd-root ${st.darkMode ? 'dark' : ''}`} data-device={device} style={{ ['--tc' as any]: themeColor }}>
       <style>{CSS}</style>
 
       {/* ============ SCENE ============ */}
-      <section className="sd-scene">
+      <motion.section className="sd-scene" initial={{ opacity: 0, y: 14, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} transition={{ type: 'spring', stiffness: 260, damping: 24 }}>
         <div className="sd-head">
           <span className="sd-badge">☀️ Evaporation lab</span>
           <h1>Sun-Drying Salt Drops</h1>
-          {showModeToggle && <span className={`sd-mode ${isAI ? 'ai' : ''}`} onClick={() => setMode(isAI ? 'student' : 'ai')} role="button">{isAI ? '👩\u200d🏫 Teacher' : '🙋 Your turn'}</span>}
+          {showModeToggle && <ModeToggle mode={st.operatorMode} onChange={setMode} glowStyle={glow('modeToggle')} />}
         </div>
 
         <div className="sd-stage">
@@ -385,11 +460,11 @@ function Tool(props: any = {}) {
 
           {isAI && <div className="sd-watch">👩‍🏫 Your teacher is running <b>{STEP_LABELS[st.step]}</b> — watch what stays on the paper.</div>}
         </div>
-      </section>
+      </motion.section>
 
       {/* ============ WIZARD (student) ============ */}
       {!isAI && (
-        <aside className="sd-panel">
+        <motion.aside className="sd-panel" initial={{ opacity: 0, x: 18 }} animate={{ opacity: 1, x: 0 }} transition={{ type: 'spring', stiffness: 260, damping: 24, delay: 0.08 }}>
           {/* progress rail */}
           <div className="sd-rail">
             {STEP_LABELS.map((lb, i) => (
@@ -399,8 +474,11 @@ function Tool(props: any = {}) {
             ))}
           </div>
 
-          {/* one step card at a time */}
-          <div className="sd-cardwrap" key={st.step}>
+          {/* one step card at a time, springy transition between steps */}
+          <AnimatePresence mode="wait">
+          <motion.div className="sd-cardwrap" key={st.step}
+            initial={{ opacity: 0, y: 14, scale: 0.98 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -10, scale: 0.98 }}
+            transition={{ type: 'spring', stiffness: 320, damping: 26 }}>
             {st.step === 0 && (
               <div className="sd-card">
                 <div className="sd-lbl">Step 1 · Add the salt-water drops</div>
@@ -445,22 +523,93 @@ function Tool(props: any = {}) {
                 <div className="sd-lbl">Result</div>
                 <p className="sd-result">{correct ? '⭐ You predicted it! ' : '✨ Surprise! '}The water floated away as <b>vapour</b>, and the <b>salt stayed behind</b> as white patches — exactly where each drop was.</p>
                 <p className="sd-hint">Only the water can evaporate; the dissolved salt cannot, so it is left behind. That is <b>evaporation</b>.</p>
-                <div className="sd-nav"><span /><button className="sd-btn primary" onClick={reset}>↺ Start over</button></div>
+                <div className="sd-nav">
+                  <button className="sd-btn ghost" onClick={tryAnother}>🧂 Try another salt amount</button>
+                  <button className="sd-btn primary" style={glow('finishButton')} onClick={doFinish}>✓ Finish</button>
+                </div>
               </div>
             )}
-          </div>
+          </motion.div>
+          </AnimatePresence>
 
           <div className="sd-footer">
-            <button className="sd-mini" style={glow('reset')} onClick={reset}>↺ Reset</button>
             <button className="sd-mini" onClick={() => { muted.current = !muted.current; setSt((s) => ({ ...s })); }}>{muted.current ? '🔇 Muted' : '🔊 Sound'}</button>
           </div>
-        </aside>
+        </motion.aside>
       )}
+
+      {/* ============ FINISH SCREEN (§6.3) — full-viewport celebratory overlay, evaluating tool → stars + "What you have learned" ============ */}
+      <AnimatePresence>
+        {st.finished && finishSummary && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(26,16,40,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, boxSizing: 'border-box' }}
+          >
+            <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', overflow: 'hidden' }}>
+              {Array.from({ length: finishSummary.stars > 0 ? 46 : 22 }).map((_, i) => {
+                const colors = [C.primary, C.orange, C.amber, C.tintP, C.purpleDeep, C.ok];
+                return <span key={i} className="sd-confetti" style={{ left: `${(i * 37) % 100}%`, background: colors[i % colors.length], animationDuration: `${1.8 + (i % 5) * 0.3}s`, animationDelay: `${(i % 9) * 0.1}s` }} />;
+              })}
+            </div>
+            <motion.div
+              initial={{ scale: 0.7, opacity: 0, y: 24 }} animate={{ scale: 1, opacity: 1, y: 0 }}
+              transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+              style={{ background: '#fff', borderRadius: 24, padding: 28, maxWidth: 420, width: '100%', maxHeight: '86dvh', overflowY: 'auto', textAlign: 'center', boxShadow: '0 30px 70px -12px rgba(0,0,0,0.5)', position: 'relative', zIndex: 301, boxSizing: 'border-box' }}
+            >
+              <motion.div initial={{ scale: 0 }} animate={{ scale: 1 }} transition={{ type: 'spring', stiffness: 300, damping: 16, delay: 0.1 }}
+                style={{ width: 72, height: 72, margin: '0 auto 12px', borderRadius: '50%', background: '#DCFCE7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 34 }}>
+                ☀️
+              </motion.div>
+              <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 10 }}>
+                {[0, 1, 2].map((i) => (
+                  <motion.span key={i} initial={{ scale: 0, rotate: -30, opacity: 0 }} animate={{ scale: 1, rotate: 0, opacity: 1 }}
+                    transition={{ type: 'spring', stiffness: 260, damping: 14, delay: 0.25 + i * 0.15 }}
+                    style={{ fontSize: 30, filter: i < finishSummary.stars ? 'none' : 'grayscale(1) opacity(0.35)' }}>⭐</motion.span>
+                ))}
+              </div>
+              <h3 style={{ margin: '0 0 4px', fontSize: 21, fontWeight: 800, color: C.purpleDeep, fontFamily: 'inherit' }}>Drying complete!</h3>
+              <p style={{ margin: '0 0 14px', fontSize: 14.5, color: C.sub, lineHeight: 1.5 }}>
+                {finishSummary.score} of {finishSummary.total} prediction{finishSummary.total === 1 ? '' : 's'} correct — {finishSummary.stars === 3 ? 'a perfect run of evaporation trials!' : finishSummary.stars >= 2 ? 'solid work, keep noticing the pattern!' : 'a good first experiment — watch the water vs. the salt next time.'}
+              </p>
+              <div style={{ background: C.cream, borderRadius: 16, padding: '14px 16px', textAlign: 'left' }}>
+                <div style={{ fontWeight: 800, fontSize: 13.5, color: C.purpleDeep, marginBottom: 8 }}>🌟 What you have learned</div>
+                <ul style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {finishSummary.learned.map((l, i) => (
+                    <motion.li key={i} initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.12 }}
+                      style={{ fontSize: 12.5, color: C.text, lineHeight: 1.5 }}>{l}</motion.li>
+                  ))}
+                </ul>
+              </div>
+              <div style={{ marginTop: 16, fontSize: 12, color: C.sub, fontWeight: 600 }}>Session complete — your teacher will continue from here.</div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
 
 /* ---------------------------- sub-components ---------------------------- */
+/* real two-segment Teacher|Student toggle (§6.1) — both options always visible, one highlighted */
+function ModeToggle({ mode, onChange, glowStyle }: { mode: 'ai' | 'student'; onChange: (m: 'ai' | 'student') => void; glowStyle?: React.CSSProperties }) {
+  return (
+    <div className="sd-toggle" style={glowStyle} role="tablist" aria-label="Teacher or student mode">
+      {(['ai', 'student'] as const).map((m) => (
+        <button
+          key={m}
+          type="button"
+          role="tab"
+          aria-selected={mode === m}
+          className={`sd-toggle-opt ${mode === m ? 'on' : ''}`}
+          onClick={() => onChange(m)}
+        >
+          {m === 'ai' ? '\u{1F469}‍\u{1F3EB} Teacher' : '\u{1F64B} Your turn'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 function SaltSlider({ value, onChange, hl }: { value: number; onChange: (v: number) => void; hl?: boolean }) {
   return (
     <div className="salt-seg" style={hl ? { boxShadow: `0 0 0 3px ${C.orange}`, borderRadius: 18 } : undefined}>
@@ -511,8 +660,12 @@ const CSS = `
 .sd-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px}
 .sd-head h1{font-size:clamp(17px,2.3vw,25px);font-weight:800;margin:0;background:linear-gradient(90deg,${C.purpleDeep},${C.amber});-webkit-background-clip:text;background-clip:text;color:transparent}
 .sd-badge{font-size:12px;font-weight:700;color:${C.purpleDeep};background:#fff;border:1.5px solid ${C.tintP};padding:5px 12px;border-radius:20px}
-.sd-mode{margin-left:auto;font-size:12px;font-weight:700;color:${C.primary};background:#fff;border:1.5px solid ${C.tintP};padding:5px 12px;border-radius:20px;cursor:pointer;user-select:none}
-.sd-mode.ai{color:${C.orange};border-color:${C.amber}}
+.sd-toggle{margin-left:auto;display:inline-flex;gap:4px;padding:4px;border-radius:14px;background:${C.surface};border:1.5px solid ${C.border};transition:box-shadow .18s ease}
+.sd-toggle-opt{font-family:inherit;font-weight:700;font-size:12px;border:none;border-radius:10px;padding:6px 13px;cursor:pointer;background:transparent;color:${C.sub};transition:background .16s ease,color .16s ease,transform .12s ease;white-space:nowrap;min-height:32px}
+.sd-toggle-opt:hover{background:#fff;color:${C.primary}}
+.sd-toggle-opt:active{transform:scale(.95)}
+.sd-toggle-opt:focus-visible{outline:2px solid ${C.orange};outline-offset:2px}
+.sd-toggle-opt.on{background:linear-gradient(135deg,${C.purpleDeep},${C.primary});color:#fff;box-shadow:0 4px 10px ${C.primary}44}
 .sd-stage{position:relative;flex:1;min-height:0;display:flex;align-items:center;justify-content:center}
 .sd-svg{width:100%;height:100%;max-height:40dvh;display:block}
 .sd-watch{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#fff;border:1.5px solid ${C.amber};color:${C.purpleDeep};font-weight:600;font-size:14px;padding:10px 16px;border-radius:16px;box-shadow:0 8px 24px #4a2e7a22;max-width:88%;text-align:center}
@@ -578,10 +731,52 @@ const CSS = `
 .sd-root.dark .sd-btn.ghost,.sd-root.dark .sd-mini{background:#241f38;border-color:#3a3358;color:#C9C2E6}
 .sd-root.dark .salt-opt{background:#241f38;border-color:#3a3358}
 .sd-root.dark .salt-opt .opt-name{color:#B9B2D6}
-.sd-root.dark .sd-badge,.sd-root.dark .sd-mode{background:#241f38;border-color:#3a3358}
+.sd-root.dark .sd-badge,.sd-root.dark .sd-toggle{background:#241f38;border-color:#3a3358}
+.sd-root.dark .sd-toggle-opt{color:#B9B2D6}
+.sd-root.dark .sd-toggle-opt:hover{background:#332c50;color:#EDEBFF}
 .sd-root.dark .sd-readout{background:#241f38;border-color:#3a3358;color:#EDEBFF}
 .sd-root.dark .sd-meter{background:#332c50;border-color:#453c66}
-@media (prefers-reduced-motion:reduce){.sun-warm,.steam,.sd-cardwrap{animation:none!important}}
+
+/* confetti (finish screen) */
+.sd-confetti{position:absolute;top:-20px;width:8px;height:12px;border-radius:2px;animation-name:sd-fall;animation-timing-function:linear;animation-fill-mode:forwards}
+@keyframes sd-fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(360deg);opacity:.15}}
+
+/* ── orientation-aware layout (§8.1): all three device frames are landscape — split into a
+   two-pane row so the tall wizard never stacks under the scene and overflows ── */
+@media (orientation:landscape){
+  .sd-root{flex-direction:row;align-items:stretch;justify-content:center;gap:16px}
+  .sd-scene{max-width:58%;flex:1 1 58%;height:100%}
+  .sd-svg{max-height:none;height:100%}
+  .sd-panel{max-width:42%;flex:1 1 42%;height:100%;overflow-y:auto}
+}
+/* the tightest canonical frame — Mobile App 844x390 — show less chrome, keep it compact */
+@media (orientation:landscape) and (max-height:430px){
+  .sd-root{padding:8px;gap:8px}
+  .sd-head{margin-bottom:2px}
+  .sd-head h1{font-size:14px}
+  .sd-badge{display:none}
+  .sd-node em{display:none}
+  .sd-rail{padding:4px 6px}
+  .sd-node .dot{width:18px;height:18px;font-size:10px}
+  .sd-card{padding:8px 11px}
+  .sd-lbl{font-size:12px;margin-bottom:5px}
+  .sd-p,.sd-count,.sd-result{font-size:12px}
+  .sd-hint{font-size:10.5px;margin-top:6px}
+  .sd-btn{height:34px;font-size:12.5px;padding:0 14px}
+  .sd-btn.big{height:36px;font-size:13px}
+  .sd-mini{height:30px;font-size:11px}
+  .salt-opt{padding:6px 4px}
+  .sd-choice{padding:8px 6px;min-height:44px;font-size:12px}
+}
+/* Smart Board — large touch display: fill the frame, grow every control (§7.4/§8.1) */
+.sd-root[data-device="smartboard"] .sd-btn{min-height:60px;min-width:60px;font-size:18px;padding:0 28px}
+.sd-root[data-device="smartboard"] .sd-mini{min-height:60px;font-size:16px}
+.sd-root[data-device="smartboard"] .salt-opt{min-height:60px;padding:16px 10px}
+.sd-root[data-device="smartboard"] .sd-choice{min-height:76px;font-size:18px}
+.sd-root[data-device="smartboard"] .sd-toggle-opt{padding:12px 22px;font-size:16px;min-height:60px}
+.sd-root[data-device="smartboard"] .sd-head h1{font-size:clamp(22px,2.6vw,34px)}
+
+@media (prefers-reduced-motion:reduce){.sun-warm,.steam,.sd-cardwrap,.sd-confetti{animation:none!important}}
 `;
 
 export default Tool;

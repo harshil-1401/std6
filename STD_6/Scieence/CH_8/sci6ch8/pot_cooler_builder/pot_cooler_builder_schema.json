@@ -1,0 +1,106 @@
+{
+  "toolId": "M4.S7.T15.2D1",
+
+  "title": "Pot-in-pot evaporative cooler builder",
+  "description": "The student assembles a side cut-away, no-electricity pot-in-pot (matka) cooler in six ordered steps — placing the large earthen pot, layering base sand, nesting the smaller pot filled with fruit and vegetables, packing the gap with sand, pouring water into the sand, and adding a wet jute cover. Once the cooler is fully built, the student predicts whether the inside will get cooler, stay the same, or get warmer, then presses Play to advance simulated time over about five hours while an inside thermometer, a cool-blue tint and rising vapour wisps show the real result, and finally sees a scored recap of the temperature drop achieved and whether their prediction was correct.",
+  "context": "Grade 6 Science, the chapter on measurement and matter that covers keeping things cool without electricity. This tool renders on screen the classic pot-in-pot (double-matka) cooler: a smaller earthen pot nested inside a larger one, with moist sand packed in the gap between them and a wet jute cover over the smaller pot's mouth. It shows why this simple household device — still used across India to keep vegetables, fruit and water cool in hot weather — needs no electricity at all: water evaporating from the moist sand and cover carries heat away from the inner pot. The tool sits in the lesson at the point where students move from being told that evaporation causes cooling to constructing and testing that idea for themselves in a hands-on build-predict-observe activity, paired with the household references to an earthen matka and a surahi.",
+  "teachingNotes": "Run this as a predict-then-reveal activity: the student must fully assemble the cooler (all six steps, including pouring the water and adding the wet cover) before they are allowed to lock in a prediction, and the prediction is locked before any time is allowed to pass, so the reveal is a genuine test of their idea rather than something they can see coming. Once time runs, have the student watch the thermometer fall, the small pot's interior tint blue, and faint vapour rise from the damp outer wall — call out that all three visual cues are showing the SAME evaporation event. The one idea to land is causal, not just descriptive: evaporation removes heat, so wherever water is evaporating from the moist sand and cover, the neighbouring air and pot walls cool down. Pre-empt the common misconception that a covered pot cools because it is 'sealed in' or 'in the shade' — the covering matters only because it is WET; a dry lid would not cool the inside. If a student predicts 'no change' or 'warmer', use the recap screen's explanation (evaporation only ever removes heat, never adds it) to correct the misconception rather than simply marking it wrong. Re-run the observe stage's time slider back and forth to show the temperature is monotonic — it never ticks back up once it has fallen.",
+  "instructionsForStudent": "1. Tap through the six build steps in order to assemble your cooler: place the large pot, add a layer of sand, set the small pot inside, fill the gap with more sand, pour water into the sand, and add the wet jute cover. 2. Once every step is placed, tap 'Predict the result' and choose whether you think the inside of the small pot will get cooler, stay the same, or get warmer. 3. Tap 'Run time & watch' and press Play to let about five simulated hours pass — watch the thermometer, the colour inside the small pot, and the vapour rising from the outer wall. You can also drag the time slider yourself to scrub back and forth. 4. Tap 'See what I learned' to compare your prediction with what actually happened and read how the cooler works. 5. Tap the Finish button to complete the activity and see your result.",
+
+  "subtype": "simulation",
+  "conceptId": "M4.S7.T15",
+  "relatedConceptIds": ["M4.S7.T14"],
+  "module": "Measurement — keeping things cool without electricity",
+
+  "placement": {
+    "beat": "Apply",
+    "where": "the student builds the cooler, commits a prediction, and runs the simulation themselves — the agent mostly coaches and highlights rather than performing the build for them"
+  },
+
+  "sharedState": { "fields": ["stage", "built", "predict", "hours", "running", "finished", "temp", "operatorMode", "depth"] },
+
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+    },
+    "windowMethods": [
+      "setParam(name, value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "placeStep(stepId)",
+      "undoStep()",
+      "setPredict(predictionId)",
+      "scrub(hours)",
+      "advance()",
+      "back()",
+      "finish()"
+    ]
+  },
+
+  "studentControls": [
+    { "control": "Tap 'Add: <step name>' on the Build screen", "effect": "places the next build step in order (large pot, base sand, small pot, fill sand, pour water, wet cover), revealing it in the cut-away scene" },
+    { "control": "Tap 'Undo'", "effect": "removes the most recently placed build step" },
+    { "control": "Tap 'Predict the result →'", "effect": "moves from the finished build to the Predict screen (only enabled once all six steps are placed)" },
+    { "control": "Tap a prediction option (cooler / no change / warmer)", "effect": "locks in that prediction for later comparison" },
+    { "control": "Tap 'Run time & watch →'", "effect": "moves to the Observe screen and resets the simulated clock to 0 hours" },
+    { "control": "Tap Play / Pause", "effect": "starts or pauses the simulated 5-hour clock; the inside thermometer falls while it runs" },
+    { "control": "Drag the time slider", "effect": "scrubs the simulated clock directly to any point between 0 and 5 hours and shows the temperature at that instant" },
+    { "control": "Tap 'Reset' on the Observe screen", "effect": "returns the simulated clock to 0 hours without leaving the Observe screen" },
+    { "control": "Tap 'See what I learned →'", "effect": "moves to the recap screen showing the temperature drop achieved and whether the prediction was correct" },
+    { "control": "Tap 'Finish'", "effect": "ends the activity and opens the full-screen star result screen" },
+    { "control": "Tap the Teacher | Student toggle", "effect": "switches between the lean teacher-demo view and the full student-practice view" },
+    { "control": "Tap the speaker icon", "effect": "mutes or unmutes the tool's sound cues" }
+  ],
+
+  "validIds": {
+    "buildSteps": ["large_pot", "base_sand", "small_pot", "fill_sand", "pour_water", "cover"],
+    "predictions": ["cooler", "same", "warmer"],
+    "highlightTargets": ["scene", "thermometer", "checklist", "predictOptions", "timeSlider", "playButton", "modeToggle"],
+    "operatorModes": ["ai", "student"],
+    "settableParams": ["muted", "operatorMode"]
+  },
+
+  "answerKey": {
+    "correctPrediction": "cooler"
+  },
+
+  "props": {
+    "defaults": { "operatorMode": "student", "showModeToggle": true, "themeColor": "#FF7212", "darkMode": false, "device": "web", "muted": false, "seed": 1 },
+    "additionalProps": {}
+  },
+
+  "events": [
+    "ready",
+    "operator_mode_changed",
+    "step_placed",
+    "step_undone",
+    "build_completed",
+    "prediction_made",
+    "stage_changed",
+    "run_started",
+    "run_paused",
+    "run_completed",
+    "time_scrubbed",
+    "reset",
+    "finished"
+  ],
+
+  "scientificFacts": [
+    "A pot-in-pot cooler keeps food and water cool using no electricity at all — only clay, sand and water.",
+    "Water in the moist sand and wet cover evaporates from the pot's surfaces into the air.",
+    "Evaporation always removes heat from its surroundings, so the inside of the small pot gets cooler as the water evaporates.",
+    "This is the same evaporative-cooling principle used by an earthen matka or a surahi to keep drinking water cool."
+  ],
+
+  "agentInstructions": {
+    "description": "<description>Shows the student building a no-electricity pot-in-pot cooler step by step, predicting what will happen to the inside temperature, then running simulated time to watch evaporation cool the small pot.</description>",
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS use ONLY the actions listed in windowMethods, with the EXACT ids from validIds; NEVER invent an id or a step order. ALWAYS call placeStep with each buildSteps id in its listed order (large_pot, base_sand, small_pot, fill_sand, pour_water, cover) one at a time, narrating what each step adds; NEVER call placeStep with an id that is not the next expected step, since it will no-op. ALWAYS call advance() once built reaches 6 to move to the Predict screen, then call setPredict with one predictions id, then advance() again to reach the Observe screen. ALWAYS call play() to run the simulated clock and let the student watch the thermometer fall before calling advance() again to reach the recap screen. ALWAYS use highlight(target) with a highlightTargets id to point at the thermometer or scene while narrating instead of performing extra actions. NEVER call finish() unless you are deliberately closing out the demo, since it opens the full-screen result screen. NEVER ask the student to tap, drag, or operate the tool in this mode — that is your job here. ALWAYS ask the student what they OBSERVED (the thermometer, the tint, the vapour) or why they think it happened before revealing the correct prediction; NEVER reveal answerKey.correctPrediction before they have answered.</teacher_tool_instruction>",
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS place the six build steps in order — large pot, base sand, small pot, fill sand, pour water, wet cover — before trying to predict anything. ALWAYS make your prediction about whether the inside will get cooler, stay the same, or get warmer BEFORE you press Play, so it is a real guess and not a copy of what you already saw. ALWAYS watch the thermometer, the colour inside the small pot, and the rising vapour together while time runs, and be ready to explain WHY the temperature is changing. ALWAYS compare your prediction with the actual result on the recap screen before you tap Finish.</student_tool_instruction>",
+    "teacherRealInstruction": "<teacher_real_instruction>A build-predict-observe simulation of a pot-in-pot (matka) evaporative cooler for the 'keeping things cool without electricity' beat. Use it in place of, or alongside, a physical two-pot demonstration so every student can build and test the idea individually; it evaluates the student's prediction and the cooling result achieved, so hand it to students in Student mode for practice and switch to Teacher mode only for a quick whole-class walkthrough.</teacher_real_instruction>"
+  }
+}

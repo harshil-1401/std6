@@ -1,101 +1,144 @@
 {
-    "toolName": "water_disappearing_act_tool",
-    "version": "1.0.0",
-    "description": "Interactive simulation of NCERT Class 6 Science Chapter 8, Activity 8.2 — a tablespoon of water on a steel plate evaporates over time, letting students predict, observe, flip the plate to rule out seepage, and conclude that liquid water becomes water vapour.",
+  "toolId": "steel_plate_evaporation",
 
-    "parameters": {
-        "initialMode": {
-            "type": "string",
-            "enum": ["investigate", "explore"],
-            "default": "investigate",
-            "description": "Starting mode: 'investigate' runs the predict/observe/flip/conclude experiment, 'explore' shows everyday evaporation examples"
-        },
-        "showModeSelector": {
-            "type": "boolean",
-            "default": true,
-            "description": "Show/hide the Investigate / Everyday examples tab switcher in the header"
-        },
-        "enabledModes": {
-            "type": "array",
-            "items": { "type": "string", "enum": ["investigate", "explore"] },
-            "default": ["investigate", "explore"],
-            "description": "Which modes appear in the mode selector"
-        },
-        "themeColor": {
-            "type": "string",
-            "default": "#4A4DC9",
-            "description": "Primary accent color (hex) used for buttons, progress bar, and highlights"
-        }
+  "title": "Water's disappearing act on a steel plate",
+  "description": "The student places a spoonful of water on a shiny steel plate, predicts what will happen to it, then watches the puddle shrink minute by minute as the water quietly leaves. Before accepting that answer, the plate is flipped over to check whether the water simply seeped through to the underside — it hasn't — which leads the student to the real explanation: the liquid turned into invisible water vapour and drifted into the air. A second, explore mode then lets the student browse everyday moments where the same disappearing act happens, from drying clothes to a puddle vanishing after rain.",
+  "context": "Grade 6 Science, the chapter on the states and journeys of water. This tool renders, on screen, the classic classroom test of pouring a little water onto a steel plate and watching it over time: something every student can picture happening on a kitchen counter or in a science lab. It matters because it is the first time many students are asked to explain where a liquid 'goes' when it disappears without spilling, without soaking into anything visible, and without anyone wiping it away — and it directly confronts the common belief that the water has leaked through the metal. The tool sits at the point in the lesson where evaporation is introduced as an everyday, room-temperature process, right after the states of water (solid, liquid, gas) have been described, and just before the class extends the idea to the wider water cycle.",
+  "teachingNotes": "Run this as a predict-then-reveal investigation: let the student commit to a prediction first, then run the observation and let the plate itself supply the evidence, rather than telling the student the answer up front. The pivotal step is the flip — many students genuinely expect to find water on the underside, so pause there and let them look before revealing that it is bone dry; that single moment is what rules out seepage and clears the way for 'it must have turned into a gas.' Re-run the timer at a faster pace if a student wants to see the whole shrink-and-vanish happen again, and use the explore mode afterwards to show that the very same disappearing act happens in drying clothes, a drying puddle, a hot pan, and hand sanitiser, so the idea generalises beyond one plate on one table. Pre-empt two misconceptions directly: that the water 'leaks through' the steel (steel has no pores or holes for liquid to pass through), and that the water simply 'vanishes into nothing' (matter does not disappear — it changes form, from liquid water into an invisible gas called water vapour, which is still there, mixed into the air). The idea to land: liquid water left in the open slowly turns into water vapour and escapes into the air — that change of state is called evaporation, and it happens without any boiling.",
+  "instructionsForStudent": "1) Read the question and make your own prediction about where you think the water on the steel plate will go over time, then tap the option that matches your thinking. 2) Tap 'Start the experiment' to watch the spoon pour a little water onto the plate. 3) Tap 'Play timer' and watch the puddle shrink minute by minute, noticing the faint vapour rising off it as it disappears. 4) Once the plate looks completely dry, tap 'Check the underside' and flip the plate over to see for yourself whether any water seeped through. 5) Read the conclusion that explains what actually happened to the water and compare it with your first prediction. 6) Switch to 'Everyday examples' and tap through the four real-life cards to see the same disappearing act happening elsewhere. 7) When you are done exploring, tap 'Finish' to see a summary of what you have learned.",
+
+  "subtype": "simulation",
+  "conceptId": "M6.WATER.EVAPORATION",
+  "relatedConceptIds": ["M6.WATER.STATES", "M6.WATER.CYCLE", "M6.WATER.CONDENSATION"],
+  "module": "A journey through states of water",
+
+  "placement": {
+    "beat": "Observe",
+    "where": "After the states of water have been introduced, the agent (or the student, once handed the tool) runs the predict -> pour -> observe -> flip -> conclude investigation on the steel plate, then browses the everyday-examples gallery. In Teacher mode the agent demonstrates the whole sequence with the tool's verbs while the student watches and answers thinking questions; in Student mode the student drives every step themselves while the agent coaches and highlights."
+  },
+
+  "sharedState": { "fields": ["activityMode", "phase", "prediction", "progress", "flipped", "exampleId", "operatorMode", "depth", "muted", "finished"] },
+
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
     },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "setActivityMode(mode)",
+      "predict(predictionId)",
+      "pourWater()",
+      "advanceTime()",
+      "flipPlate()",
+      "goToPhase(phaseId)",
+      "selectExample(exampleId)",
+      "finish()"
+    ]
+  },
 
+  "studentControls": [
+    { "control": "Tap a prediction option", "effect": "Commits a prediction for where the water will go, then unlocks 'Start the experiment'." },
+    { "control": "Tap 'Start the experiment'", "effect": "Moves to the Observe step and pours a spoonful of water onto the plate." },
+    { "control": "Tap 'Play timer' / 'Pause'", "effect": "Starts or pauses the evaporation timer, shrinking the puddle and drifting steam upward as time passes." },
+    { "control": "Tap 'Check the underside'", "effect": "Moves to the Check step once the plate is dry." },
+    { "control": "Tap 'Flip the plate over'", "effect": "Flips the plate to reveal whether any water seeped through to the underside." },
+    { "control": "Tap 'Back' / 'Next' on the phase stepper", "effect": "Moves between Predict, Observe, Check and Conclude once each is reachable." },
+    { "control": "Tap the Investigate | Everyday examples toggle", "effect": "Switches between the steel-plate investigation and the everyday-examples gallery." },
+    { "control": "Tap an example card", "effect": "Shows the note explaining how that everyday scene is also evaporation." },
+    { "control": "Tap the Teacher | Your turn toggle", "effect": "Switches between the teacher's focused demo view (controls hidden, one example shown) and the full student practice view (all controls and all four examples shown)." },
+    { "control": "Tap the mute icon", "effect": "Mutes or unmutes the pour/flip/completion sound cues." },
+    { "control": "Tap 'Finish'", "effect": "Ends the session and opens the 'What you have learned' summary screen." }
+  ],
+
+  "validIds": {
+    "predictions": ["seep", "vapour", "vanish", "stay"],
+    "phases": ["predict", "observe", "flip", "conclude"],
+    "activityModes": ["investigate", "explore"],
+    "examples": ["puddle", "clothes", "dosa", "sanitiser"],
+    "highlightTargets": [
+      "plate", "spoon",
+      "seep", "vapour", "vanish", "stay",
+      "playButton", "pourButton", "flipButton", "prevButton", "nextButton", "finishButton",
+      "activityModeToggle", "modeToggle", "muteButton",
+      "puddle", "clothes", "dosa", "sanitiser"
+    ],
+    "operatorModes": ["ai", "student"]
+  },
+
+  "answerKey": {
+    "correctPrediction": "vapour",
+    "note": "Informational only, for the teacher's own reference -- this tool is non-evaluating (§6.3): it never scores the student's prediction or awards a star. 'vapour' is the scientifically correct outcome and is what the flip step and the conclusion demonstrate; the other three ids ('seep','vanish','stay') are common misconceptions the reveal is designed to correct, not wrong answers to be marked."
+  },
+
+  "props": {
+    "defaults": {
+      "gradeLevel": 6,
+      "operatorMode": "student",
+      "activityMode": "investigate",
+      "muted": false,
+      "showModeToggle": true,
+      "darkMode": false,
+      "device": "mobile"
+    },
     "additionalProps": {
-        "description": "Tool-specific dynamic content passed by the agent",
-        "schema": {
-            "totalMinutes": {
-                "type": "number",
-                "default": 30,
-                "description": "Total minutes the observation timeline represents, shown on the progress bar (0 min / midpoint / total) and as the elapsed-time chip"
-            },
-            "runSeconds": {
-                "type": "number",
-                "default": 18,
-                "description": "Real-world seconds the play/pause timer takes to animate from a full puddle to a completely dry plate"
-            },
-            "showVapour": {
-                "type": "boolean",
-                "default": true,
-                "description": "Show the rising steam/vapour wisps above the puddle while the timer plays"
-            },
-            "initialPhase": {
-                "type": "string",
-                "enum": ["predict", "observe", "flip", "conclude"],
-                "default": "predict",
-                "description": "Which step of the investigate flow to open on: Predict (make a guess), Observe (pour water, run the timer), Flip (check the underside for seepage), Conclude (summary of evaporation)"
-            }
-        },
-        "examples": {
-            "default_experiment": {
-                "totalMinutes": 30,
-                "runSeconds": 18,
-                "showVapour": true,
-                "initialPhase": "predict"
-            },
-            "fast_demo": {
-                "totalMinutes": 10,
-                "runSeconds": 6,
-                "showVapour": true,
-                "initialPhase": "observe"
-            },
-            "slow_realistic_timeline": {
-                "totalMinutes": 60,
-                "runSeconds": 30,
-                "showVapour": true,
-                "initialPhase": "predict"
-            },
-            "jump_straight_to_conclusion": {
-                "initialPhase": "conclude"
-            },
-            "no_vapour_visual": {
-                "showVapour": false,
-                "initialPhase": "observe"
-            }
-        }
-    },
-
-    "modes": {
-        "investigate": {
-            "phases": ["predict", "observe", "flip", "conclude"],
-            "description": "Step-by-step Activity 8.2 experiment: predict where the water goes, watch it evaporate from a poured puddle, flip the plate to confirm no seepage, then read the evaporation conclusion"
-        },
-        "explore": {
-            "description": "Tap through four everyday evaporation examples: drying puddles, wet clothes on a line, water on a hot pan, and hand sanitiser"
-        }
-    },
-
-    "stepSummary": {
-        "predict": { "title": "Make a prediction", "description": "Student picks where they think the water will go (seep through, turn to vapour, vanish, or stay the same)" },
-        "observe": { "title": "Observe at regular intervals", "description": "Spoon pours one tablespoon of water onto the plate; play the timer and watch the puddle shrink as vapour rises" },
-        "flip": { "title": "Did any water seep through?", "description": "Flip the plate over to show the underside is completely dry, ruling out seepage through the steel" },
-        "conclude": { "title": "What we found out", "description": "Summary: steel is not porous, the water turned into water vapour, and this process is called evaporation" }
+      "totalMinutes": 30,
+      "runSeconds": 18,
+      "showVapour": true,
+      "seed": 42
     }
+  },
+
+  "events": [
+    "ready",
+    "activity_mode_changed",
+    "phase_changed",
+    "prediction_made",
+    "poured",
+    "run_started",
+    "run_completed",
+    "plate_flipped",
+    "example_selected",
+    "operator_mode_changed",
+    "finished",
+    "reset"
+  ],
+
+  "eventDetail": {
+    "activity_mode_changed": "{ mode }",
+    "phase_changed": "{ phase }",
+    "prediction_made": "{ predictionId, matchesScience }",
+    "poured": "{}",
+    "run_started": "{}",
+    "run_completed": "{}",
+    "plate_flipped": "{ flipped }",
+    "example_selected": "{ exampleId }",
+    "operator_mode_changed": "{ operatorMode, depth }",
+    "finished": "{ evaluated:false, interactions:{ phasesVisited, activityModesVisited, predictionId, plateFlipped, examplesExplored, runsCompleted, durationMs }, learned:[...] }",
+    "reset": "{}"
+  },
+
+  "scientificFacts": [
+    "Steel has no pores for liquid water to pass through, so water sitting on a steel plate cannot seep through it.",
+    "Left in the open, liquid water slowly changes into an invisible gas called water vapour, which mixes into the air.",
+    "This change of liquid water into water vapour without boiling is called evaporation, and it happens at room temperature.",
+    "Evaporation is happening around us all the time -- in drying clothes, a drying puddle, and a drying floor."
+  ],
+
+  "agentInstructions": {
+    "description":
+      "<description>Shows a spoonful of water placed on a steel plate slowly shrinking away over a simulated timer, then flips the plate to prove no water seeped through, landing on evaporation as the explanation; a second mode gathers everyday examples of the same disappearing act.</description>",
+    "teacherToolInstruction":
+      "<teacher_tool_instruction>ALWAYS call setOperatorMode(\"ai\") before driving, then use goToPhase(\"predict\") and predict(\"vapour\") to model a considered prediction before calling pourWater() and play() (or advanceTime() to skip straight to a dry plate) so the student watches the puddle shrink and the vapour rise. ALWAYS call flipPlate() once the plate is dry and pause there before speaking, then goToPhase(\"conclude\") to land the explanation. ALWAYS use highlight(target) with only ids from validIds to point at the plate, the timer, or the flip control rather than performing the action silently. NEVER call predict() with any id other than \"vapour\" when demonstrating, since that would model a wrong prediction. NEVER ask the student to tap a prediction, the timer, or the flip button in this mode -- call setOperatorMode(\"student\") to hand over control. ALWAYS ask a thinking question about what the student OBSERVED (what happened to the puddle, what they found on the underside) before advancing, and NEVER reveal the flip result before you have actually called flipPlate(). When showing the everyday-examples gallery, call setActivityMode(\"explore\") and selectExample(exampleId) one at a time using only ids from validIds.examples.</teacher_tool_instruction>",
+    "studentToolInstruction":
+      "<student_tool_instruction>ALWAYS make your own prediction before starting the experiment, then watch the puddle carefully as the timer runs rather than skipping ahead. ALWAYS check the underside for yourself when the plate looks dry, and think about whether what you find matches your prediction before reading the conclusion. ALWAYS try the 'Everyday examples' gallery afterwards and read all four cards to see the same disappearing act happening elsewhere. ALWAYS tap 'Finish' once you are done exploring both the experiment and the examples.</student_tool_instruction>",
+    "teacherRealInstruction":
+      "<teacher_real_instruction>A steel-plate evaporation investigation for the 'water disappearing without leaking' beat in the states-of-water chapter. Use it right after introducing evaporation, to let students predict, observe a shrinking puddle, and flip the plate to rule out seepage before concluding that the water turned into vapour; the built-in everyday-examples gallery (drying clothes, a drying puddle, a hot pan, hand sanitiser) is useful immediately after for generalising the idea beyond the plate.</teacher_real_instruction>"
+  }
 }

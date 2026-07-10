@@ -1,13 +1,128 @@
 {
-    "toolId": "handpicking_separation_tool",
-    "componentName": "HandpickingSeparationTool",
-    "file": "handpicking_separation_tool.tsx",
-    "title": "Handpicking — Separation of Substances",
-    "subject": "Science",
-    "grade": 6,
-    "chapter": "Curiosity Ch 9: Methods of Separation of Substances",
-    "concept": "Handpicking: removing few, large, odd-coloured impurities (pebbles) from grains (wheat), and why it stops being convenient for large quantities.",
-    "props": {
+  "toolId": "handpicking_separation_tool",
+  "componentName": "HandpickingSeparationTool",
+  "file": "Handpicking_Pick.tsx",
+
+  "title": "Handpicking — Pebbles from Wheat",
+  "description": "The student picks pebbles out of a thali (plate) filled with wheat grains by tapping each grey pebble. In Round 1 there are only a few pebbles scattered among grains, so the job is quick and easy. Round 2 loads a much bigger heap with many more pebbles and the student discovers how tedious and slow handpicking becomes. A stats card then shows the difference in time-per-pebble between the two rounds, making the limitation of handpicking tangible and memorable. A free-play Free Pile tab lets the student set any grain and pebble counts with sliders and time themselves, exploring the relationship between quantity and effort.",
+  "context": "Grade 6 Science, in the chapter on Methods of Separation of Substances (Curiosity). This tool renders the classic classroom handpicking activity on-screen: a circular thali (metal plate) holding a mix of wheat grains and a few pebbles, just as students might encounter before a meal in Indian homes. The concept it anchors is that handpicking works well only when impurities are few in number, clearly different in size or colour, and easy to spot by eye. Once quantities grow, it becomes impractical and slower methods such as winnowing and sieving are needed. The tool sits in the Observe and Apply beats of the lesson — teachers can run the demo mode to illustrate the concept, then hand control to students to experience the effort difference directly.",
+  "teachingNotes": "Run Round 1 first in Teacher (ai) mode so students watch a small pile being cleared quickly, then ask: 'What do you notice about how long that took?' Switch to Student mode and have students clear Round 2 themselves — the spike in time-per-pebble lands the limitation experientially rather than abstractly. In Free Pile mode, challenge students to set the pebbles to maximum and compare their clear time with a classmate. Key misconception to pre-empt: students sometimes think handpicking is always valid as long as impurities look different — remind them it is the quantity, not just the visibility, that matters. The reflection card after Round 2 connects to winnowing and sieving as the next lesson beat.",
+  "instructionsForStudent": "1. Look at the thali — you will see golden oval wheat grains and a few larger grey pebbles mixed in. 2. Tap any grey pebble to pick it out; it will fly into the bowl on the right. 3. If you tap a wheat grain by mistake it will shake and you will get a hint — that does not end the round. 4. Watch the timer and 'Left' counter as you go. 5. When all pebbles are cleared, your time and stats appear. 6. After Round 1, read the prompt and tap 'Load the bigger pile' to try Round 2 with many more pebbles. 7. Compare your time — notice how much longer it takes per pebble. 8. In Free Pile mode, use the sliders to set any number of grains and pebbles you like, then tap 'New pile' and time yourself.",
+
+  "subtype": "hotspot",
+  "conceptId": "handpicking_separation_tool",
+  "relatedConceptIds": ["winnowing_separation_tool", "sieving_separation_tool"],
+  "module": "Methods of Separation of Substances",
+  "subject": "Science",
+  "grade": 6,
+  "chapter": "Curiosity Ch 9: Methods of Separation of Substances",
+
+  "placement": {
+    "beat": "Apply",
+    "where": "After the teacher introduces handpicking verbally or shows a physical demo; the tool provides the tactile experience of the effort difference and leads into the question 'what would work better for large quantities?'"
+  },
+
+  "sharedState": {
+    "fields": [
+      "mode", "operatorMode", "depth",
+      "muted", "roundStats",
+      "remaining", "totalPebbles", "picked", "wrong",
+      "timeMs", "finished", "pebbleIds"
+    ]
+  },
+
+  "agentControl": {
+    "postmessage": {
+      "in":  "{ type: 'command', id: string, method: string, args: any[] }",
+      "out": [
+        "{ type: 'ready', toolId }",
+        "{ type: 'state', state }",
+        "{ type: 'event', name, detail }",
+        "{ type: 'response', id, result }"
+      ]
+    },
+    "windowMethods": [
+      "setParam(name, value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "setMode(mode)",
+      "tap(pebbleId)",
+      "listPebbleIds()"
+    ]
+  },
+
+  "studentControls": [
+    {
+      "control": "Tap a grey pebble on the thali",
+      "effect": "Picks it up and sends it flying into the bowl; decrements the 'Left' counter"
+    },
+    {
+      "control": "Tap a wheat grain",
+      "effect": "The grain shakes, a hint text appears, and the wrong-taps counter increments — the round continues"
+    },
+    {
+      "control": "✋ Pick It / 🎛 Free Pile tabs",
+      "effect": "Switches between the two-round guided activity and the free-play slider mode"
+    },
+    {
+      "control": "Wheat grains slider (Free Pile)",
+      "effect": "Sets how many wheat grains appear in the next pile (10 – 700)"
+    },
+    {
+      "control": "Pebbles slider (Free Pile)",
+      "effect": "Sets how many pebbles appear in the next pile (1 – 60)"
+    },
+    {
+      "control": "New pile button (Free Pile)",
+      "effect": "Regenerates the thali with the chosen grain and pebble counts and restarts the timer"
+    },
+    {
+      "control": "Teacher / Your turn toggle",
+      "effect": "Switches between Teacher demo view (lean, controls hidden) and Student full-practice view"
+    },
+    {
+      "control": "Mute / Unmute button",
+      "effect": "Toggles all sound cues on or off"
+    },
+    {
+      "control": "Finish button (student mode only, footer)",
+      "effect": "Ends the activity, tallies the session's picks/mis-taps into a score, and opens the full-screen finish screen with a star rating and a 'What you have learned' summary"
+    }
+  ],
+
+  "validIds": {
+    "pebbleIds": [
+      "pebble-0", "pebble-1", "pebble-2", "pebble-3", "pebble-4",
+      "pebble-5", "pebble-6", "pebble-7", "pebble-8", "pebble-9",
+      "pebble-10", "pebble-11", "pebble-12", "pebble-13", "pebble-14",
+      "pebble-15", "pebble-16", "pebble-17", "pebble-18", "pebble-19",
+      "pebble-20", "pebble-21", "pebble-22", "pebble-23", "pebble-24",
+      "pebble-25", "pebble-26", "pebble-27", "pebble-28", "pebble-29"
+    ],
+    "highlightTargets": [
+      "thali", "bowl", "timer", "remaining", "hint",
+      "grainSlider", "pebbleSlider", "newPileBtn",
+      "modeToggle", "tabPractice", "tabFree",
+      "next", "pebble"
+    ],
+    "modes": ["practice", "hands_on"],
+    "operatorModes": ["ai", "student"],
+    "paramNames": ["operatorMode", "muted", "animationSpeed"],
+    "note_on_pebbleIds": "ALWAYS call listPebbleIds() first to get the exact ids present in the current pile before calling tap(pebbleId). Pebble ids are zero-indexed from pebble-0 and reset when the pile resets. 'next' and 'pebble' are shorthand highlight targets that point to the first remaining pebble."
+  },
+
+  "answerKey": {
+    "correctAction": "tap",
+    "correctTarget": "pebble",
+    "note": "Any pebble-N id returned by listPebbleIds() is a correct tap target. Tapping a wheat grain is the incorrect action (answer_incorrect event fires)."
+  },
+
+  "props": {
+    "defaults": {
       "width": 820,
       "height": 620,
       "initialMode": "practice",
@@ -18,51 +133,68 @@
       "darkMode": false,
       "operatorMode": "student",
       "muted": false,
-      "additionalProps": {
-        "round1Pebbles": 7,
-        "round1Grains": 500,
-        "round2Pebbles": 30,
-        "round2Grains": 650,
-        "maxPileGrains": 700,
-        "maxPilePebbles": 60,
-        "thaliColor": "#8a5a33",
-        "grainColor": "#d9a64a",
-        "pebbleColor": "#868b91",
-        "bowlColor": "#cfd6dc",
-        "hintText": "That is a wheat grain — small, golden and oval with a groove down the middle. Pebbles are larger, dull grey and round.",
-        "showTimer": true,
-        "promptAfterRound1": "Quick and easy with just a few pebbles. But what if the heap were much bigger?"
-      }
+      "showModeToggle": true,
+      "device": "mobile"
     },
-    "modes": [
-      { "id": "practice", "label": "Pick It", "description": "Two-round guided flow: pick pebbles from a small pile, then a big pile, then a reflection on why handpicking suits only small quantities." },
-      { "id": "hands_on", "label": "Free Pile", "description": "Free play: set grain and pebble counts with sliders, then time yourself clearing the thali." }
-    ],
-    "agentApi": {
-      "commandChannel": "postMessage",
-      "readySignal": { "type": "ready", "toolId": "handpicking_separation_tool" },
-      "methods": [
-        { "name": "setParam", "args": ["name", "value"] },
-        { "name": "play", "args": [] },
-        { "name": "pause", "args": [] },
-        { "name": "reset", "args": [] },
-        { "name": "highlight", "args": ["target?"] },
-        { "name": "getState", "args": [] },
-        { "name": "setOperatorMode", "args": ["mode"] },
-        { "name": "setMode", "args": ["mode"] },
-        { "name": "tap", "args": ["pebbleId"] },
-        { "name": "listPebbleIds", "args": [] }
-      ],
-      "events": [
-        "ready", "mode_changed", "param_changed", "play", "pause", "reset",
-        "operator_mode_changed", "item_placed", "answer_incorrect", "highlighted",
-        "completed", "state", "response"
-      ]
+    "additionalProps": {
+      "round1Pebbles": 7,
+      "round1Grains": 500,
+      "round2Pebbles": 30,
+      "round2Grains": 650,
+      "maxPileGrains": 700,
+      "maxPilePebbles": 60,
+      "thaliColor": "#8a5a33",
+      "grainColor": "#d9a64a",
+      "pebbleColor": "#868b91",
+      "bowlColor": "#cfd6dc",
+      "hintText": "That is a wheat grain — small, golden and oval with a groove down the middle. Pebbles are larger, dull grey and round.",
+      "showTimer": true,
+      "promptAfterRound1": "Quick and easy with just a few pebbles. But what if the heap were much bigger?"
+    }
+  },
+
+  "events": [
+    "ready",
+    "mode_changed",
+    "param_changed",
+    "play",
+    "pause",
+    "reset",
+    "operator_mode_changed",
+    "item_placed",
+    "answer_incorrect",
+    "highlighted",
+    "completed",
+    "finished"
+  ],
+
+  "scientificFacts": [
+    "Handpicking is a separation method used when impurities are few, large, and visibly different from the main substance.",
+    "Wheat grains are small, golden, and oval with a central groove; pebbles are larger, rounded, and dull grey.",
+    "Handpicking becomes inconvenient when the quantity of the mixture is large — it takes too long and is tiring.",
+    "For large quantities, faster methods like winnowing (using wind) and sieving (using a mesh) are used instead."
+  ],
+
+  "agentInstructions": {
+    "description": "<description>A two-round pebble-picking activity on a thali that teaches students what handpicking is, which properties make it work, and why it fails for large quantities. The student taps grey pebbles to pick them out; Round 1 is quick, Round 2 is large and tiring, revealing the limitation directly.</description>",
+
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS call listPebbleIds() before any tap() call to get the exact pebble ids in the current pile; NEVER guess or hardcode a pebble id. ALWAYS tap() one pebble at a time to let the student watch each pick, rather than batching all at once. ALWAYS use highlight('thali') before starting to draw attention to the pile, and highlight('bowl') after clearing to show where pebbles collected. ALWAYS use highlight('next') or highlight('pebble-0') to point out the first remaining pebble when narrating. ALWAYS call reset() between demonstrations if you need to restart from the beginning. ALWAYS call setOperatorMode('ai') before driving the tool; NEVER call tap() or highlight() while operatorMode is 'student' — that mode belongs to the student. NEVER batch all pebbles into a single narration turn; ALWAYS pause after 2–3 picks and ask a short thinking question about what the student observed. NEVER press or reference the Finish button — it renders only in student mode and ends only when the student chooses to end their own session.</teacher_tool_instruction>",
+
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS look at the thali first and notice the difference between the small golden wheat grains and the larger grey pebbles before tapping. ALWAYS try to tap every grey pebble you can see and watch your 'Left' counter drop. ALWAYS try Round 2 after finishing Round 1 and compare your time — notice whether it felt faster or slower per pebble. ALWAYS try the Free Pile tab to set different numbers of pebbles and see how your clearing time changes. NEVER worry if you tap a wheat grain by mistake — the hint will help you tell them apart. ALWAYS tap the Finish button when you are done exploring to see your score, star rating, and a summary of what you learned.</student_tool_instruction>",
+
+    "teacherRealInstruction": "<teacher_real_instruction>This tool is best used after introducing handpicking with a real or described example — a handful of wheat and pebbles on a thali. Run it in Teacher mode to do a quick live demo of Round 1 (few pebbles, fast), then switch to Student mode and have students tackle Round 2 themselves. The stats card after Round 2 gives them a concrete number to compare with Round 1, making the limitation tangible. Free Pile mode is good for a short 'what if' exploration or a timed challenge between students.</teacher_real_instruction>"
+  },
+
+  "modes": [
+    {
+      "id": "practice",
+      "label": "Pick It",
+      "description": "Two-round guided flow: pick pebbles from a small pile (Round 1), then a large pile (Round 2), followed by a reflection card comparing time-per-pebble and explaining why handpicking suits only small quantities."
     },
-    "learningObjectives": [
-      "Identify handpicking as a separation method for small, visibly different impurities.",
-      "Distinguish wheat grains from pebbles by size, colour and shape.",
-      "Reason about why handpicking becomes inconvenient as quantity grows.",
-      "Connect the limitation to faster methods like winnowing and sieving."
-    ]
-  }
+    {
+      "id": "hands_on",
+      "label": "Free Pile",
+      "description": "Free exploration: set grain and pebble counts with sliders, then time yourself clearing the thali. Encourages students to discover the quantity–effort relationship on their own."
+    }
+  ]
+}

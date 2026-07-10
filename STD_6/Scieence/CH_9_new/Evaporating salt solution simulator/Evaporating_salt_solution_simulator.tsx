@@ -63,7 +63,8 @@ interface Sim {
   operatorMode: Mode;
   roundIndex: number;   // which practice mixture (0-based)
   score: number;        // correct predictions so far
-  completed: boolean;   // all rounds done
+  completed: boolean;   // all rounds done (ready for Finish)
+  finished: boolean;    // student pressed Finish — finish screen shown
 }
 
 const initSim = (p: any): Sim => {
@@ -85,6 +86,7 @@ const initSim = (p: any): Sim => {
     roundIndex: 0,
     score: 0,
     completed: false,
+    finished: false,
   };
 };
 
@@ -101,6 +103,18 @@ function Tool(props: any) {
   const scoredRound = useRef<number>(-1);          // guard: score a round once
   const celebTimer = useRef<any>(null);
   const [, force] = useState(0);
+
+  // device target (§7.4/§8.1): mobile >= 24x24, smartboard >= 60x30
+  const device: 'mobile' | 'smartboard' = props?.device === 'smartboard' ? 'smartboard' : 'mobile';
+  const touchH = (base: number) => (device === 'smartboard' ? Math.max(60, base) : base);
+
+  // §6.3 performance/interaction summary tracking (for the uniform `finished` event)
+  const historyRef = useRef<{ id: string; correct: boolean; chose: string }[]>([]);
+  const attemptsRef = useRef(0);
+  const correctFirstTryRef = useRef(0);
+  const hintsUsedRef = useRef(0);
+  const exploredRef = useRef<string[]>([]);
+  const startRef = useRef<number>(performance.now());
 
   // ---------- Web Audio ----------
   const acRef = useRef<AudioContext | null>(null);
@@ -213,14 +227,13 @@ function Tool(props: any) {
       if (scoredRound.current !== sim.roundIndex) {
         scoredRound.current = sim.roundIndex;
         const isLast = sim.roundIndex >= total - 1;
-        const newScore = sim.score + (correct ? 1 : 0);
+        historyRef.current.push({ id: `mixture_${sim.roundIndex + 1}`, correct, chose: String(sim.prediction) });
+        if (correct) correctFirstTryRef.current += 1;
         setSim((s) => ({ ...s, score: s.score + (correct ? 1 : 0), completed: isLast ? true : s.completed }));
-        if (isLast) {
-          setCelebrate(true);
-          emit({ type: 'event', name: 'completed', detail: { score: newScore, total } });
-          clearTimeout(celebTimer.current);
-          celebTimer.current = setTimeout(() => setCelebrate(false), 3400);
-        }
+        // §6.3: reaching the last round only marks the activity ready-to-finish — it does
+        // NOT auto-celebrate. The full-screen finish screen opens only when the student
+        // (student mode) presses the Finish button, via finish() below.
+        if (isLast) emit({ type: 'event', name: 'completed', detail: { score: sim.score + (correct ? 1 : 0), total } });
       }
     }
     prevStage.current = sim.stage;
@@ -229,6 +242,7 @@ function Tool(props: any) {
   // ---------- actions (used by BOTH student + agent) ----------
   const doHighlight = useCallback((target: string) => {
     highlightRef.current = { id: String(target), until: performance.now() + 2600 };
+    hintsUsedRef.current += 1;
     force((x) => x + 1);
     emit({ type: 'event', name: 'highlighted', detail: { target } });
   }, []);
@@ -236,6 +250,7 @@ function Tool(props: any) {
   const commitPrediction = useCallback((choice: string) => {
     const c = (['salt', 'nothing', 'water'].includes(String(choice)) ? choice : null) as Predict;
     if (!c) return;
+    attemptsRef.current += 1;
     setSim((s) => (s.predictionCommitted ? s : { ...s, prediction: c, predictionCommitted: true, stage: s.stage === 'predict' ? 'ready' : s.stage }));
     cue(c === 'salt' ? 'correct' : 'tap');
     emit({ type: 'event', name: 'prediction_made', detail: { choice: c, correct: c === 'salt' } });
@@ -248,6 +263,7 @@ function Tool(props: any) {
       const heating = lv > 0;
       return { ...s, flameLevel: lv, heating, stage: heating && s.stage === 'ready' ? 'heating' : s.stage };
     });
+    if (lv > 0) exploredRef.current.push(FLAME_NAMES[lv]);
     cue('tap');
     emit({ type: 'event', name: 'flame_changed', detail: { level: FLAME_NAMES[lv], value: lv } });
   }, [cue]);
@@ -292,6 +308,8 @@ function Tool(props: any) {
   const reset = useCallback(() => {
     boilTarget.current = null;
     scoredRound.current = -1;
+    historyRef.current = []; attemptsRef.current = 0; correctFirstTryRef.current = 0;
+    hintsUsedRef.current = 0; exploredRef.current = []; startRef.current = performance.now();
     clearTimeout(celebTimer.current);
     setCelebrate(false);
     setSim((s) => ({ ...initSim({ operatorMode: s.operatorMode }) }));
@@ -305,6 +323,8 @@ function Tool(props: any) {
     const m: Mode = mode === 'ai' ? 'ai' : 'student';
     boilTarget.current = null;
     scoredRound.current = -1;
+    historyRef.current = []; attemptsRef.current = 0; correctFirstTryRef.current = 0;
+    hintsUsedRef.current = 0; exploredRef.current = []; startRef.current = performance.now();
     clearTimeout(celebTimer.current);
     setCelebrate(false);
     setSim(() => ({ ...initSim({ operatorMode: m }) }));
@@ -314,6 +334,40 @@ function Tool(props: any) {
     cue('tap');
   }, [cue]);
   const setOperatorMode = applyMode;
+
+  // §6.3 — the uniform Finish flow: student-mode only, no "Play Again" loop. Idempotent —
+  // only fires once, only once the LAST mixture has been revealed.
+  const finish = useCallback(() => {
+    const s = simRef.current;
+    if (s.finished) return;
+    const total = roundsFor(s.operatorMode).length;
+    const isLast = s.roundIndex >= total - 1;
+    if (s.operatorMode !== 'student' || s.stage !== 'done' || !isLast) return;
+    const stars = Math.max(0, Math.min(3, s.score));
+    setSim((cur) => ({ ...cur, finished: true }));
+    cue('done');
+    emit({ type: 'event', name: 'finished', detail: {
+      evaluated: true,
+      score: s.score, total,
+      stars,
+      breakdown: historyRef.current.slice(),
+      interactions: {
+        attempts: attemptsRef.current,
+        correctFirstTry: correctFirstTryRef.current,
+        hintsUsed: hintsUsedRef.current,
+        itemsExplored: Array.from(new Set(exploredRef.current)),
+        durationMs: Math.round(performance.now() - startRef.current),
+      },
+      learned: [
+        'Heating turns the water in a salt solution into vapour, which escapes the dish.',
+        'Dissolved salt cannot vaporise, so it stays behind as a solid.',
+        'More dissolved salt leaves more solid salt once the water is gone.',
+      ],
+    } });
+    setCelebrate(true);
+    clearTimeout(celebTimer.current);
+    celebTimer.current = setTimeout(() => setCelebrate(false), 3800);
+  }, [cue]);
 
   // advance to the next practice mixture (Student/full mode)
   const nextRound = useCallback(() => {
@@ -357,7 +411,7 @@ function Tool(props: any) {
       predictionCommitted: s.predictionCommitted, temp: Math.round(s.temp),
       operatorMode: s.operatorMode, depth: depthFor(s.operatorMode),
       roundIndex: s.roundIndex, totalRounds: rounds.length, stepCount: rounds.length, exampleCount: rounds.length,
-      score: s.score, completed: s.completed,
+      score: s.score, completed: s.completed, finished: s.finished,
     };
     emit({ type: 'state', state });
     return state;
@@ -365,7 +419,7 @@ function Tool(props: any) {
 
   const api = {
     setParam, play, pause, reset, highlight: doHighlight, getState, setOperatorMode,
-    setFlame, setBoilProgress, toggleLamp, setSalt, coolDown, commitPrediction, nextRound,
+    setFlame, setBoilProgress, toggleLamp, setSalt, coolDown, commitPrediction, nextRound, finish,
   };
   const apiRef = useRef(api); apiRef.current = api;
 
@@ -418,7 +472,11 @@ function Tool(props: any) {
   const flick1 = 1 + Math.sin(clock * 19) * 0.09 + Math.sin(clock * 8.1) * 0.05;
   const flick2 = 1 + Math.sin(clock * 24 + 1.3) * 0.13 + Math.cos(clock * 11) * 0.06;
   const flameBase = 260;
-  const flameH = heatOn ? (24 + sim.flameLevel * 18) * flick1 : 0;
+  const GAUZE_Y = 190;   // wire gauze sits just under the dish (dish floor ≈ 187)
+  let flameH = heatOn ? (22 + sim.flameLevel * 15) * flick1 : 0;
+  // keep the flame tip licking the underside of the gauze — never up into the dish
+  const maxFlameH = flameBase - (GAUZE_Y + 3);
+  if (flameH > maxFlameH) flameH = maxFlameH;
 
   // ---- correct layering: salt bed on the floor, water column resting ON TOP of it ----
   // As the solution concentrates, salt precipitates at the bottom and its bed grows;
@@ -450,17 +508,17 @@ function Tool(props: any) {
   // soft curling steam wisps (blurred), rising from the water surface
   const steam: React.ReactNode[] = [];
   if (sim.vaporRising) {
-    const n = 5 + sim.flameLevel * 2;
+    const n = 6 + sim.flameLevel * 2;
     for (let i = 0; i < n; i++) {
       const ph = (clock * (0.34 + i * 0.05) + i * 0.618) % 1;
-      const spread = dishW * 0.42;
+      const spread = dishW * 0.46;
       const baseX = dishCx - spread / 2 + (i / Math.max(1, n - 1)) * spread;
       const curl = Math.sin(clock * 1.6 + i * 1.3 + ph * 3) * (6 + ph * 15);
       const x = baseX + curl;
-      const y = waterTopY - 4 - ph * 110;
-      const rr = (5 + ph * 13) * (0.7 + boilInt * 0.5);
-      const op = Math.sin(ph * Math.PI) * 0.5 * (0.6 + boilInt * 0.5);
-      steam.push(<ellipse key={'s' + i} cx={x} cy={y} rx={rr} ry={rr * 1.35} fill="#eef4ff" opacity={op} />);
+      const y = waterTopY - 4 - ph * 112;
+      const rr = (6 + ph * 15) * (0.78 + boilInt * 0.5);
+      const op = Math.sin(ph * Math.PI) * 0.82 * (0.7 + boilInt * 0.45);
+      steam.push(<ellipse key={'s' + i} cx={x} cy={y} rx={rr} ry={rr * 1.35} fill="#ffffff" opacity={op} />);
     }
   }
 
@@ -503,7 +561,7 @@ function Tool(props: any) {
         return (
           <button key={m} role="tab" aria-selected={on} className="evap-btn" onClick={() => applyMode(m)}
             style={{
-              border: 'none', cursor: 'pointer', borderRadius: 999, minHeight: 32, padding: '0 12px',
+              border: 'none', cursor: 'pointer', borderRadius: 999, minHeight: touchH(32), padding: '0 12px',
               fontFamily: 'Poppins, system-ui, sans-serif', fontWeight: 700, fontSize: 'clamp(10px,1.15vw,12.5px)',
               color: on ? '#fff' : C.soft, background: on ? `linear-gradient(135deg, ${C.purple}, ${C.primary})` : 'transparent',
               boxShadow: on ? '0 4px 12px rgba(74,77,201,.32)' : 'none',
@@ -518,7 +576,7 @@ function Tool(props: any) {
 
   const btn = (variant: 'primary' | 'ghost' | 'highlight' | 'success', extra?: React.CSSProperties): React.CSSProperties => ({
     fontFamily: 'Poppins, system-ui, sans-serif', fontWeight: 700, fontSize: 'clamp(12px,1.3vw,15px)',
-    border: 'none', cursor: 'pointer', borderRadius: 24, minHeight: 44, padding: '0 20px',
+    border: 'none', cursor: 'pointer', borderRadius: 24, minHeight: touchH(44), padding: '0 20px',
     display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 8,
     transition: 'transform .16s ease, box-shadow .16s ease, background .16s ease',
     color: variant === 'ghost' ? C.primary : '#fff',
@@ -550,6 +608,7 @@ function Tool(props: any) {
       fontFamily: 'Poppins, system-ui, sans-serif', color: C.text,
       width: '100%', minHeight: '100dvh', maxWidth: 3840, maxHeight: 2160, margin: '0 auto',
       display: 'grid', placeContent: 'center', boxSizing: 'border-box', padding: 'clamp(8px,1.5vw,20px)',
+      position: 'relative',
       background: `radial-gradient(1200px 600px at 20% -10%, ${C.cream}, ${C.surface} 60%)`,
     }}>
       <style>{`@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800;900&display=swap');
@@ -564,14 +623,19 @@ function Tool(props: any) {
         .evap-spark{animation:spark 1.6s ease-in-out infinite}
         .evap-glint{animation:glint 2.6s ease-in-out infinite}
         @media (prefers-reduced-motion: reduce){ .evap-spark,.evap-glint,.evap-confetti{animation:none !important} }
-        input[type=range].evap{ -webkit-appearance:none;appearance:none;height:8px;border-radius:8px;outline:none;}
-        input[type=range].evap::-webkit-slider-thumb{-webkit-appearance:none;height:26px;width:26px;border-radius:50%;background:#fff;border:3px solid ${C.primary};box-shadow:0 3px 8px rgba(0,0,0,.2);cursor:pointer;margin-top:-9px}
-        input[type=range].evap::-moz-range-thumb{height:24px;width:24px;border-radius:50%;background:#fff;border:3px solid ${C.primary};cursor:pointer}
+        input[type=range].evap{ -webkit-appearance:none;appearance:none;width:100%;height:10px;border-radius:999px;outline:none;margin:8px 0;cursor:pointer;box-shadow:inset 0 1px 2px rgba(0,0,0,.10); }
+        input[type=range].evap:disabled{ cursor:default;opacity:.55; }
+        input[type=range].evap::-webkit-slider-runnable-track{ height:10px;border-radius:999px;background:transparent; }
+        input[type=range].evap::-webkit-slider-thumb{ -webkit-appearance:none;appearance:none;box-sizing:border-box;height:22px;width:22px;border-radius:50%;background:${C.orange};border:3px solid #fff;box-shadow:0 2px 6px rgba(26,26,46,.30),0 0 0 1.5px ${C.orange};margin-top:-6px;cursor:pointer;transition:transform .12s ease; }
+        input[type=range].evap:not(:disabled)::-webkit-slider-thumb:hover{ transform:scale(1.09); }
+        input[type=range].evap:not(:disabled):active::-webkit-slider-thumb{ transform:scale(.96); }
+        input[type=range].evap::-moz-range-track{ height:10px;border-radius:999px;background:transparent; }
+        input[type=range].evap::-moz-range-thumb{ box-sizing:border-box;height:22px;width:22px;border-radius:50%;background:${C.orange};border:3px solid #fff;box-shadow:0 2px 6px rgba(26,26,46,.30),0 0 0 1.5px ${C.orange};cursor:pointer; }
       `}</style>
 
       <div style={{
         width: 'min(1100px, 96vw)', display: 'grid', gap: 'clamp(10px,1.4vw,18px)',
-        gridTemplateColumns: '1.15fr 1fr',
+        gridTemplateColumns: '1.15fr 1fr', position: 'relative',
       }}
         // orientation: stack on portrait
         className="evap-shell">
@@ -605,12 +669,18 @@ function Tool(props: any) {
               <linearGradient id="dishG" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0" stopColor="#ffffff" /><stop offset="1" stopColor="#e7e9f2" />
               </linearGradient>
+              <linearGradient id="sceneBg" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="#c3cdec" /><stop offset="0.5" stopColor="#dde3f4" /><stop offset="1" stopColor="#f1f3fb" />
+              </linearGradient>
               <linearGradient id="saltG" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0" stopColor="#ffffff" /><stop offset="1" stopColor="#eef0f8" />
               </linearGradient>
               <filter id="steamBlur" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="2.4" /></filter>
               <filter id="softGlow" x="-90%" y="-90%" width="280%" height="280%"><feGaussianBlur stdDeviation="3.2" /></filter>
             </defs>
+
+            {/* soft lab backdrop — gives the white vapour something to show against */}
+            <rect x="0" y="0" width="400" height="300" rx="16" fill="url(#sceneBg)" />
 
             {/* ambient heat shimmer above the water surface */}
             {sim.vaporRising && (
@@ -814,7 +884,7 @@ function Tool(props: any) {
                   {FLAME_NAMES.map((f, i) => (
                     <button key={f} className="evap-btn" onClick={() => setFlame(i)}
                       disabled={sim.stage === 'boiled' || sim.stage === 'cooling' || sim.stage === 'done'}
-                      style={{ ...btn(sim.flameLevel === i ? 'primary' : 'ghost'), flex: 1, minHeight: 40, fontSize: 12, padding: '0 6px',
+                      style={{ ...btn(sim.flameLevel === i ? 'primary' : 'ghost'), flex: 1, minHeight: touchH(40), fontSize: 12, padding: '0 6px',
                         opacity: (sim.stage === 'boiled' || sim.stage === 'cooling' || sim.stage === 'done') ? 0.45 : 1 }}>
                       {i === 0 ? 'Off' : '🔥'.repeat(i)}
                     </button>
@@ -840,15 +910,13 @@ function Tool(props: any) {
                     Next mixture ▶
                   </button>
                 )}
-                {sim.stage === 'done' && isLastRound && (
-                  <button className="evap-btn" onClick={reset} style={{ ...btn('success'), flex: 1 }}>
-                    ↺ Play again
+                {sim.stage === 'done' && isLastRound && !sim.finished && (
+                  <button className="evap-btn" onClick={finish} style={{ ...btn('success'), flex: 1 }}>
+                    🏁 Finish
                   </button>
                 )}
-                {!(sim.stage === 'done') && (
-                  <button className="evap-btn" onClick={reset} style={{ ...btn('ghost') }}>↺ Reset</button>
-                )}
-                <button className="evap-btn" onClick={() => { muted.current = !muted.current; force(x => x + 1); }} style={{ ...btn('ghost'), minWidth: 44, padding: 0 }}>
+                <button className="evap-btn" onClick={() => { muted.current = !muted.current; force(x => x + 1); }}
+                  style={{ ...btn('ghost'), minWidth: touchH(44), padding: 0 }}>
                   {muted.current ? '🔇' : '🔊'}
                 </button>
               </div>
@@ -875,13 +943,15 @@ function Tool(props: any) {
         </section>
       </div>
 
-      {/* ===== FULL-SCREEN completion celebration (§7.4) ===== */}
-      {celebrate && (
-        <div className="evap-confetti" aria-hidden style={{
-          position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'none', overflow: 'hidden',
+      {/* ===== FULL-SCREEN Finish screen (§6.3/§7.4) — evaluating tool: stars + what-you-learned ===== */}
+      {sim.finished && (
+        <div className="evap-confetti" aria-hidden={false} role="dialog" aria-label="Activity finished" style={{
+          position: 'absolute', inset: 0, zIndex: 9999, pointerEvents: 'none', overflow: 'hidden',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, boxSizing: 'border-box',
           animation: reduce.current ? undefined : 'riseIn .3s ease both',
+          background: 'radial-gradient(1200px 700px at 50% 40%, rgba(74,77,201,.16), rgba(255,255,255,.96) 70%)',
         }}>
-          {!reduce.current && Array.from({ length: 46 }).map((_, i) => {
+          {celebrate && !reduce.current && Array.from({ length: 54 }).map((_, i) => {
             const cols = [C.primary, C.fcOrange, C.orange, C.purple, C.success, '#7fb8e6'];
             const left = (i * 2.17 + (i % 5) * 3) % 100;
             const dur = 2.4 + (i % 6) * 0.35;
@@ -896,16 +966,30 @@ function Tool(props: any) {
             );
           })}
           <div style={{
-            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+            position: 'relative',
             textAlign: 'center', animation: 'badgePop .6s cubic-bezier(.22,1.4,.4,1) both',
+            width: 'min(440px, 100%)', maxHeight: '100%', overflow: 'auto',
+            background: '#fff', borderRadius: 28, padding: 'clamp(16px,3vw,26px)',
+            boxShadow: '0 30px 70px rgba(26,26,46,.28)', boxSizing: 'border-box', pointerEvents: 'auto',
           }}>
-            <div style={{ fontSize: 'clamp(30px,7vw,64px)' }}>🧂✨</div>
-            <div style={{ fontFamily: 'Poppins, system-ui, sans-serif', fontWeight: 900, fontSize: 'clamp(20px,4.5vw,40px)',
+            <div style={{ fontSize: 'clamp(28px,6vw,52px)' }}>🧂✨</div>
+            <div style={{ fontFamily: 'Poppins, system-ui, sans-serif', fontWeight: 900, fontSize: 'clamp(18px,4vw,32px)',
               background: `linear-gradient(135deg,${C.purple},${C.fcOrange})`, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
               Well done!
             </div>
-            <div style={{ fontFamily: 'Poppins, system-ui, sans-serif', fontWeight: 800, color: C.primary, fontSize: 'clamp(13px,2vw,18px)' }}>
-              You recovered the salt in {sim.score}/{totalRounds} mixtures 🎉
+            <div style={{ fontSize: 'clamp(24px,5vw,38px)', letterSpacing: 4, margin: '4px 0 6px' }}>
+              {'⭐'.repeat(Math.max(0, Math.min(3, sim.score)))}{'☆'.repeat(Math.max(0, 3 - sim.score))}
+            </div>
+            <div style={{ fontFamily: 'Poppins, system-ui, sans-serif', fontWeight: 800, color: C.primary, fontSize: 'clamp(12px,1.8vw,16px)', marginBottom: 12 }}>
+              You correctly predicted {sim.score}/{totalRounds} mixtures 🎉
+            </div>
+            <div style={{ textAlign: 'left', background: C.surface, borderRadius: 16, padding: '12px 14px' }}>
+              <div style={{ fontWeight: 800, fontSize: 'clamp(12px,1.6vw,14px)', color: C.text, marginBottom: 6 }}>✅ What you learned</div>
+              <ul style={{ margin: 0, paddingLeft: 18, fontSize: 'clamp(11px,1.4vw,13px)', color: C.soft, lineHeight: 1.55 }}>
+                <li>Heating turns the water in a salt solution into vapour, which escapes the dish.</li>
+                <li>Dissolved salt cannot vaporise, so it stays behind as a solid.</li>
+                <li>More dissolved salt leaves more solid salt once the water is gone.</li>
+              </ul>
             </div>
           </div>
         </div>

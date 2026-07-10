@@ -1,254 +1,188 @@
 {
-    "toolName": "threshing_by_machine",
-    "exportName": "ThreshingByMachine",
-    "version": "1.0.0",
-    "displayName": "Threshing — By Machine",
-    "description": "Class 6 Science interactive (NCERT Curiosity) demonstrating threshing by machine — a powered drum thresher beats bundled crop to separate grain from stalks. Locked to the By Machine method with a 4-step animated demo and drag-to-sort Compare board.",
-    "subject": "Science",
-    "grade": 6,
-    "chapter": "Methods of Separation of Substances",
-    "textbook": "Curiosity | Textbook of Science | Grade 6 (NCERT)",
-    "topic": "Threshing — separating grain from stalks by machine (thresher)",
-    "concepts": [
-      "Threshing",
-      "Separation of grain from harvested crop",
-      "Hand method vs machine method (trade-offs)",
-      "Choosing a method by scale, cost, and effort",
-      "Scientific comparison and reasoning"
-    ],
-    "changelog": {
-      "1.0.0": [
-        "Split from threshing_hand_vs_machine v2.0.0.",
-        "Locked to byMachine method — no method toggle, no section nav.",
-        "Removed intro paragraph, Explore tagline, and method switcher.",
-        "Header updated to 'Threshing — By Machine'.",
-        "Removed initialMethod and showSectionNav props (not applicable)."
+  "toolId": "threshing_by_machine",
+  "componentName": "ThreshingByMachine",
+  "file": "Threshing_By_Machine.tsx",
+
+  "title": "Threshing — Separating Grain by Machine",
+  "description": "The student watches a four-step animated canvas scene of a powered threshing machine in action. Step 0 shows the machine waiting with a bundle of crop beside its hopper; step 1 shows the bundle fed into the hopper; step 2 shows the internal drum spinning fast, beating the stalks so grain flies into a sack while straw is thrown to one side; step 3 shows the sack full of clean grain and a straw pile, with a 'done — fast and easy' label. A step description card below the canvas explains each stage in plain language.",
+  "context": "Grade 6 Science, from the Curiosity textbook's Methods of Separation of Substances chapter (NCERT). Threshing is the process of separating grain from the dried, harvested stalks of a crop. In the machine method, a powered thresher receives bundles through a hopper; an internal spinning drum beats the stalks and the grain is knocked loose, collected in a sack, while the light straw is ejected to one side. This tool makes the inside action of the machine visible, which students cannot normally see, and contrasts it with the by-hand method. It sits at the Observe beat of the lesson, after the teacher has defined threshing and before students compare the two methods.",
+  "teachingNotes": "This tool is most effective when shown alongside or after the By Hand tool so students immediately see the contrast. In Teacher mode, run the demo step by step, pausing at step 2 to highlight the drum and ask 'What do you think is happening inside?' before revealing the label. Switch to Student mode so students can replay step 2 and watch the grain and straw particles build up at different rates. Key contrast to draw out: machine threshing separates grain and straw simultaneously into two distinct piles, whereas hand threshing only knocks grain off stalks and leaves you to gather it separately. The step 3 label 'fast and easy' is the bridge to the conceptual question 'when would you choose this over the hand method?'",
+  "instructionsForStudent": "1. Watch the animation — notice the machine waiting with a bundle of crop beside it. 2. Tap Next to see the bundle fed into the hopper at the top. 3. Tap Next again to see the drum spin and watch grain collect in the sack while straw is thrown out. 4. Tap Next to see the final result — a full sack of clean grain and a straw pile beside the machine. 5. Use Replay on the last step to watch the drum action and particle flow again. 6. Use Play / Pause to freeze any step and study what is happening. 7. Read the description card below the canvas for each step to understand the science. 8. When you are done exploring, tap Finish to see a summary of what you have learned.",
+
+  "subtype": "simulation",
+  "conceptId": "threshing_by_machine",
+  "relatedConceptIds": ["threshing_by_hand", "winnowing_separation_tool", "sieving_separation_tool"],
+  "module": "Methods of Separation of Substances",
+  "subject": "Science",
+  "grade": 6,
+  "chapter": "Methods of Separation of Substances",
+  "textbook": "Curiosity — Textbook of Science, Grade 6 (NCERT)",
+
+  "placement": {
+    "beat": "Observe",
+    "where": "After the teacher defines threshing and demonstrates or describes the by-hand method; use this tool to make the machine's internal action visible, then transition to comparing the two methods."
+  },
+
+  "sharedState": {
+    "fields": [
+      "operatorMode", "depth", "muted",
+      "stepIdx", "totalSteps", "isPlaying", "finished"
+    ]
+  },
+
+  "evaluated": false,
+  "finishedEventNote": "This tool is non-evaluating (subtype simulation, beat Observe — the student only watches/steps through the machine, nothing is judged right or wrong). Pressing Finish (student mode only) emits the uniform 'finished' event with { evaluated: false, interactions: { attempts, hintsUsed, replaysUsed, itemsExplored, durationMs }, learned: [...] }. score/stars/breakdown are intentionally omitted — the finish screen shows a 'What you have learned' summary with no star rating.",
+
+  "agentControl": {
+    "postmessage": {
+      "in":  "{ type: 'command', id: string, method: string, args: any[] }",
+      "out": [
+        "{ type: 'ready', toolId }",
+        "{ type: 'state', state }",
+        "{ type: 'event', name, detail }",
+        "{ type: 'response', id, result }"
       ]
     },
-    "parameters": {
-      "width": {
-        "type": "number",
-        "default": 940,
-        "description": "Maximum width in pixels. The tool is responsive and self-sizes up to this width.",
-        "consumed": true
-      },
-      "height": {
-        "type": "number",
-        "default": 0,
-        "description": "Optional minimum height in pixels. 0 = let content determine height (recommended).",
-        "consumed": true
-      },
-      "initialSection": {
-        "type": "string",
-        "enum": [
-          "tools"
-        ],
-        "default": "tools",
-        "description": "The tool only has the Tools section.",
-        "consumed": true
-      },
-      "showPlayPause": {
-        "type": "boolean",
-        "default": true,
-        "description": "Show/hide the play/pause control on the Tools-section demos.",
-        "consumed": true
-      }
+    "windowMethods": [
+      "setParam(name, value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "step(direction)"
+    ]
+  },
+
+  "studentControls": [
+    {
+      "control": "Next / Back buttons",
+      "effect": "Advances or reverses the animated demonstration one step at a time (4 steps total)"
+    },
+    {
+      "control": "Play / Pause button (if showPlayPause = true)",
+      "effect": "Starts or stops the canvas animation within the current step — useful to freeze the drum-spinning step"
+    },
+    {
+      "control": "Replay button (visible on last step)",
+      "effect": "Resets the grain and straw particles and replays the current step's animation from the start"
+    },
+    {
+      "control": "Teacher | Your turn toggle",
+      "effect": "Switches between Teacher demo view (all 4 steps, student navigation hidden — the demo is agent-driven) and Student full-practice view (all 4 steps with controls)"
+    },
+    {
+      "control": "Mute / Unmute button",
+      "effect": "Toggles all sound cues on or off"
+    },
+    {
+      "control": "Finish button (Student mode only; appears once the student reaches the last step)",
+      "effect": "Ends the activity and opens a full-screen 'What you have learned' finish screen with a summary of the steps explored; this tool only lets the student observe so there is no star/score, only takeaways"
+    }
+  ],
+
+  "validIds": {
+    "stepDirections": ["next", "back"],
+    "highlightTargets": [
+      "canvas", "demo",
+      "machine", "body",
+      "drum",
+      "hopper",
+      "sack", "grainSack",
+      "strawPile", "straw",
+      "bundle", "crop",
+      "nextBtn", "backBtn",
+      "modeToggle", "finishBtn"
+    ],
+    "operatorModes": ["ai", "student"],
+    "paramNames": ["operatorMode", "muted", "showPlayPause"],
+    "note_on_highlight": "highlight(target) is non-destructive — it applies an orange glow to the named canvas element or button for ~2.8 s without advancing any step. Use it to draw the student's attention before narrating. Canvas-element targets (machine, drum, hopper, sack, straw, bundle) render as a glow in the scene itself.",
+    "note_on_control_verbs": "play()/pause()/reset()/step(direction) drive the REAL animation — the same next/back/replay logic the student's own buttons trigger — so calling them produces the identical visible result the student would see."
+  },
+
+  "props": {
+    "defaults": {
+      "width": 940,
+      "height": 0,
+      "showPlayPause": true,
+      "operatorMode": "student",
+      "muted": false,
+      "showModeToggle": true,
+      "device": "mobile"
     },
     "additionalProps": {
-      "description": "Agent config may be passed nested here (same pattern as the other tools). Values here override the top-level parameters of the same name. Step copy and Compare-board cards are defined internally and are not agent-configurable.",
-      "schema": {
-        "showPlayPause": {
-          "type": "boolean",
-          "description": "Show/hide the demo play/pause control."
-        }
-      },
-      "examples": {
-        "default": {
-          "additionalProps": {
-            "showPlayPause": true
-          }
-        },
-        "no_controls": {
-          "additionalProps": {
-            "showPlayPause": false
-          }
-        }
-      }
-    },
-    "sections": {
-      "tools": {
-        "order": 1,
-        "title": "Tools — Explore",
-        "component": "ToolsExplorer",
-        "intro": "Explore — see threshing in action before we name the parts.",
-        "description": "An animated 4-step demo of the By Machine method, followed by a side-by-side CompareView and a drag-to-sort Compare board. The student drags four statement cards onto the By Hand or By Machine side; correct drops lock with a reason, wrong drops bounce back with a hint, and completing it triggers confetti and a summary.",
-        "methodDemos": {
-          "byHand": [
-            {
-              "step": 0,
-              "title": "The harvested crop",
-              "type": "intro"
-            },
-            {
-              "step": 1,
-              "title": "Lift the bundle",
-              "type": "explanation"
-            },
-            {
-              "step": 2,
-              "title": "Beat it — that's threshing!",
-              "type": "explanation"
-            },
-            {
-              "step": 3,
-              "title": "Slow and tiring",
-              "type": "explanation"
-            }
-          ],
-          "byMachine": [
-            {
-              "step": 0,
-              "title": "The threshing machine",
-              "type": "intro"
-            },
-            {
-              "step": 1,
-              "title": "Feed it in",
-              "type": "explanation"
-            },
-            {
-              "step": 2,
-              "title": "The drum spins — that's threshing!",
-              "type": "explanation"
-            },
-            {
-              "step": 3,
-              "title": "Fast and easy",
-              "type": "explanation"
-            }
-          ]
-        },
-        "compareBoard": {
-          "description": "Drag each card to the side it best fits. Each card is correct for exactly one side.",
-          "sides": [
-            "byHand",
-            "byMachine"
-          ],
-          "cards": [
-            {
-              "id": "kg10",
-              "text": "Faster for just 10 kg",
-              "side": "byHand"
-            },
-            {
-              "id": "cheap",
-              "text": "Cheaper for a small farm",
-              "side": "byHand"
-            },
-            {
-              "id": "nofuel",
-              "text": "Works without any fuel",
-              "side": "byHand"
-            },
-            {
-              "id": "field",
-              "text": "Threshes a whole field in a day",
-              "side": "byMachine"
-            }
-          ]
-        }
-      }
-    },
-    "designSystem": {
-      "designLanguage": "Singularity",
-      "fonts": [
-        "Poppins (Google Fonts)",
-        "DM Serif Display (headings)"
-      ],
-      "colors": {
-        "primary": "#4A4DC9",
-        "primaryDark": "#533086",
-        "orange": "#FF7212",
-        "orange2": "#FC9145",
-        "ink": "#332F4A",
-        "gray700": "subtle text",
-        "gray100": "surface background",
-        "white": "#FFFFFF"
-      },
-      "components": [
-        "Pill UIButton kit (contained / highlight / outlined / text)",
-        "Inline stroke icons (no external icon library)"
-      ],
-      "gradeTiers": {
-        "6": {
-          "confettiCount": 70,
-          "confettiDuration": 2500,
-          "playAgainLabel": "Play again!"
-        },
-        "7": {
-          "confettiCount": 40,
-          "confettiDuration": 2000,
-          "playAgainLabel": "Play again"
-        },
-        "8": {
-          "confettiCount": 15,
-          "confettiDuration": 1500,
-          "playAgainLabel": "Try again"
-        }
-      },
-      "animations": [
-        "thFadeUp — section/card entry",
-        "thPop — badge pop",
-        "thFall — grain falling",
-        "thScaleIn — element reveal",
-        "thShake — wrong-drop bounce",
-        "thLock — correct-drop lock-in",
-        "respects prefers-reduced-motion"
-      ],
-      "notes": "Imports only react — no external dependencies, no Tailwind CDN."
-    },
-    "agentQuickReference": {
-      "defaultUsage": {
-        "description": "Show the animated By Machine demo with play/pause.",
-        "call": {
-          "toolName": "threshing_by_machine",
-          "parameters": {
-            "additionalProps": {
-              "showPlayPause": true
-            }
-          }
-        }
-      },
-      "noControls": {
-        "description": "Show the By Machine demo without play/pause (auto-plays through steps).",
-        "call": {
-          "toolName": "threshing_by_machine",
-          "parameters": {
-            "additionalProps": {
-              "showPlayPause": false
-            }
-          }
-        }
-      }
-    },
-    "ncertAlignment": {
-      "chapterTitle": "Methods of Separation of Substances",
-      "textbook": "Curiosity — Textbook of Science, Grade 6 (NCERT)",
-      "keyConceptTaught": "Threshing separates grain from the cut, dried stalks of a harvested crop. It can be done by hand (beating bundles against a hard surface) or by machine (a powered drum). Both do the same job; the better choice depends on the amount, cost, and effort.",
-      "learningObjectives": [
-        "Define threshing as separating grain from harvested stalks",
-        "Describe the by-hand method and the by-machine method",
-        "Compare the two methods by amount, cost, fuel, and effort",
-        "Justify which method suits a given situation (small amount vs whole field)",
-        "Connect threshing to other separation methods in the chapter"
-      ],
-      "keywords": [
-        "Threshing",
-        "Grain",
-        "Stalks",
-        "Harvest",
-        "Thresher",
-        "Separation"
-      ]
+      "showPlayPause": true,
+      "operatorMode": "student",
+      "muted": false
     }
+  },
+
+  "events": [
+    "ready",
+    "param_changed",
+    "play",
+    "pause",
+    "reset",
+    "operator_mode_changed",
+    "highlighted",
+    "step_requested",
+    "completed",
+    "finished",
+    "state",
+    "response"
+  ],
+
+  "scientificFacts": [
+    "Threshing separates grain from the dried, harvested stalks of a crop.",
+    "A mechanical thresher uses a fast-spinning drum inside a housing to beat the stalks; grain falls loose and is collected in a sack.",
+    "The machine separates grain (heavy, falls into sack) and straw (light, thrown to the side) in one pass.",
+    "A single threshing machine can process a whole field in a day, making it far faster than hand threshing for large quantities."
+  ],
+
+  "agentInstructions": {
+    "description": "<description>An animated four-step canvas scene of a powered threshing machine — from bundle waiting at the hopper, through drum spinning and grain filling the sack, to the finished result of clean grain and a straw pile. The tool teaches how machine threshing works step by step and makes the internal drum action visible.</description>",
+
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS call highlight('canvas') or highlight('machine') first to draw attention to the animation before narrating. ALWAYS use step('next') to advance one step at a time; NEVER skip steps without narrating what the student just saw. ALWAYS highlight('drum') before narrating step 3 so the student knows where to look for the spinning action. ALWAYS highlight('sack') and highlight('strawPile') on step 3 or 4 to point out where the two outputs go. ALWAYS pause after the drum-spinning step and ask the student a thinking question before advancing. NEVER ask the student to click or operate the tool in ai mode — that is your job. ALWAYS call setOperatorMode('ai') before driving the tool.</teacher_tool_instruction>",
+
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS step through all four stages in order using the Next button — the drum-spinning step is the most important one. ALWAYS watch where the grain goes and where the straw goes in step 3; they end up in different places. ALWAYS use Replay on the last step if you want to see the grain filling the sack again from the start. ALWAYS read the description card below the canvas to understand what is happening at each stage. ALWAYS tap Finish when you are done exploring to see a summary of what you have learned. NEVER skip step 3 — the spinning drum is what defines machine threshing.</student_tool_instruction>",
+
+    "teacherRealInstruction": "<teacher_real_instruction>This tool is designed to show what happens inside a threshing machine, which students cannot observe in real life. Show it in Teacher mode while narrating, then hand control to students in Student mode to step through at their own pace. It pairs naturally with the By Hand tool — show both so students can contrast the speed and effort. Both Teacher and Student modes step through all four steps; Teacher mode hides the student navigation buttons (you drive the demo) and shows a 'watch' banner, while Student mode exposes the Next/Back/Replay/Finish controls. This tool only lets students observe (no scored answer), so its finish screen shows a 'what you have learned' summary rather than a star rating.</teacher_real_instruction>"
+  },
+
+  "modes": [
+    {
+      "id": "tools",
+      "label": "Tools — Explore",
+      "description": "A four-step animated canvas demo of threshing by machine. Both modes show all four steps: in Teacher mode the student navigation is hidden (agent-driven demo), and in Student mode all four steps are navigable with Next/Back/Replay controls and a step description card."
+    }
+  ],
+
+  "designSystem": {
+    "designLanguage": "Singularity",
+    "fonts": ["Poppins (Google Fonts)", "DM Serif Display (headings)"],
+    "colors": {
+      "primary": "#4A4DC9", "primaryDark": "#533086", "orange": "#FF7212",
+      "orange2": "#FC9145", "ink": "#1A1A2E", "gray100": "#F5F5F5", "white": "#FFFFFF"
+    },
+    "animations": [
+      "thFadeUp — step description card entry",
+      "thScaleIn — element reveal",
+      "Canvas: drum rotation, grain-particle physics, straw-projectile physics, machine shake on step 2",
+      "respects prefers-reduced-motion"
+    ]
+  },
+
+  "ncertAlignment": {
+    "chapterTitle": "Methods of Separation of Substances",
+    "textbook": "Curiosity — Textbook of Science, Grade 6 (NCERT)",
+    "keyConceptTaught": "A threshing machine uses a powered spinning drum to beat harvested stalks and separate grain from straw quickly. It can process a whole field in a day and is the preferred method for large farms.",
+    "learningObjectives": [
+      "Describe the by-machine threshing method step by step",
+      "Identify the hopper, drum, grain sack, and straw pile as key parts of a thresher",
+      "Explain that grain falls into the sack (heavy) while straw is thrown out (light)",
+      "Justify when machine threshing is preferred over hand threshing"
+    ],
+    "keywords": ["Threshing", "Thresher", "Drum", "Hopper", "Grain", "Straw", "Separation"]
   }
+}

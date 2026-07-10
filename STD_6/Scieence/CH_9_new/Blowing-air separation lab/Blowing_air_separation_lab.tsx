@@ -13,6 +13,10 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+// framer-motion is available in this environment (used by sibling tools in this project) —
+// imported for the UI-chrome transitions (finish screen, mode-toggle settle). The physics
+// simulation itself stays on the canvas/rAF path since framer-motion cannot drive canvas pixels.
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ==================== AGENT-CONTROL CONTRACT (postMessage) ====================
 // The tool lives in a sandboxed iframe and talks to the host ONLY via postMessage.
@@ -174,7 +178,7 @@ const TIER_CONFIG = {
       mid: "Nice try! Let's see what the wind taught us.",
       low: 'Good guess! Watch closely — the wind never lies.',
     },
-    playAgainLabel: 'Try again!', reviewLabel: 'What we learned',
+    anotherRoundLabel: 'Blow again!', reviewLabel: 'What we learned',
     heroFontMobile: 36, heroFontDesktop: 48, bodyFontMobile: 16, bodyFontDesktop: 17,
     touchTargetMobile: 56, storyFrame: true,
   },
@@ -185,7 +189,7 @@ const TIER_CONFIG = {
       mid: 'Good — review what happened.',
       low: "Let's see why the wind behaved this way.",
     },
-    playAgainLabel: 'Play again', reviewLabel: 'Review',
+    anotherRoundLabel: 'Run another round', reviewLabel: 'Review',
     heroFontMobile: 32, heroFontDesktop: 44, bodyFontMobile: 15, bodyFontDesktop: 16,
     touchTargetMobile: 50, storyFrame: false,
   },
@@ -196,7 +200,7 @@ const TIER_CONFIG = {
       mid: 'Review the outcome carefully.',
       low: 'Work through why separation occurred this way.',
     },
-    playAgainLabel: 'Try fresh values', reviewLabel: 'Review',
+    anotherRoundLabel: 'New wind trial', reviewLabel: 'Review',
     heroFontMobile: 30, heroFontDesktop: 40, bodyFontMobile: 15, bodyFontDesktop: 16,
     touchTargetMobile: 48, storyFrame: false,
   },
@@ -416,6 +420,14 @@ const BlowingAirSeparationLab: React.FC<ToolProps> = (rawProps) => {
   const [highlight, setHighlight] = useState<HighlightTarget | null>(null);
   const [runsDone, setRunsDone] = useState(0);
   const [muted, setMuted] = useState(!!props.muted);
+
+  // ── Finish / performance-summary tracking (§6.3) ──
+  const [finished, setFinished] = useState(false);
+  const [finishOverlayVisible, setFinishOverlayVisible] = useState(false);
+  const [finishSummary, setFinishSummary] = useState<any>(null);
+  const historyRef = useRef<{ material: MaterialKey; strength: StrengthKey; prediction: PredictKey | null; correct: boolean }[]>([]);
+  const hintsUsedRef = useRef(0);
+  const sessionStartRef = useRef<number>(Date.now());
 
   const mutedRef = useRef(muted); mutedRef.current = muted;
   const playCue = useSound(mutedRef);
@@ -822,6 +834,9 @@ const BlowingAirSeparationLab: React.FC<ToolProps> = (rawProps) => {
     setPhase('result');
     setShowPopup(true);
     setRunsDone((n) => n + 1);
+    if (cur.prediction) {
+      historyRef.current = [...historyRef.current, { material: cur.material, strength, prediction: cur.prediction, correct }];
+    }
     playCue(cur.prediction ? (correct ? 'correct' : 'wrong') : 'done');
     emit({ type: 'event', name: 'run_completed', detail: { stayed: cur.stayed, blown: cur.blown, quality: strength } });
     if (cur.prediction) emit({ type: 'event', name: correct ? 'answer_correct' : 'answer_incorrect', detail: { prediction: cur.prediction, correct } });
@@ -834,6 +849,42 @@ const BlowingAirSeparationLab: React.FC<ToolProps> = (rawProps) => {
   const handleNewStrength = () => {
     setShowPopup(false); setOutcome(null); setSeed(Date.now()); setPhase('ready');
   };
+
+  // ---- Finish (§6.3): the uniform, student-mode-only ending. No further replay is offered — ----
+  // ---- this is an EVALUATING tool (predict-then-reveal has a right/wrong answer), so Finish  ----
+  // ---- opens the star finish screen + "What you have learned", and emits ONE `finished` event. ----
+  const handleFinish = useCallback(() => {
+    const rounds = historyRef.current;
+    const total = rounds.length;
+    const correctCount = rounds.filter((r) => r.correct).length;
+    const stars = total === 0 ? 0 : correctCount === total ? 3 : correctCount / total >= 0.5 ? 2 : 1;
+    const breakdown = rounds.map((r, i) => ({ id: `round${i + 1}_${r.strength}`, correct: r.correct, chose: r.prediction }));
+    const itemsExplored = Array.from(new Set(rounds.map((r) => r.strength)));
+    const detail = {
+      evaluated: true,
+      score: correctCount, total,
+      stars,
+      breakdown,
+      interactions: {
+        attempts: total,
+        correctFirstTry: correctCount,
+        hintsUsed: hintsUsedRef.current,
+        itemsExplored,
+        durationMs: Date.now() - sessionStartRef.current,
+      },
+      learned: [
+        'Moving air can carry away light material (like husk) while heavier material (like grain) falls almost straight down.',
+        'Separating a mixture this way — using a stream of air — is called winnowing.',
+        'Wind strength matters: too gentle a breeze leaves husk behind; too strong a gust can blow away a little grain too.',
+      ],
+    };
+    setFinishSummary(detail);
+    setFinished(true);
+    setFinishOverlayVisible(true);
+    setShowPopup(false);
+    playCue('done');
+    emit({ type: 'event', name: 'finished', detail });
+  }, [playCue]);
 
   // ---- mode + depth switch: shared by props, setOperatorMode, AND the clickable toggle (§6.1) ----
   const applyMode = useCallback((m: OperatorMode) => {
@@ -849,6 +900,7 @@ const BlowingAirSeparationLab: React.FC<ToolProps> = (rawProps) => {
   // ---- highlight(target): non-destructive laser-pointer pulse on any nameable element ----
   const doHighlight = useCallback((target: HighlightTarget) => {
     setHighlight(target);
+    hintsUsedRef.current += 1;
     emit({ type: 'event', name: 'highlighted', detail: { target } });
     if (highlightTimer.current) window.clearTimeout(highlightTimer.current);
     highlightTimer.current = window.setTimeout(() => setHighlight(null), 2400);
@@ -863,6 +915,8 @@ const BlowingAirSeparationLab: React.FC<ToolProps> = (rawProps) => {
     setHighlight(null); setRunsDone(0);
     setSeed(props.seed ?? Date.now());
     setPhase('predict');
+    historyRef.current = []; hintsUsedRef.current = 0; sessionStartRef.current = Date.now();
+    setFinished(false); setFinishOverlayVisible(false); setFinishSummary(null);
     emit({ type: 'event', name: 'reset', detail: {} });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ap.defaultStrength, props.seed]);
@@ -1055,16 +1109,30 @@ const BlowingAirSeparationLab: React.FC<ToolProps> = (rawProps) => {
         </div>
       )}
 
-      {!isAI && phase === 'result' && outcome && (
+      {!isAI && phase === 'result' && outcome && !finished && (
         <div className="ba-mode-enter">
-          <ResultSummary outcome={outcome} mat={mat} bodyFont={bodyFont} onTryAgain={handleTryAgain} onNewStrength={handleNewStrength} tier={tier} touch={touch} S={S} />
+          <ResultSummary outcome={outcome} mat={mat} bodyFont={bodyFont} onTryAgain={handleTryAgain} onNewStrength={handleNewStrength} onFinish={handleFinish} tier={tier} touch={touch} S={S} />
         </div>
       )}
 
       {/* runs practised (full-depth progress across the larger set, §6.2) */}
-      {!isAI && runsDone > 0 && (
+      {!isAI && runsDone > 0 && !finished && (
         <div style={{ fontSize: bodyFont - 2, color: S.sub, fontWeight: 600 }}>
           Winnowing runs completed: {runsDone} {runsDone >= 3 ? '⭐' : ''}
+        </div>
+      )}
+
+      {/* Session complete (§6.3): the forward path ends here — no replay control is offered. */}
+      {!isAI && finished && finishSummary && (
+        <div className="ba-mode-enter" style={{ background: S.panel, borderRadius: DS.radii.lg, padding: 16, border: `1px solid ${S.border}`, textAlign: 'center' }}>
+          <div style={{ fontWeight: 800, fontSize: bodyFont + 2, color: S.text, marginBottom: 6 }}>Activity finished ✓</div>
+          <div style={{ fontSize: bodyFont, color: S.sub }}>
+            {finishSummary.score}/{finishSummary.total} predictions correct
+            {tier.showStars && <span style={{ marginLeft: 8 }}>{'⭐'.repeat(finishSummary.stars)}</span>}
+          </div>
+          {!finishOverlayVisible && (
+            <button onClick={() => setFinishOverlayVisible(true)} style={{ ...outlineBtn(touch), marginTop: 12 }}>View summary</button>
+          )}
         </div>
       )}
     </div>
@@ -1111,11 +1179,21 @@ const BlowingAirSeparationLab: React.FC<ToolProps> = (rawProps) => {
       </div>
     </div>
 
-    {/* Completion celebration — a full-viewport, non-blocking overlay that owns the whole screen
-        then fades and hands it back (§7.4). The "what happened" reveal stays in the panel underneath. */}
-    {showPopup && outcome && (
+    {/* Per-round completion celebration — a full-viewport, non-blocking overlay that owns the whole
+        screen then fades and hands it back (§7.4). The "what happened" reveal stays in the panel
+        underneath. This is per-round feedback, distinct from the session Finish screen below. */}
+    {showPopup && outcome && !finished && (
       <CelebrationOverlay outcome={outcome} tier={tier} heroFont={heroFont} bodyFont={bodyFont} onDone={() => setShowPopup(false)} />
     )}
+
+    {/* The uniform FINISH screen (§6.3): full-screen, star rating earned from the student's actual
+        prediction accuracy + a "What you have learned" panel. This is the tool's one true ending —
+        there is no control here that loops back to the start. */}
+    <AnimatePresence>
+      {!isAI && finished && finishOverlayVisible && finishSummary && (
+        <FinishScreen summary={finishSummary} tier={tier} heroFont={heroFont} bodyFont={bodyFont} onClose={() => setFinishOverlayVisible(false)} />
+      )}
+    </AnimatePresence>
     </div>
   );
 };
@@ -1199,10 +1277,10 @@ function drawFarmer(ctx: CanvasRenderingContext2D, kurta: string, tip: number) {
 const ResultSummary: React.FC<{
   outcome: { correct: boolean; quality: StrengthKey };
   mat: typeof MATERIALS[MaterialKey];
-  bodyFont: number; onTryAgain: () => void; onNewStrength: () => void;
+  bodyFont: number; onTryAgain: () => void; onNewStrength: () => void; onFinish: () => void;
   tier: typeof TIER_CONFIG[GradeLevel]; touch: number;
   S: ReturnType<typeof surfaces>;
-}> = ({ outcome, mat, bodyFont, onTryAgain, onNewStrength, tier, touch, S }) => {
+}> = ({ outcome, mat, bodyFont, onTryAgain, onNewStrength, onFinish, tier, touch, S }) => {
   const note =
     outcome.quality === 'gentle'
       ? `The breeze was too gentle — some ${mat.lightName.toLowerCase()} stayed behind in the pile. A steadier wind gives a cleaner separation.`
@@ -1219,9 +1297,12 @@ const ResultSummary: React.FC<{
         The lighter <b>{mat.lightName.toLowerCase()}</b> are carried away by the moving air, while the heavier <b>{mat.heavyName.toLowerCase()}</b> are too heavy and fall straight down. This method is called <b>winnowing</b>.
       </p>
       <p style={{ margin: '0 0 14px', fontSize: bodyFont - 1, lineHeight: 1.5, color: S.sub }}>{note}</p>
+      {/* Two ways to keep practising this round (not a whole-tool restart — §6.3), plus the
+          uniform, primary Finish control that ends the activity and opens the finish screen. */}
       <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
         <button onClick={onNewStrength} style={outlineBtn(touch)}><Wind size={18} /> Try a different wind</button>
-        <button onClick={onTryAgain} style={ctaBtn(touch)}><RotateCcw size={18} /> {tier.playAgainLabel}</button>
+        <button onClick={onTryAgain} style={outlineBtn(touch)}><RotateCcw size={18} /> {tier.anotherRoundLabel}</button>
+        <button onClick={onFinish} style={ctaBtn(touch)}><Check size={18} /> Finish</button>
       </div>
     </div>
   );
@@ -1285,6 +1366,65 @@ const CelebrationOverlay: React.FC<{
         </div>
       </div>
     </div>
+  );
+};
+
+// Uniform FINISH screen (§6.3): full-viewport overlay, position:fixed inset:0, high z-index.
+// This tool EVALUATES the student (predict-then-reveal has a right/wrong answer), so Finish opens
+// the star-rating screen + "What you have learned" — never a star-less screen, never a replay CTA.
+const FinishScreen: React.FC<{
+  summary: { score: number; total: number; stars: number; learned: string[] };
+  tier: typeof TIER_CONFIG[GradeLevel];
+  heroFont: number; bodyFont: number; onClose: () => void;
+}> = ({ summary, tier, heroFont, bodyFont, onClose }) => {
+  const colors = [DS.primary, DS.accent, DS.accentDark, DS.primaryLight, DS.amber, DS.success];
+  const pieceCount = Math.round(tier.confettiCount * 0.8);
+  return (
+    <motion.div
+      initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.35 }}
+      style={{ position: 'fixed', inset: 0, zIndex: 10000, overflow: 'hidden', background: 'rgba(20,16,40,0.62)', backdropFilter: 'blur(2px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+    >
+      {/* confetti/star burst across the FULL viewport (pointer-events:none so it never blocks the close action) */}
+      <div aria-hidden style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}>
+        {Array.from({ length: pieceCount }).map((_, i) => {
+          const star = i % 4 === 0;
+          const left = (i * 53) % 100;
+          const dur = 2.2 + (i % 6) * 0.3;
+          const delay = (i % 9) * 0.09;
+          const size = 8 + (i % 4) * 3;
+          return star ? (
+            <span key={i} style={{ position: 'absolute', top: 0, left: `${left}%`, fontSize: size + 8, animation: `ba-rain ${dur}s linear ${delay}s infinite` }}>⭐</span>
+          ) : (
+            <span key={i} style={{ position: 'absolute', top: 0, left: `${left}%`, width: size, height: size * 1.5, background: colors[i % colors.length], borderRadius: 2, animation: `ba-rain ${dur}s linear ${delay}s infinite` }} />
+          );
+        })}
+      </div>
+
+      <motion.div
+        initial={{ scale: 0.5, opacity: 0, y: 30 }} animate={{ scale: 1, opacity: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 260, damping: 20 }}
+        style={{ position: 'relative', width: 'min(94vw, 460px)', maxHeight: '86vh', overflow: 'auto', background: DS.white, borderRadius: DS.radii.xl, padding: '28px 24px', textAlign: 'center', boxShadow: '0 30px 70px -20px rgba(0,0,0,0.5)', boxSizing: 'border-box' }}
+      >
+        <div style={{ fontSize: heroFont - 6, fontWeight: 800, color: DS.primaryDark, marginBottom: 4, fontFamily: "'Poppins', sans-serif" }}>Lab complete!</div>
+        <div style={{ fontSize: bodyFont, color: DS.gray700, marginBottom: 14 }}>
+          {summary.score}/{summary.total} predictions correct
+        </div>
+        {tier.showStars && (
+          <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 16 }}>
+            {Array.from({ length: 3 }).map((_, i) => (
+              <span key={i} style={{ fontSize: 40, opacity: i < summary.stars ? 1 : 0.25, animation: i < summary.stars ? `ba-star 0.5s ease ${i * 180}ms both` : 'none' }}>⭐</span>
+            ))}
+          </div>
+        )}
+        <div style={{ background: DS.primaryGhost, borderRadius: DS.radii.lg, padding: '14px 16px', textAlign: 'left', marginBottom: 18 }}>
+          <div style={{ fontWeight: 700, color: DS.primaryDark, fontSize: bodyFont - 1, marginBottom: 8 }}>🌟 What you have learned</div>
+          <ul style={{ margin: 0, paddingLeft: 18, color: DS.gray900, fontSize: bodyFont - 2, lineHeight: 1.6 }}>
+            {summary.learned.map((l, i) => (<li key={i}>{l}</li>))}
+          </ul>
+        </div>
+        <button onClick={onClose} style={{ ...ctaBtn(48), width: '100%' }}>Done</button>
+      </motion.div>
+    </motion.div>
   );
 };
 

@@ -621,9 +621,6 @@ const ThaliGame: React.FC<ThaliGameProps> = ({ grains, pebbles, tool, colors, sp
                         );
                     })}
                 </div>
-                <p style={{ textAlign: 'center', marginTop: 14, color: colors.subtle, fontWeight: 600, fontSize: 14 }}>
-                    Tap every grey pebble. Tap a wheat grain by mistake and you'll get a hint.
-                </p>
             </div>
 
             <div style={{ flex: '0 1 240px', minWidth: 220, display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -655,8 +652,10 @@ const ThaliGame: React.FC<ThaliGameProps> = ({ grains, pebbles, tool, colors, sp
                             ))}
                         </div>
                     </div>
-                    <span style={{ marginTop: 8, fontWeight: 800, color: colors.text, fontSize: 15 }}>
-                        Pebble bowl · {pickedCount}
+                    <span style={{ marginTop: 8, display: 'inline-flex', alignItems: 'center', gap: 8, fontWeight: 800, color: colors.text, fontSize: 15 }}>
+                        Pebble bowl
+                        <span aria-hidden style={{ flexShrink: 0, width: 3, height: 12, borderRadius: 2, background: 'currentColor', opacity: 0.35 }} />
+                        {pickedCount}
                     </span>
                 </div>
 
@@ -718,8 +717,11 @@ const PracticeFlow: React.FC<{ tool: any; colors: any; speed: number; bridge?: A
         <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12, marginBottom: 18 }}>
                 <div>
-                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontSize: 12, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: headColor }}>
-                        <Hand size={16} /> Round {round} · {cfg.pebbles} pebbles in {cfg.grains} wheat grains
+                    <span style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '2px 7px', fontSize: 12, fontWeight: 800, letterSpacing: 0.6, lineHeight: 1.4, textTransform: 'uppercase', color: headColor }}>
+                        <Hand size={16} style={{ flexShrink: 0 }} />
+                        <span>Round {round}</span>
+                        <span aria-hidden style={{ flexShrink: 0, width: 3, height: 11, borderRadius: 2, background: 'currentColor', opacity: 0.4 }} />
+                        <span>{cfg.pebbles} pebbles in {cfg.grains} wheat grains</span>
                     </span>
                     <h2 style={{ fontSize: 26, fontWeight: 800, margin: '6px 0 0' }}>
                         {round === 1 ? 'Pick the pebbles out' : 'Now the big pile'}

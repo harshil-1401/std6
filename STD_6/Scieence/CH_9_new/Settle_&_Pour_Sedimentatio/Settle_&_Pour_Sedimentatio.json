@@ -1,0 +1,137 @@
+{
+  "toolId": "M2.S7.T10.C39.2D1",
+
+  "title": "Settle and Pour Off the Clear Tea",
+  "description": "A guided kitchen simulation where the student separates tea leaves from tea in two steps. First they press Wait & settle and watch the heavier, insoluble leaves slowly sink and gather at the bottom as a dark band while clear tea forms on top (sedimentation). Then they pour gently, step by step, tilting the pan so only the clear upper tea flows into the waiting cup while the settled leaves stay behind (decantation). Pouring before the leaves have settled lifts the sediment and cloudy tea comes out — a built-in failure case that shows why the tilt must be slow and the leaves must settle first. A Learn walkthrough, a four-question Quiz, and a Daily-Life panel round out the tool.",
+  "context": "Grade 6 Science, in the chapter on methods of separation in everyday life (NCERT Curiosity). The tool renders the familiar kitchen scene of a pan of tea with the leaves still mixed through it, and turns the two-step separation into something the student performs and watches unfold. It teaches that sedimentation is the settling of heavier insoluble particles to the bottom of a still liquid, and that decantation is gently pouring off the clear upper liquid without disturbing that settled layer. It sits right after the class predicts whether you can just pour the tea out immediately, replacing the hands-on step of leaving the pan undisturbed and then carefully pouring; the deliberate fast-pour failure builds the deeper understanding that decantation only works once sedimentation has been allowed to finish.",
+  "teachingNotes": "Run it as predict-then-reveal. Before opening the tool, ask the class what would happen if you poured the tea straight away — let them commit a guess. Then have a student press Wait & settle and describe what happens to the leaves, and only once two layers have clearly formed, let them pour gently and watch clear tea reach the cup. Deliberately trigger the failure case — pour before settling, or yank fast — so the cup fills cloudy, then ask the class to state in their own words why the tilt must be slow. Pre-empt the misconception that decantation removes every particle: draw out that a few leaves still slip through, which is why a strainer (filtration) is used for a perfectly clear cup. The idea to land: settle first, then pour slowly — sedimentation must finish before decantation can work.",
+  "instructionsForStudent": "1. Press Wait & settle and watch the heavier tea leaves sink and gather in a dark band at the bottom while clear tea forms on top. 2. Wait until it reads Settled 100% and two layers have formed. 3. Now tap Pour gently, one step at a time, to tilt the pan and let only the clear tea run into the cup — the leaves stay behind. 4. Keep pouring gently until the cup is full of clear tea. 5. Try it the wrong way too: pour before the leaves have settled and watch cloudy tea come out — then press Reset and do it in the right order.",
+
+  "subtype": "simulation",
+  "conceptId": "M2.S7.T10.C39",
+  "relatedConceptIds": ["M2.S7.T10"],
+  "module": "Methods of separation in everyday life",
+
+  "placement": {
+    "beat": "Observe",
+    "where": "Sits right after the predict prompt on whether pouring the tea immediately would work; replaces the hands-on step of leaving the pan of tea undisturbed and then gently pouring the clear tea into a cup."
+  },
+
+  "sharedState": {
+    "fields": ["mode", "phase", "settle", "stepsCompleted", "totalSteps", "panVolume", "cupVolume", "clarity", "finished", "operatorMode", "depth", "stepCount", "muted"]
+  },
+
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+    },
+    "windowMethods": [
+      "setParam(name, value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "settle()",
+      "step(idOrArray)",
+      "decant()"
+    ]
+  },
+
+  "windowMethodNotes": {
+    "setParam(name, value)": "name is one of: muted (boolean), operatorMode ('ai'|'student'), mode ('learn'|'practice'|'real_world'|'hands_on').",
+    "play()": "If the leaves are not yet settled, runs sedimentation; otherwise advances the next gentle pour step.",
+    "pause()": "Stops the settling animation.",
+    "reset()": "Returns the pan to a fresh mixture — leaves suspended, cup empty, steps cleared.",
+    "highlight(target)": "Non-destructively pulses a nameable element (see validIds.highlightTargets). Does NOT settle, pour, or score.",
+    "getState()": "Returns the full state snapshot (also broadcast as {type:'state', state}).",
+    "setOperatorMode(mode)": "'ai' collapses to a focused demo: student controls hide, inputs go inert, and content goes LEAN (a 2-step pour). 'student' shows the full panel and the FULL 4-step pour. The settling pan, pouring stream, cup, and read-out stay visible in both. Reflected in getState().depth ('lean'|'full').",
+    "settle()": "Runs sedimentation — the heavy leaves sink and two layers form (settle -> 1).",
+    "step(idOrArray)": "Performs one OR several gentle pour steps (decantation). Pass a single step id (e.g. 's2'), an array (e.g. ['s1','s2','s3','s4']), or no argument to advance the next pending step. Pouring before settle >= 0.6 lifts the sediment and pours cloudy tea.",
+    "decant()": "Convenience verb: gently pours off all remaining clear tea for the current depth (runs the full settled pour in one call)."
+  },
+
+  "studentControls": [
+    { "control": "Mode tabs — Learn, Quiz, Daily Life, Hands-On", "effect": "Switches which panel is shown (hidden while the teacher is driving)." },
+    { "control": "Wait & settle button", "effect": "Lets the leaves sediment to the bottom until two layers form." },
+    { "control": "Pour gently button", "effect": "Advances the next gentle pour step so clear tea runs into the cup." },
+    { "control": "Reset button", "effect": "Starts the experiment over with the leaves mixed back through the tea." },
+    { "control": "Quiz answer buttons", "effect": "Tap an option to answer; instant feedback and an explanation appear." },
+    { "control": "Teacher | Your turn toggle", "effect": "Flips between the lean teacher demo and the full student practice." },
+    { "control": "Mute toggle (speaker icon)", "effect": "Turns the sound cues on or off." }
+  ],
+
+  "validIds": {
+    "pourSteps": ["s1", "s2", "s3", "s4"],
+    "pourStepNames": {
+      "s1": "tilt_gently",
+      "s2": "pour_steady",
+      "s3": "keep_pouring",
+      "s4": "almost_there"
+    },
+    "highlightTargets": ["pan", "cup", "leaves", "sediment", "tea", "settle", "pour", "s1", "s2", "s3", "s4"],
+    "modes": ["learn", "practice", "real_world", "hands_on"],
+    "operatorModes": ["ai", "student"],
+    "settableParams": ["muted", "operatorMode", "mode"],
+    "note": "In student (full) mode the pour is 4 steps (s1..s4); in teacher (lean) mode it is 2 steps (s1, s4). Any of s1..s4 is always a valid id to pass. operatorMode 'ai' collapses to the lean demo (controls hidden, depth='lean'); 'student' shows the full panel (depth='full')."
+  },
+
+  "answerKey": {
+    "procedure": {
+      "rule": "Settle the leaves first (settle -> 1), THEN pour gently in steps. Pouring while settle < 0.6 lifts the sediment and produces cloudy tea.",
+      "settleThreshold": 0.6,
+      "successCondition": "All pour steps for the current depth completed AFTER the leaves have settled -> clarity > 0.6 (clear tea decanted)."
+    },
+    "quiz": {
+      "0": { "correctOption": 1, "correctText": "Sedimentation", "why": "Sedimentation is the settling of the heavier insoluble solid to the bottom of a liquid." },
+      "1": { "correctOption": 0, "correctText": "Decantation", "why": "Removing the clear upper liquid by tilting the vessel is decantation." },
+      "2": { "correctOption": 1, "correctText": "So the settled leaves are not disturbed", "why": "A fast pour stirs the settled sediment back up, making the poured liquid cloudy." },
+      "3": { "correctOption": 1, "correctText": "False — a few may remain, so we use a strainer (filtration)", "why": "Decantation is not perfect; filtration gives a fully clear liquid." }
+    }
+  },
+
+  "props": {
+    "defaults": {
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false,
+      "initialMode": "learn",
+      "device": "mobile",
+      "showModeToggle": true,
+      "width": 0
+    },
+    "additionalProps": {
+      "leafCount": { "type": "number", "default": 14, "description": "Number of tea-leaf particles drawn in the pan." }
+    }
+  },
+
+  "events": [
+    { "name": "ready", "detail": "{ toolId }", "when": "On mount, after the message listener is attached." },
+    { "name": "settle_started", "detail": "{}", "when": "Sedimentation begins." },
+    { "name": "settled", "detail": "{ settle }", "when": "Leaves are fully settled and two layers have formed." },
+    { "name": "step_completed", "detail": "{ stepId, stepsCompleted, totalSteps }", "when": "A gentle pour step finishes." },
+    { "name": "poured_too_early", "detail": "{ stepId }", "when": "A pour happened before the leaves settled -> cloudy tea." },
+    { "name": "completed", "detail": "{ clarity, clear, cupVolume }", "when": "All pour steps for the current depth are done." },
+    { "name": "answer_correct", "detail": "{ questionIndex, picked }", "when": "A correct quiz answer is chosen." },
+    { "name": "answer_incorrect", "detail": "{ questionIndex, picked }", "when": "A wrong quiz answer is chosen." },
+    { "name": "operator_mode_changed", "detail": "{ operatorMode, depth, stepCount }", "when": "The mode is switched via the toggle, setOperatorMode, or the host." },
+    { "name": "reset", "detail": "{}", "when": "The experiment is reset." }
+  ],
+
+  "scientificFacts": [
+    "Sedimentation is the settling of heavier, insoluble particles to the bottom of a liquid when it is left undisturbed.",
+    "Decantation is gently pouring off the clear upper liquid, leaving the settled sediment behind.",
+    "You must settle first and pour slowly — pouring fast lifts the leaves and makes the liquid cloudy.",
+    "Decantation does not remove every particle; passing the liquid through a strainer (filtration) gives a fully clear result."
+  ],
+
+  "agentInstructions": {
+    "description": "<description>A kitchen simulation that separates tea leaves from tea in two steps: first the heavier insoluble leaves settle to the bottom (sedimentation), then the clear upper tea is gently poured off into a cup (decantation). Pouring before the leaves settle produces cloudy tea, showing why settling must finish first.</description>",
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS bring the tool on screen first, then call settle() and let the student watch the leaves sink and two layers form before you say anything. ALWAYS ask what the student OBSERVED happening to the leaves before you pour. ALWAYS then decant by calling step with the ordered ids as an array (step(['s1','s4']) in this lean demo) OR decant() to pour it all off gently, so clear tea flows into the cup. ALWAYS, at least once, demonstrate the failure by calling step('s1') BEFORE settle() so the cloudy-tea result appears, then ask why it went wrong. ALWAYS use highlight(target) with a valid target (pan, cup, sediment, tea) to point while you talk. NEVER pour before you have settled unless you are deliberately showing the failure. NEVER ask the student to operate the tool in this mode — you drive it.</teacher_tool_instruction>",
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS press Wait & settle first and watch the tea leaves sink to the bottom until two clear layers form. ALWAYS then tap Pour gently one step at a time and watch only the clear tea run into the cup while the leaves stay behind. ALWAYS try pouring before the leaves have settled at least once, and notice how cloudy tea comes out. ALWAYS be ready to explain WHY you must settle first and pour slowly.</student_tool_instruction>",
+    "teacherRealInstruction": "<teacher_real_instruction>A two-step sedimentation-and-decantation simulation for the tea-and-leaves separation. Reach for it when introducing how to separate an insoluble solid from a liquid by settling and pouring, in place of doing the pan-of-tea demonstration live. Use the deliberate fast-pour failure to show why the leaves must settle before you pour.</teacher_real_instruction>"
+  }
+}

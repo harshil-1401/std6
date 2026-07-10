@@ -90,6 +90,26 @@
        <polygon points="6 4 20 12 6 20 6 4" />
      </svg>
    );
+   const Volume2 = ({ size = 24, color = "currentColor", style }: IconProps) => (
+     <svg {...svgBase(size)} color={color} style={style}>
+       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+       <path d="M15.5 8.5a5 5 0 0 1 0 7" />
+       <path d="M18.5 5.5a9 9 0 0 1 0 13" />
+     </svg>
+   );
+   const VolumeX = ({ size = 24, color = "currentColor", style }: IconProps) => (
+     <svg {...svgBase(size)} color={color} style={style}>
+       <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" />
+       <line x1="23" y1="9" x2="17" y2="15" />
+       <line x1="17" y1="9" x2="23" y2="15" />
+     </svg>
+   );
+   const Flag = ({ size = 24, color = "currentColor", style }: IconProps) => (
+     <svg {...svgBase(size)} color={color} style={style}>
+       <path d="M4 21V4" />
+       <path d="M4 4h13l-2.5 4L17 12H4" />
+     </svg>
+   );
    
    /* ============================================================================
       Sieve Matching Board  —  Class 6 Science · "Methods of Separation"
@@ -104,6 +124,8 @@
    type Phase = "intro" | "explore";
    type GradeLevel = 6 | 7 | 8;
    type Status = "idle" | "wrong" | "correct";
+   type OperatorMode = "ai" | "student";
+   type Depth = "lean" | "full";
    
    interface Mixture {
      id: string;
@@ -128,6 +150,16 @@
        height?: number;
        data?: { config?: { mixtures?: Mixture[]; options?: SieveOption[] } };
        gradeLevel?: GradeLevel;
+       operatorMode?: OperatorMode;
+       muted?: boolean;
+       showModeToggle?: boolean;
+       darkMode?: boolean;
+       device?: "mobile" | "smartboard";
+       additionalProps?: {
+         operatorMode?: OperatorMode;
+         muted?: boolean;
+         showModeToggle?: boolean;
+       };
      };
      setStepDetails?: (s: {
        currentStep: number;
@@ -135,6 +167,152 @@
        isPaused: boolean;
        currentMode: string;
      }) => void;
+   }
+
+   /* the 2-4 short takeaways every finish screen must show (§6.3) */
+   const LEARNED_POINTS = [
+     "Sieving separates solids of different sizes using a mesh of holes.",
+     "Smaller pieces fall through the holes; bigger pieces stay on top.",
+     "The hole size must match the mixture — too fine or too coarse and it won't work.",
+     "A solid-in-liquid mixture (like tea) can't be sieved — the liquid just runs through.",
+   ];
+
+   /* --------------------------- Web Audio cues ------------------------------- */
+   function useAudio(muted: boolean) {
+     const ctxRef = useRef<AudioContext | null>(null);
+     const ensure = () => {
+       if (!ctxRef.current) ctxRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+       if (ctxRef.current.state === "suspended") ctxRef.current.resume();
+       return ctxRef.current;
+     };
+     const tone = (freq: number, type: OscillatorType, dur: number, delay = 0, vol = 0.16) => {
+       if (muted) return;
+       try {
+         const ac = ensure();
+         const o = ac.createOscillator();
+         const g = ac.createGain();
+         o.connect(g); g.connect(ac.destination);
+         o.frequency.value = freq; o.type = type;
+         const st = ac.currentTime + delay;
+         g.gain.setValueAtTime(0.0001, st);
+         g.gain.exponentialRampToValueAtTime(vol, st + 0.02);
+         g.gain.exponentialRampToValueAtTime(0.0001, st + dur);
+         o.start(st); o.stop(st + dur + 0.02);
+       } catch {}
+     };
+     return {
+       tap: () => tone(520, "sine", 0.09, 0, 0.12),
+       correct: () => { tone(587, "sine", 0.18, 0); tone(880, "sine", 0.22, 0.09); },
+       wrong: () => tone(180, "triangle", 0.26, 0, 0.14),
+       done: () => { [523, 659, 784, 1047].forEach((f, i) => tone(f, "sine", 0.3, i * 0.11, 0.18)); },
+     };
+   }
+
+   /* ------------------------- Teacher | Student toggle ----------------------- */
+   function ModeToggle({ mode, onChange, highlighted }: { mode: OperatorMode; onChange: (m: OperatorMode) => void; highlighted?: boolean }) {
+     return (
+       <div
+         data-hl="modeToggle"
+         style={{
+           display: "inline-flex", borderRadius: 12, padding: 4, gap: 4, background: DS.gray200,
+           border: `1px solid ${highlighted ? DS.accent : "rgba(0,0,0,0.06)"}`,
+           boxShadow: highlighted ? `0 0 0 3px ${DS.accent}55` : "none",
+           transition: "box-shadow 200ms ease",
+         }}
+       >
+         {(["ai", "student"] as const).map((m) => {
+           const sel = mode === m;
+           return (
+             <button
+               key={m}
+               type="button"
+               onClick={() => onChange(m)}
+               aria-pressed={sel}
+               style={{
+                 padding: "7px 13px", borderRadius: 9, border: "none", cursor: "pointer",
+                 fontFamily: "Poppins, sans-serif", fontWeight: 700, fontSize: 12.5,
+                 background: sel ? `linear-gradient(135deg, ${DS.primaryDark}, ${DS.primary})` : "transparent",
+                 color: sel ? DS.white : DS.gray700, transition: "all 180ms ease", whiteSpace: "nowrap",
+                 minHeight: 32,
+               }}
+             >
+               {m === "ai" ? "👩‍🏫 Teacher" : "🙋 Your turn"}
+             </button>
+           );
+         })}
+       </div>
+     );
+   }
+
+   /* ----------------------------- Star icon ----------------------------------- */
+   function StarIcon({ filled, delay = 0 }: { filled: boolean; delay?: number }) {
+     return (
+       <svg width={40} height={40} viewBox="0 0 24 24" style={{ animation: `smb-star-in 420ms cubic-bezier(.2,1.5,.4,1) ${delay}s both` }}>
+         <path
+           d="M12 2.5 14.8 8.6 21.5 9.4 16.6 13.9 18 20.6 12 17.2 6 20.6 7.4 13.9 2.5 9.4 9.2 8.6 Z"
+           fill={filled ? DS.amber : "none"}
+           stroke={filled ? "#B8790A" : DS.gray400}
+           strokeWidth={1.4}
+           strokeLinejoin="round"
+         />
+       </svg>
+     );
+   }
+
+   /* ================= Finish screen — full-screen star + learned panel (§6.3) === */
+   function FinishOverlay({
+     show, onClose, stars, score, total, learned,
+   }: { show: boolean; onClose: () => void; stars: number; score: number; total: number; learned: string[] }) {
+     if (!show) return null;
+     return (
+       <div
+         style={{
+           position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center",
+           background: "rgba(26,26,46,0.55)", backdropFilter: "blur(2px)", animation: "smb-fade-in 320ms ease both",
+         }}
+       >
+         <div style={{ position: "absolute", inset: 0, pointerEvents: "none" }}>
+           <Confetti n={70} />
+         </div>
+         <div
+           style={{
+             position: "relative", pointerEvents: "auto", maxWidth: 420, width: "88%", background: DS.white,
+             borderRadius: 26, padding: "30px 28px", boxShadow: "0 30px 70px rgba(0,0,0,.4)", textAlign: "center",
+             animation: "smb-pop-in 420ms cubic-bezier(.2,1.4,.4,1) both", boxSizing: "border-box",
+             fontFamily: "Poppins, sans-serif",
+           }}
+         >
+           <div style={{ display: "flex", justifyContent: "center", gap: 6, marginBottom: 8 }}>
+             {[0, 1, 2].map((i) => <StarIcon key={i} filled={i < stars} delay={0.2 + i * 0.12} />)}
+           </div>
+           <div style={{ fontSize: 26, fontWeight: 800, color: DS.gray900, margin: "4px 0 2px" }}>Well done!</div>
+           <div style={{ fontSize: 14, color: DS.gray700, fontWeight: 600, marginBottom: 16 }}>
+             {score}/{total} mixtures sieved correctly
+           </div>
+           <div style={{ textAlign: "left", background: DS.primaryGhost, borderRadius: 16, padding: "14px 16px", marginBottom: 20 }}>
+             <div style={{ fontWeight: 800, color: DS.primaryDark, fontSize: 12.5, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 8 }}>
+               What you have learned
+             </div>
+             {learned.map((pt, i) => (
+               <div key={i} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: i < learned.length - 1 ? 8 : 0 }}>
+                 <span style={{ color: DS.success, fontWeight: 800 }}>✓</span>
+                 <span style={{ color: DS.gray900, fontSize: 13.5, lineHeight: 1.5 }}>{pt}</span>
+               </div>
+             ))}
+           </div>
+           <button
+             onClick={onClose}
+             style={{
+               width: "100%", fontFamily: "Poppins, sans-serif", fontWeight: 700, border: "none", borderRadius: 9999,
+               cursor: "pointer", padding: "13px 20px", fontSize: 15, minHeight: 48, color: DS.white,
+               background: `linear-gradient(135deg, ${DS.accent}, ${DS.accentDark})`, boxShadow: "0 6px 16px rgba(255,114,18,.32)",
+             }}
+           >
+             Close
+           </button>
+         </div>
+       </div>
+     );
    }
    
    /* --------------------------- Design tokens ------------------------------- */
@@ -1183,7 +1361,9 @@
      const mixturesData = props.data?.config?.mixtures ?? MIXTURES;
      const optionsData = props.data?.config?.options ?? OPTIONS;
      const { isMobile, isNarrow } = useResponsive();
-   
+     const ap = props.additionalProps ?? {};
+     const showModeToggle = props.showModeToggle ?? ap.showModeToggle ?? true;
+
      const [seed, setSeed] = useState(() => Date.now());
      const [phase, setPhase] = useState<Phase>("intro");
      const [exampleIdx, setExampleIdx] = useState(0);
@@ -1194,6 +1374,30 @@
      const [hl, setHl] = useState<string | null>(null);      // agent highlight target
      const hlTimer = useRef<number | null>(null);
      const isHL = (name: string) => hl === name;
+
+     /* ---- operator mode (§6.1/§6.2): Teacher = agent-driven demo of ALL mixtures,
+        Student = full practice. Both show the full intro + all mixtures — Teacher
+        mode never trims content, it only swaps who drives (agent vs. taps). ---- */
+     const [operatorMode, setOperatorModeState] = useState<OperatorMode>(ap.operatorMode ?? props.operatorMode ?? "student");
+     const [muted, setMuted] = useState<boolean>(ap.muted ?? props.muted ?? false);
+     const depth: Depth = "full";
+     const isAI = operatorMode === "ai";
+     const audio = useAudio(muted);
+
+     /* ---- finish flow (§6.3) ---- */
+     const [finished, setFinished] = useState(false);
+     const [finishSummary, setFinishSummary] = useState<{ stars: number; score: number; total: number } | null>(null);
+
+     /* ---- interaction tracking for the uniform `finished` event ---- */
+     const startTimeRef = useRef<number>(Date.now());
+     const visitedRef = useRef<Set<string>>(new Set());
+     const attemptsRef = useRef(0);
+     const firstTryRef = useRef<Set<string>>(new Set());
+     const attemptedOnceRef = useRef<Set<string>>(new Set());
+     const hintsUsedRef = useRef(0);
+
+     useEffect(() => { if (props.operatorMode) setOperatorModeState(props.operatorMode); }, [props.operatorMode]);
+     useEffect(() => { if (props.muted !== undefined) setMuted(props.muted); }, [props.muted]);
    
      const STEPS: Phase[] = ["intro", "explore"];
      const stepIndex = STEPS.indexOf(phase);
@@ -1210,7 +1414,18 @@
          @keyframes smb-up { from { transform: translateY(12px); opacity: 0 } to { transform: translateY(0); opacity: 1 } }
          @keyframes smb-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
          @keyframes smb-ring { 0%,100%{ box-shadow: 0 0 0 3px ${DS.accent}, 0 0 0 3px rgba(255,114,18,0) } 50%{ box-shadow: 0 0 0 3px ${DS.accent}, 0 0 0 10px rgba(255,114,18,0) } }
+         @keyframes smb-fade-in { from { opacity: 0 } to { opacity: 1 } }
+         @keyframes smb-pop-in { from { opacity: 0; transform: scale(.85) translateY(10px) } to { opacity: 1; transform: scale(1) translateY(0) } }
+         @keyframes smb-star-in { from { opacity: 0; transform: scale(0) rotate(-30deg) } to { opacity: 1; transform: scale(1) rotate(0) } }
+         @keyframes smb-caption-pulse { 0%,100% { opacity: .78 } 50% { opacity: 1 } }
          .smb-hl { animation: smb-ring 1.05s ease-in-out infinite; border-radius: inherit; }
+         @media (orientation: landscape) {
+           .smb-explore-grid { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(280px, 1fr); gap: 18px; align-items: start; }
+         }
+         @media (prefers-reduced-motion: reduce) {
+           .smb-hl, [style*="smb-star-in"], [style*="smb-pop-in"] { animation: none !important; }
+           *[style*="animation"] { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+         }
        `;
        document.head.appendChild(style);
        return () => { document.querySelectorAll("style[data-smb]").forEach((s) => s.remove()); };
@@ -1219,7 +1434,7 @@
      useEffect(() => {
        setStepDetails?.({ currentStep: stepIndex, totalSteps: STEPS.length, isPaused: true, currentMode: "explore" });
      }, [stepIndex]); // eslint-disable-line
-   
+
      // The walkthrough only steps through the sieve-able (solid-solid) mixtures.
      // Any non-sieveable mixture (correct === "none") is filtered out here.
      const exploreMixtures = useMemo(() => mixtures.filter((m) => m.correct !== "none"), [mixtures]);
@@ -1228,6 +1443,9 @@
      const sieveVariantFor = (m: Mixture) => (m.correct === "none" ? "medium" : m.correct);
    
      const current = exploreMixtures[exampleIdx];
+     // Both Teacher and Student see the full set of mixtures — Teacher mode only
+     // changes who drives (agent commands vs. taps), never how much content shows.
+     const visibleMixtures = exploreMixtures;
 
      /* live mirror so agent commands always read the latest state */
      const emitEvent = (name: string, detail: any) => emit({ type: "event", name, detail });
@@ -1238,23 +1456,34 @@
        if (status[mixture.id] === "correct") return { ok: true, already: true, correct: true };
        setPicks((p) => ({ ...p, [mixture.id]: optId }));
        const correct = optId === mixture.correct;
+       attemptsRef.current += 1;
+       visitedRef.current.add(mixture.id);
+       const firstAttempt = !attemptedOnceRef.current.has(mixture.id);
+       attemptedOnceRef.current.add(mixture.id);
        emitEvent("answer_checked", { mixtureId: mixture.id, sieveId: optId, correct });
        if (correct) {
+         if (firstAttempt) firstTryRef.current.add(mixture.id);
          setStatus((s) => ({ ...s, [mixture.id]: "correct" }));
          setHints((h) => ({ ...h, [mixture.id]: "" }));
          setReplay((r) => ({ ...r, [mixture.id]: (r[mixture.id] || 0) + 1 }));
+         audio.correct();
          emitEvent("answer_correct", { mixtureId: mixture.id, sieveId: optId });
          const solved = exploreMixtures.filter((mm) => mm.id === mixture.id || status[mm.id] === "correct").length;
          if (solved >= exploreMixtures.length) emitEvent("completed", { score: solved, total: exploreMixtures.length });
        } else {
+         hintsUsedRef.current += 1;
          setStatus((s) => ({ ...s, [mixture.id]: "wrong" }));
          setHints((h) => ({ ...h, [mixture.id]: getHint(mixture, optId) }));
+         audio.wrong();
          emitEvent("answer_incorrect", { mixtureId: mixture.id, sieveId: optId, hint: getHint(mixture, optId) });
        }
        return { ok: true, correct };
      };
-   
-     const playAgain = () => {
+
+     /* ---- agent-only reset: returns to the very start. NEVER exposed as a
+        student "Play again" whole-tool loop (§6.3) — student's forward path
+        ends at Finish; only the agent (or a fresh mount) calls this. ---- */
+     const resetAll = () => {
        setSeed(Date.now());
        setPhase("intro");
        setExampleIdx(0);
@@ -1262,6 +1491,14 @@
        setStatus({});
        setHints({});
        setReplay({});
+       setFinished(false);
+       setFinishSummary(null);
+       startTimeRef.current = Date.now();
+       visitedRef.current = new Set();
+       attemptsRef.current = 0;
+       firstTryRef.current = new Set();
+       attemptedOnceRef.current = new Set();
+       hintsUsedRef.current = 0;
        emitEvent("reset", {});
      };
 
@@ -1279,8 +1516,51 @@
        if (idx < 0) return { ok: false, reason: "unknown mixture" };
        setPhase("explore");
        setExampleIdx(idx);
+       visitedRef.current.add(mixtureId);
        emitEvent("example_selected", { mixtureId });
        return { ok: true, index: idx };
+     };
+
+     /* ---- Teacher|Student mode switch — swaps who drives (agent vs. taps) and
+        hides/shows the tap controls; content depth stays "full" in both (§6.1/6.2) ---- */
+     const applyOperatorMode = (m: OperatorMode) => {
+       const v = m === "ai" ? "ai" : "student";
+       setOperatorModeState(v);
+       emitEvent("operator_mode_changed", { operatorMode: v, depth: "full" });
+       return { ok: true };
+     };
+
+     /* ---- Finish (student mode only) — the uniform end-of-tool event (§6.3) ---- */
+     const handleFinish = () => {
+       if (finished) return { ok: true, already: true };
+       const list: Mixture[] = live.current.exploreMixtures;
+       const score = list.filter((mm) => live.current.status[mm.id] === "correct").length;
+       const total = list.length;
+       const ratio = total > 0 ? score / total : 0;
+       const stars = total === 0 ? 0 : ratio >= 1 && hintsUsedRef.current === 0 ? 3 : ratio >= 1 ? 2 : ratio >= 0.5 ? 1 : 0;
+       const breakdown = list.map((mm) => ({ id: mm.id, correct: live.current.status[mm.id] === "correct", chose: live.current.picks[mm.id] ?? null }));
+       const durationMs = Date.now() - startTimeRef.current;
+       setFinished(true);
+       setFinishSummary({ stars, score, total });
+       audio.done();
+       emit({
+         type: "event",
+         name: "finished",
+         detail: {
+           evaluated: true,
+           score, total, stars,
+           breakdown,
+           interactions: {
+             attempts: attemptsRef.current,
+             correctFirstTry: firstTryRef.current.size,
+             hintsUsed: hintsUsedRef.current,
+             itemsExplored: Array.from(visitedRef.current),
+             durationMs,
+           },
+           learned: LEARNED_POINTS.slice(0, 4),
+         },
+       });
+       return { ok: true, score, total, stars };
      };
 
      const snapshot = () => ({
@@ -1290,22 +1570,32 @@
        solved: live.current.exploreMixtures.filter((mm: Mixture) => live.current.status[mm.id] === "correct").map((mm: Mixture) => mm.id),
        total: live.current.exploreMixtures.length,
        done: live.current.exploreMixtures.length > 0 && live.current.exploreMixtures.every((mm: Mixture) => live.current.status[mm.id] === "correct"),
+       operatorMode,
+       depth,
+       muted,
+       finished,
      });
 
      /* ---- The agent API: every windowMethod in the JSON lives here ---- */
      const api = {
-       setParam: (_n: string, _v: any) => ({ ok: true }),
+       setParam: (n: string, v: any) => {
+         if (n === "operatorMode") return applyOperatorMode(v);
+         if (n === "muted") { setMuted(!!v); return { ok: true }; }
+         return { ok: true };
+       },
        play: () => { const m = live.current.exploreMixtures[live.current.exampleIdx]; if (m) setReplay((r) => ({ ...r, [m.id]: (r[m.id] || 0) + 1 })); return { ok: true }; },
        pause: () => ({ ok: true }),
-       reset: () => { playAgain(); return { ok: true }; },
+       reset: () => { resetAll(); return { ok: true }; },
        highlight: doHighlight,
        getState: () => { const st = snapshot(); emit({ type: "state", state: st }); return st; },
-       start: () => { setPhase("explore"); setExampleIdx(0); emitEvent("example_selected", { mixtureId: live.current.exploreMixtures[0]?.id }); return { ok: true }; },
+       setOperatorMode: (mode: OperatorMode) => applyOperatorMode(mode),
+       finish: () => handleFinish(),
+       start: () => { setPhase("explore"); setExampleIdx(0); visitedRef.current.add(live.current.exploreMixtures[0]?.id); emitEvent("example_selected", { mixtureId: live.current.exploreMixtures[0]?.id }); return { ok: true }; },
        select: (mixtureId: string) => goToMixture(mixtureId),
        next: () => {
          const i = live.current.exampleIdx, list = live.current.exploreMixtures;
          if (live.current.status[list[i]?.id] !== "correct") return { ok: false, reason: "current not solved" };
-         if (i + 1 < list.length) { setExampleIdx(i + 1); emitEvent("example_selected", { mixtureId: list[i + 1].id }); return { ok: true }; }
+         if (i + 1 < list.length) { setExampleIdx(i + 1); visitedRef.current.add(list[i + 1].id); emitEvent("example_selected", { mixtureId: list[i + 1].id }); return { ok: true }; }
          return { ok: true, done: true };
        },
        prev: () => {
@@ -1339,8 +1629,10 @@
        return () => window.removeEventListener("message", onMsg);
      }, []);
    
-     /* styles */
-     const btnBase: React.CSSProperties = { fontFamily: "Poppins, sans-serif", fontWeight: 700, border: "none", borderRadius: 9999, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "13px 26px", fontSize: 16, minHeight: 50, transition: "transform 100ms ease, filter 120ms ease" };
+     /* styles — §7.4 device-target minimums: mobile ≥24px, smartboard ≥60x30 (primary CTA bigger) */
+     const deviceCtx = ap.device ?? props.device ?? "mobile";
+     const isSmartboard = deviceCtx === "smartboard";
+     const btnBase: React.CSSProperties = { fontFamily: "Poppins, sans-serif", fontWeight: 700, border: "none", borderRadius: 9999, cursor: "pointer", display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: isSmartboard ? "18px 30px" : "13px 26px", fontSize: isSmartboard ? 20 : 16, minHeight: isSmartboard ? 64 : 50, minWidth: isSmartboard ? 100 : undefined, transition: "transform 100ms ease, filter 120ms ease" };
      const primaryBtn: React.CSSProperties = { ...btnBase, background: `linear-gradient(135deg, ${DS.accent}, ${DS.accentDark})`, color: DS.white, boxShadow: "0 6px 16px rgba(255,114,18,.32)" };
      const ghostBtn: React.CSSProperties = { ...btnBase, background: DS.white, color: DS.primary, border: `2px solid ${DS.primaryLight}` };
      const disabledBtn: React.CSSProperties = { ...btnBase, background: DS.gray200, color: DS.gray400, cursor: "not-allowed", boxShadow: "none" };
@@ -1348,10 +1640,42 @@
      const cardShadow = "0 4px 18px rgba(0,0,0,.06)";
    
      return (
-       <div style={{ fontFamily: "Poppins, sans-serif", background: DS.gray100, minHeight: "100%", width: "100%", color: DS.gray900, boxSizing: "border-box" }}>
-   
-         <div style={{ maxWidth: 860, margin: "0 auto", padding: isMobile ? "16px 14px 30px" : "24px 24px 40px", boxSizing: "border-box" }}>
-           {/* ===================== STEP 1 — INTRO ===================== */}
+       <div style={{ fontFamily: "Poppins, sans-serif", background: DS.gray100, minHeight: "100%", maxHeight: "100dvh", overflow: isAI ? "hidden" : "auto", width: "100%", color: DS.gray900, boxSizing: "border-box" }}>
+
+         <div style={{ maxWidth: 860, margin: "0 auto", padding: isMobile ? "14px 14px 26px" : "20px 24px 36px", boxSizing: "border-box" }}>
+
+           {/* ===================== HEADER — title, Teacher|Student toggle, mute ===================== */}
+           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
+             <div style={{ fontWeight: 800, fontSize: isMobile ? 15 : 17, color: DS.primaryDark, display: "flex", alignItems: "center", gap: 8 }}>
+               <Sparkles size={18} color={DS.accent} /> Match the Sieve
+             </div>
+             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+               {showModeToggle && <ModeToggle mode={operatorMode} onChange={applyOperatorMode} highlighted={isHL("modeToggle")} />}
+               <button
+                 data-hl="muteButton"
+                 className={isHL("muteButton") ? "smb-hl" : ""}
+                 onClick={() => setMuted((m) => !m)}
+                 aria-label={muted ? "Unmute sound" : "Mute sound"}
+                 style={{
+                   width: isSmartboard ? 60 : 36, height: isSmartboard ? 60 : 36, borderRadius: 9999, border: `2px solid ${DS.primaryLight}`,
+                   background: DS.white, color: DS.primary, cursor: "pointer", display: "inline-flex",
+                   alignItems: "center", justifyContent: "center", flexShrink: 0,
+                 }}
+               >
+                 {muted ? <VolumeX size={17} /> : <Volume2 size={17} />}
+               </button>
+             </div>
+           </div>
+
+           {/* ===================== TEACHER (ai) — focused demo caption ===================== */}
+           {isAI && (
+             <div style={{ display: "flex", alignItems: "center", gap: 8, background: DS.primaryGhost, color: DS.primaryDark, borderRadius: 12, padding: "9px 14px", fontWeight: 700, fontSize: 13, marginBottom: 14, animation: "smb-caption-pulse 2.2s ease-in-out infinite" }}>
+               👩‍🏫 Your teacher is showing you this — watch, you'll get a turn
+             </div>
+           )}
+
+           {/* ===================== STEP 1 — INTRO (shown in both modes; Teacher mode
+               just has the agent call start() instead of the student tapping) ======= */}
            {phase === "intro" && (
              <div style={{ animation: "smb-up 380ms ease" }}>
                <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: DS.accentLight, color: DS.accentDark, padding: "6px 14px", borderRadius: 9999, fontWeight: 700, fontSize: 13, marginBottom: 14 }}>
@@ -1361,29 +1685,32 @@
                  You'll go through each mixture one at a time. Watch the live demo below, then start — for each one, pick the sieve whose holes match the pieces.
                </p>
    
-               <div style={{ background: DS.white, borderRadius: 18, padding: 14, boxShadow: cardShadow, marginBottom: 22 }}>
-                 <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
-                   <Play size={16} color={DS.primary} /> Sand + Pebbles through a coarse sieve
-                 </div>
-                 <SieveSimulation mixtureId="sand" sieveVariant="coarse" isLiquid={false} passLabel="sand falls through" stayLabel="pebbles stay" height={isMobile ? 200 : 240} loop />
-               </div>
-   
-               <div style={{ fontWeight: 800, fontSize: 14, color: DS.primaryDark, margin: "0 0 10px" }}>Your sieve options</div>
-               <div style={{ display: "grid", gridTemplateColumns: isNarrow ? "1fr 1fr" : "repeat(4,1fr)", gap: 12, marginBottom: 24 }}>
-                 {options.map((o) => (
-                   <div key={o.id} data-hl={o.id} className={isHL(o.id) ? "smb-hl" : ""} style={{ background: o.special ? DS.dangerBg : DS.white, border: `2px solid ${o.special ? DS.danger : DS.primaryLight}`, borderRadius: 16, padding: 12, textAlign: "center" }}>
-                     {o.special ? (
-                       <div style={{ height: isMobile ? 56 : 64, display: "flex", alignItems: "center", justifyContent: "center" }}><Ban size={40} color={DS.danger} /></div>
-                     ) : (
-                       <SieveIcon variant={o.id} size={isMobile ? 56 : 64} />
-                     )}
-                     <div style={{ fontWeight: 700, fontSize: 13, marginTop: 4 }}>{o.name}</div>
-                     <div style={{ fontSize: 11.5, color: DS.gray700 }}>{o.holes}</div>
+               <div className="smb-explore-grid">
+                 <div style={{ background: DS.white, borderRadius: 18, padding: 14, boxShadow: cardShadow, marginBottom: 22, boxSizing: "border-box" }}>
+                   <div style={{ fontWeight: 700, fontSize: 14, marginBottom: 8, display: "flex", alignItems: "center", gap: 8 }}>
+                     <Play size={16} color={DS.primary} /> Sand + Pebbles through a coarse sieve
                    </div>
-                 ))}
+                   <SieveSimulation mixtureId="sand" sieveVariant="coarse" isLiquid={false} passLabel="sand falls through" stayLabel="pebbles stay" height={isMobile ? 190 : 240} loop />
+                 </div>
+
+                 <div>
+                   <div style={{ fontWeight: 800, fontSize: 14, color: DS.primaryDark, margin: "0 0 10px" }}>Your sieve options</div>
+                   <div style={{ display: "grid", gridTemplateColumns: isNarrow ? "1fr 1fr" : "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
+                     {options.map((o) => (
+                       <div key={o.id} data-hl={o.id} className={isHL(o.id) ? "smb-hl" : ""} style={{ background: o.special ? DS.dangerBg : DS.white, border: `2px solid ${o.special ? DS.danger : DS.primaryLight}`, borderRadius: 16, padding: 12, textAlign: "center", boxSizing: "border-box" }}>
+                         {o.special ? (
+                           <div style={{ height: isMobile ? 56 : 64, display: "flex", alignItems: "center", justifyContent: "center" }}><Ban size={40} color={DS.danger} /></div>
+                         ) : (
+                           <SieveIcon variant={o.id} size={isMobile ? 56 : 64} />
+                         )}
+                         <div style={{ fontWeight: 700, fontSize: 13, marginTop: 4 }}>{o.name}</div>
+                         <div style={{ fontSize: 11.5, color: DS.gray700 }}>{o.holes}</div>
+                       </div>
+                     ))}
+                   </div>
+                   <button className={isHL("startButton") ? "smb-hl" : ""} style={primaryBtn} onClick={() => { setExampleIdx(0); setPhase("explore"); }}>Let's start <ChevronRight size={20} /></button>
+                 </div>
                </div>
-   
-               <button className={isHL("startButton") ? "smb-hl" : ""} style={primaryBtn} onClick={() => { setExampleIdx(0); setPhase("explore"); }}>Let's start <ChevronRight size={20} /></button>
              </div>
            )}
    
@@ -1398,11 +1725,12 @@
              return (
                <div style={{ animation: "smb-up 320ms ease" }} key={m.id}>
                  <SectionTitle n={2} label="Sieve each mixture" />
-   
-                 {/* example progress */}
+
+                 {/* example progress — shown in both modes so a Teacher demo also
+                     shows "Example X of 3" progress across all mixtures */}
                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 10, marginBottom: 14, flexWrap: "wrap" }}>
                    <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                     {exploreMixtures.map((mm, i) => (
+                     {visibleMixtures.map((mm, i) => (
                        <button
                          key={mm.id}
                          data-hl={mm.id}
@@ -1426,7 +1754,7 @@
                      Example {exampleIdx + 1} of {exploreMixtures.length} · {correctCount} solved
                    </span>
                  </div>
-   
+
                  <div data-hl="card" className={isHL("card") || isHL("sim") ? "smb-hl" : ""} style={{ background: DS.white, borderRadius: 20, padding: isMobile ? 16 : 22, boxShadow: cardShadow, border: `2px solid ${locked ? DS.success : st === "wrong" ? DS.danger : "transparent"}`, animation: st === "wrong" ? "smb-shake 380ms ease" : "none" }}>
                    <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 14 }}>
                      <MixtureIcon id={m.id} size={isMobile ? 76 : 90} />
@@ -1441,7 +1769,11 @@
                      )}
                    </div>
    
-                   {!locked ? (
+                   {!locked && isAI ? (
+                     <p style={{ fontWeight: 600, fontSize: 14, color: DS.gray700, margin: 0 }}>
+                       Watching for the teacher to pick a sieve for this mixture…
+                     </p>
+                   ) : !locked ? (
                      <>
                        <p style={{ fontWeight: 700, fontSize: isMobile ? 15 : 16, margin: "0 0 12px" }}>
                          Which option separates this mixture?
@@ -1480,9 +1812,11 @@
                          <span style={{ display: "inline-flex", alignItems: "center", gap: 6, background: m.correct === "none" ? DS.dangerBg : DS.primaryGhost, color: m.correct === "none" ? DS.danger : DS.primary, borderRadius: 9999, padding: "6px 14px", fontWeight: 700, fontSize: 13 }}>
                            {usedOpt?.name}
                          </span>
-                         <button className={isHL("replayButton") ? "smb-hl" : ""} style={{ ...smallBtn, background: DS.white, color: DS.primary, border: `2px solid ${DS.primaryLight}` }} onClick={() => setReplay((r) => ({ ...r, [m.id]: (r[m.id] || 0) + 1 }))}>
-                           <RotateCcw size={15} /> Watch again
-                         </button>
+                         {!isAI && (
+                           <button className={isHL("replayButton") ? "smb-hl" : ""} style={{ ...smallBtn, background: DS.white, color: DS.primary, border: `2px solid ${DS.primaryLight}` }} onClick={() => setReplay((r) => ({ ...r, [m.id]: (r[m.id] || 0) + 1 }))}>
+                             <RotateCcw size={15} /> Watch again
+                           </button>
+                         )}
                        </div>
                        <div style={{ marginTop: 12, background: DS.successBg, borderRadius: 12, padding: "12px 14px", display: "flex", gap: 8 }}>
                          <Check size={20} color={DS.successDeep} style={{ flexShrink: 0, marginTop: 1 }} />
@@ -1492,32 +1826,50 @@
                    )}
                  </div>
    
-                 {/* nav buttons */}
-                 <div style={{ marginTop: 18, display: "flex", justifyContent: "space-between", gap: 10 }}>
-                   <button
-                     className={isHL("prevButton") ? "smb-hl" : ""}
-                     style={{ ...ghostBtn, opacity: exampleIdx === 0 ? 0.4 : 1, cursor: exampleIdx === 0 ? "not-allowed" : "pointer" }}
-                     disabled={exampleIdx === 0}
-                     onClick={() => setExampleIdx((i) => Math.max(0, i - 1))}
-                   >
-                     <ChevronLeft size={18} /> Previous
-                   </button>
-                   {!isLast ? (
-                     <button className={isHL("nextButton") ? "smb-hl" : ""} style={locked ? primaryBtn : disabledBtn} disabled={!locked} onClick={() => setExampleIdx((i) => i + 1)}>
-                       Next example <ChevronRight size={20} />
+                 {/* nav buttons — student mode only; agent still drives via next()/prev()/select() (§3.3) */}
+                 {!isAI && (
+                   <div style={{ marginTop: 18, display: "flex", justifyContent: "space-between", gap: 10 }}>
+                     <button
+                       className={isHL("prevButton") ? "smb-hl" : ""}
+                       style={{ ...ghostBtn, opacity: exampleIdx === 0 ? 0.4 : 1, cursor: exampleIdx === 0 ? "not-allowed" : "pointer" }}
+                       disabled={exampleIdx === 0}
+                       onClick={() => setExampleIdx((i) => Math.max(0, i - 1))}
+                     >
+                       <ChevronLeft size={18} /> Previous
                      </button>
-                   ) : (
-                     <button className={isHL("nextButton") ? "smb-hl" : ""} style={locked ? primaryBtn : disabledBtn} disabled={!locked} onClick={playAgain}>
-                       <RotateCcw size={18} /> Play again
-                     </button>
-                   )}
-                 </div>
+                     {!isLast ? (
+                       <button className={isHL("nextButton") ? "smb-hl" : ""} style={locked ? primaryBtn : disabledBtn} disabled={!locked} onClick={() => setExampleIdx((i) => i + 1)}>
+                         Next example <ChevronRight size={20} />
+                       </button>
+                     ) : (
+                       /* ⛔ no "Play Again" whole-tool loop — the terminal student action is Finish (§6.3) */
+                       <button
+                         data-hl="finishButton"
+                         className={isHL("finishButton") ? "smb-hl" : ""}
+                         style={locked ? primaryBtn : disabledBtn}
+                         disabled={!locked || finished}
+                         onClick={handleFinish}
+                       >
+                         <Flag size={18} /> Finish
+                       </button>
+                     )}
+                   </div>
+                 )}
                </div>
              );
            })()}
          </div>
+
+         <FinishOverlay
+           show={finished}
+           onClose={() => setFinished(false)}
+           stars={finishSummary?.stars ?? 0}
+           score={finishSummary?.score ?? 0}
+           total={finishSummary?.total ?? 0}
+           learned={LEARNED_POINTS}
+         />
        </div>
      );
    }
-   
+
    export default SieveMatchingBoard;

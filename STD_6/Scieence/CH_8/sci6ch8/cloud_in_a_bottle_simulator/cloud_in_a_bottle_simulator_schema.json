@@ -1,0 +1,123 @@
+{
+  "toolId": "M5.S8.T17.T2D1",
+
+  "title": "Cloud in a bottle simulator",
+  "description": "The student squeezes and releases a sealed plastic bottle that holds a little warm water, first with no dust inside and then with a pinch of burnt-paper dust added, and watches whether a hazy cloud forms in the air space above the water. After predicting the outcome and testing both cases side by side, the student answers a short set of questions about why the dust matters, when the cloud actually appears, and how the same idea explains real clouds in the sky.",
+  "context": "Class 6 Science, in the chapter on water and clouds. This tool renders the well-known 'cloud in a bottle' classroom demonstration on screen: a closed bottle with a little warm water at the bottom holds air that is full of invisible water vapour; squeezing the bottle compresses and slightly warms that air, while releasing the squeeze lets it expand and cool. On its own, cooling does not make a visible cloud — the tool shows that a hazy cloud only appears once tiny dust particles are floating in the air for the water vapour to condense onto. This sits at the point in the lesson where students move from the general idea that water evaporates and condenses to the more precise idea that clouds need condensation nuclei, preparing them to connect the bottle to how real clouds form high in the sky.",
+  "teachingNotes": "Run it as predict-then-test: have the student commit a prediction for whether a clean, dust-free bottle will produce a cloud when squeezed and released, then let them actually test it — first with no dust (it stays clear), then with dust added (a cloud blooms on release). Draw out the contrast explicitly: the squeeze/release cycle and the cooling are identical in both tests — the only difference is the dust — so the dust must be what makes the cloud possible. Pre-empt the common misconception that the dust itself is the cloud, or that cooling alone is sufficient — the wrap screen states the rule plainly (cooling makes the vapour ready to condense; dust gives it something to condense onto) before the student moves into the quiz, which checks whether they can apply that same reasoning to real clouds forming from rising, cooling, dust-laden air.",
+  "instructionsForStudent": "Look at the closed bottle of warm water and predict whether squeezing and releasing a clean bottle with no dust will make a cloud appear. Squeeze the bottle all the way using the slider, then slide back to release it, and watch the air space stay clear. Tap to add a pinch of dust into the bottle, then squeeze and release again and watch a hazy cloud appear this time. Compare the two bottles side by side and read the rule that explains what happened. Answer the five quiz questions about what you saw, then press Finish to see your result.",
+
+  "subtype": "simulation",
+  "conceptId": "M5.S8.T17",
+  "relatedConceptIds": ["M5.S8.T17.O1"],
+  "module": "Condensation and cloud formation",
+
+  "placement": {
+    "beat": "Explain",
+    "where": "replaces the physical burnt-paper-and-bottle demonstration; use it to show why dust (condensation nuclei) is needed for a visible cloud, then let the student explore and quiz themselves on the idea"
+  },
+
+  "sharedState": { "fields": ["phase", "squeeze", "dustOn", "haze", "prediction", "quizScore", "operatorMode", "depth"] },
+
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "setSqueeze(value)",
+      "setDust(present)",
+      "gotoPhase(phase)",
+      "commitPrediction(choiceId)",
+      "choose(questionId,optionId)",
+      "submit()",
+      "finish()"
+    ]
+  },
+
+  "studentControls": [
+    { "control": "Drag the squeeze slider", "effect": "squeezes the bottle (compresses/warms the trapped air) or releases it (lets the air expand and cool); haze/cloud recomputes live" },
+    { "control": "Tap the dust switch", "effect": "adds or removes the burnt-paper dust (condensation nuclei) inside the bottle" },
+    { "control": "Tap a prediction card", "effect": "locks in a prediction for whether a clean bottle will make a cloud, on the Predict screen" },
+    { "control": "Tap Next / Back", "effect": "moves between the explore screens once that screen's test has been completed" },
+    { "control": "Tap a quiz answer", "effect": "locks in and instantly reveals whether that answer is correct" },
+    { "control": "Tap a numbered chip on the summary screen", "effect": "expands/collapses that question's explanation" },
+    { "control": "Tap the Teacher / Your turn toggle", "effect": "switches between the teacher demo view and the full student experience" },
+    { "control": "Tap the speaker icon", "effect": "mutes/unmutes sound cues" },
+    { "control": "Tap Finish", "effect": "ends the activity and opens the star finish screen (student mode only, after the quiz)" }
+  ],
+
+  "validIds": {
+    "highlightTargets": ["bottle", "squeezeSlider", "dustToggle"],
+    "phases": ["intro", "predict", "testNoDust", "testWithDust", "wrap", "quiz", "summary"],
+    "predictionChoices": ["cloudForms", "noCloud"],
+    "questionIds": ["whyDustNeeded", "whenCloudAppears", "noDustResult", "realClouds", "roleOfWater"],
+    "optionIds": ["a", "b", "c"],
+    "operatorModes": ["ai", "student"],
+    "squeezeValue": { "type": "continuous number", "min": 0, "max": 1, "note": "0 = fully released (cool air, no cloud possible), 1 = fully squeezed (warm, compressed air, always clear). Pass any value in between." }
+  },
+
+  "answerKey": {
+    "correctPrediction": "noCloud",
+    "correctQuizAnswers": {
+      "whyDustNeeded": "b",
+      "whenCloudAppears": "c",
+      "noDustResult": "a",
+      "realClouds": "c",
+      "roleOfWater": "b"
+    }
+  },
+
+  "props": {
+    "defaults": {
+      "themeColor": "#4A4DC9",
+      "darkMode": false,
+      "operatorMode": "student",
+      "device": "mobile",
+      "muted": false,
+      "showModeToggle": true
+    },
+    "additionalProps": {
+      "dustLabel": "burnt-paper dust",
+      "hazeColor": "#EAF1F6",
+      "seed": 42
+    }
+  },
+
+  "events": [
+    "ready",
+    "squeeze_changed",
+    "dust_toggled",
+    "cloud_formed",
+    "prediction_made",
+    "phase_changed",
+    "answer_checked",
+    "answer_correct",
+    "answer_incorrect",
+    "quiz_completed",
+    "operator_mode_changed",
+    "reset",
+    "finished"
+  ],
+
+  "scientificFacts": [
+    "Warm water evaporates and fills a sealed space with invisible water vapour.",
+    "When squeezed air is released, it expands and cools.",
+    "Cool, moist air needs tiny floating particles — dust or smoke, called condensation nuclei — for its vapour to condense onto and form visible droplets.",
+    "Real clouds form the same way: rising air cools and its vapour condenses onto tiny dust and smoke particles high in the sky."
+  ],
+
+  "agentInstructions": {
+    "description": "<description>Shows a squeezable bottle of warm water where releasing the squeeze cools the trapped air, and a visible cloud only forms once dust particles are added for the water vapour to condense onto.</description>",
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS start with setDust(false) and setSqueeze(1) to show the bottle squeezed with no dust, then call setSqueeze(0) and highlight(\"bottle\") to show that releasing a clean bottle stays clear. ALWAYS then call setDust(true), highlight(\"dustToggle\"), and setSqueeze(1) followed by setSqueeze(0) again to show the same release now producing a cloud. ALWAYS use highlight(\"squeezeSlider\") or highlight(\"dustToggle\") to point at the thing you are about to change before you change it. ALWAYS ask the student what they OBSERVED (\"what changed when the dust went in?\") before you explain why. NEVER call commitPrediction, gotoPhase, choose, submit, or finish in this mode — those are student actions and are not shown while operatorMode is \"ai\". NEVER ask the student to operate the slider or the dust switch in this mode.</teacher_tool_instruction>",
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS try squeezing the bottle fully and then releasing it with no dust first, and notice that it stays clear. ALWAYS add the dust, then squeeze and release again to see the cloud appear. ALWAYS make your prediction before you test it, and be ready to explain WHY the cloud only shows up with dust. ALWAYS answer every quiz question, then press Finish when you are done to see your result.</student_tool_instruction>",
+    "teacherRealInstruction": "<teacher_real_instruction>A cloud-in-a-bottle simulation for teaching that water vapour needs dust particles (condensation nuclei) to condense into a visible cloud. Use it in place of the physical burnt-paper-and-bottle demonstration, either to demonstrate live in Teacher mode or to let students explore and quiz themselves in Student mode.</teacher_real_instruction>"
+  }
+}

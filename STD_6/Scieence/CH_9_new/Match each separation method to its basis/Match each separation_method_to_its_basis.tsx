@@ -12,6 +12,9 @@
 // ============================================================================
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+// framer-motion is available in this codebase (used by sibling tools) — used here for the
+// Teacher/Student mode transition, the matched-pair settle, and the finish-screen celebration.
+import { motion, AnimatePresence } from 'framer-motion';
 
 // ── the tool fills its container (iframe) and lays out fluidly at any aspect ──
 const TOOL_ID = 'WISEFISH.2D1';
@@ -37,6 +40,8 @@ interface ToolProps {
   showHints?: boolean;
   pairs?: Pair[];
   animationSpeed?: number;
+  operatorMode?: 'ai' | 'student';
+  showModeToggle?: boolean;
   // tolerate the platform's nested shapes too
   props?: any;
   additionalProps?: any;
@@ -44,6 +49,12 @@ interface ToolProps {
 }
 
 type Mood = 'idle' | 'happy' | 'worried' | 'celebrate';
+type OperatorMode = 'ai' | 'student';
+
+// Teacher (ai) mode is a LEAN demo: one representative pair per kind of "basis" (size, wind,
+// magnetism, evaporation) so the teacher can show the idea once, fast. Student mode is FULL:
+// every method in the set. Same data, same code — only how much is surfaced changes (§6.2).
+const LEAN_IDS = ['handpicking', 'winnowing', 'evaporation', 'magnetic_separation'];
 
 // ============================================================================
 // DEFAULT CONTENT
@@ -214,6 +225,47 @@ const Mascot: React.FC<{ mood: Mood; pal: Palette; reduced: boolean; size?: numb
 };
 
 // ============================================================================
+// MODE TOGGLE — clickable, fully-styled Teacher | Student segmented control (§6.1)
+// ============================================================================
+const ModeToggle: React.FC<{ mode: OperatorMode; pal: Palette; hl: boolean; onChange: (m: OperatorMode) => void; device?: 'mobile' | 'smartboard' }> = ({ mode, pal, hl, onChange, device = 'mobile' }) => (
+  <div
+    data-hl="modeToggle"
+    role="tablist"
+    aria-label="Teacher or Student mode"
+    style={{
+      position: 'relative', display: 'flex', padding: 3, borderRadius: 14,
+      background: pal.panelHi, border: `1px solid ${pal.stroke}`, backdropFilter: 'blur(8px)',
+      animation: hl ? 'wf-hlpulse 1s infinite' : undefined,
+    }}
+  >
+    <motion.div
+      layout transition={{ type: 'spring', stiffness: 400, damping: 32 }}
+      style={{
+        position: 'absolute', top: 3, bottom: 3, left: mode === 'ai' ? 3 : '50%', width: 'calc(50% - 3px)',
+        borderRadius: 11, background: `linear-gradient(135deg, ${pal.gradA}, ${pal.gradB})`, boxShadow: `0 4px 14px -4px ${pal.accent2}`,
+      }}
+    />
+    {(['ai', 'student'] as OperatorMode[]).map(m => (
+      <button
+        key={m}
+        role="tab"
+        aria-selected={mode === m}
+        onClick={() => onChange(m)}
+        style={{
+          position: 'relative', zIndex: 1, border: 'none', background: 'transparent', cursor: 'pointer',
+          padding: device === 'smartboard' ? '11px 20px' : '7px 13px', borderRadius: 11, fontWeight: 800,
+          fontSize: device === 'smartboard' ? 15 : 12, whiteSpace: 'nowrap',
+          color: mode === m ? '#fff' : pal.textDim, transition: 'color .2s',
+          minHeight: device === 'smartboard' ? 44 : 30,
+        }}
+      >
+        {m === 'ai' ? '👩‍🏫 Teacher' : '🙋 Your turn'}
+      </button>
+    ))}
+  </div>
+);
+
+// ============================================================================
 // MAIN
 // ============================================================================
 function WiseFishMatcher(rawProps: ToolProps = {}) {
@@ -228,6 +280,15 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
 
   const pal = useMemo(() => buildPalette(themeColor, darkMode), [themeColor, darkMode]);
   const reduced = useReducedMotion();
+  // device context (§7.4/§8.1): 'mobile' targets >=24x24, 'smartboard' targets >=60x30 — read
+  // from props, default 'mobile' (safe for a phone-sized iframe).
+  const device: 'mobile' | 'smartboard' = merged.device === 'smartboard' ? 'smartboard' : 'mobile';
+
+  // ---- Teacher/Student operator mode (§6.1/§6.2) ----
+  const initialMode: OperatorMode = merged.operatorMode === 'ai' ? 'ai' : 'student';
+  const [mode, setMode] = useState<OperatorMode>(initialMode);
+  const depth: 'lean' | 'full' = mode === 'ai' ? 'lean' : 'full';
+  const showModeToggle = merged.showModeToggle !== false;
 
   // ---- game state ----
   const [selected, setSelected] = useState<string | null>(null);
@@ -237,24 +298,35 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
   const [wrongId, setWrongId] = useState<string | null>(null);
   const [correctId, setCorrectId] = useState<string | null>(null);
   const [hintId, setHintId] = useState<string | null>(null);
+  const [hintsUsed, setHintsUsed] = useState(0);
+  const [wrongEver, setWrongEver] = useState<Set<string>>(new Set());
   const [banner, setBanner] = useState<{ kind: 'ok' | 'bad' | 'info'; text: string }>({ kind: 'info', text: '' });
   const [mascot, setMascot] = useState<Mood>('idle');
   const [complete, setComplete] = useState(false);
+  const [finished, setFinished] = useState(false);
+  const [finishSummary, setFinishSummary] = useState<any>(null);
   const [paused, setPaused] = useState(false);
   const [muted, setMuted] = useState<boolean>(!!merged.muted);
   const [highlight, setHighlight] = useState<{ target: string; ts: number } | null>(null);
   const [confetti, setConfetti] = useState<{ x: number; y: number; c: string; id: number }[]>([]);
 
-  const slips = useMemo(() => seededShuffle(pairs, seed), [pairs, seed]);
-  const total = pairs.length;
-  const done = matched.size;
+  // ---- lean (Teacher) vs full (Student) content slice — same data, two depths (§6.2) ----
+  const activePairs = useMemo(
+    () => (depth === 'lean' ? pairs.filter(p => LEAN_IDS.includes(p.id)) : pairs),
+    [pairs, depth]
+  );
+  const slips = useMemo(() => seededShuffle(activePairs, seed), [activePairs, seed]);
+  const total = activePairs.length;
+  const done = useMemo(() => activePairs.filter(p => matched.has(p.id)).length, [activePairs, matched]);
   const progress = total ? (done / total) * 100 : 0;
-  const stars = Math.max(1, Math.min(3, Math.round((total / Math.max(attempts, total)) * 3)));
+  const stars = done === 0 ? 0 : Math.max(1, Math.min(3, Math.round((total / Math.max(attempts, total)) * 3)));
+  const allMatched = total > 0 && done >= total;
 
   const mutedRef = useRef(muted); mutedRef.current = muted;
   const confId = useRef(0);
   const stageRef = useRef<HTMLDivElement>(null);
   const acRef = useRef<AudioContext | null>(null);
+  const startedAtRef = useRef<number>(Date.now());
 
   useEffect(() => { injectKeyframes(); }, []);
 
@@ -317,26 +389,28 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
   // ------------------------------------------------------ CORE ACTIONS -------
   const doSelect = useCallback((id: string, fx?: number, fy?: number) => {
     if (matched.has(id)) return;
+    if (!activePairs.some(p => p.id === id)) return; // idempotent-safe: ignore ids outside the active (lean/full) set
     setSelected(prev => (prev === id ? prev : id));
     setHintId(null);
     setMascot('idle');
     setBanner({ kind: 'info', text: `${labelOf(pairs, id)} is on the hook — now tap its description.` });
     playCue('tap');
     evt('method_selected', { methodId: id });
-  }, [matched, pairs, playCue, evt]);
+  }, [matched, activePairs, pairs, playCue, evt]);
 
-  const finish = useCallback((nextMatched: Set<string>, atts: number) => {
+  const onAllMatched = useCallback((nextMatched: Set<string>, atts: number) => {
     setComplete(true);
     setMascot('celebrate');
     playCue('done');
     const acc = Math.round((total / Math.max(atts, 1)) * 100);
     evt('completed', { total, attempts: atts, correct: total, accuracy: acc });
+    evt('all_matched', { total, attempts: atts, accuracy: acc });
   }, [total, playCue, evt]);
 
   const doMatch = useCallback((methodId: string, descId: string, clientX?: number, clientY?: number) => {
     if (!methodId || !descId) return;
     if (matched.has(methodId) || matched.has(descId)) return; // idempotent-safe
-    if (!pairs.some(p => p.id === methodId) || !pairs.some(p => p.id === descId)) return;
+    if (!activePairs.some(p => p.id === methodId) || !activePairs.some(p => p.id === descId)) return;
 
     const ok = methodId === descId;
     const nextAttempts = attempts + 1;
@@ -358,24 +432,47 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
       else { const el = stageRef.current; const r = el?.getBoundingClientRect(); burst((r?.width || 640) / 2, (r?.height || 360) / 2); }
       window.setTimeout(() => setCorrectId(null), 1100);
       evt('answer_correct', { methodId });
+      evt('pair_matched', { leftId: methodId, rightId: descId });
       evt('item_placed', { itemId: methodId, matched: next.size, total });
-      if (next.size === total) window.setTimeout(() => finish(next, nextAttempts), 620);
+      const activeIds = activePairs.map(p => p.id);
+      const nextDone = activeIds.filter(id => next.has(id)).length;
+      if (nextDone === total) window.setTimeout(() => onAllMatched(next, nextAttempts), 620);
     } else {
       setWrongId(methodId);
       setStreak(0);
       setMascot('worried');
+      setWrongEver(prev => { const s = new Set(prev); s.add(methodId); return s; });
       const hp = pairs.find(p => p.id === methodId);
       setBanner({ kind: 'bad', text: showHints && hp ? `Not a match. Hint: ${hp.hint}` : 'Not a match — try another slip.' });
       playCue('wrong');
       evt('answer_incorrect', { methodId, descriptionId: descId });
+      evt('pair_incorrect', { leftId: methodId, rightId: descId });
       window.setTimeout(() => {
         setWrongId(null);
         setSelected(null);
         setMascot('idle');
-        if (showHints && hp) { setHintId(methodId); window.setTimeout(() => setHintId(null), 3200); }
+        if (showHints && hp) { setHintId(methodId); setHintsUsed(h => h + 1); window.setTimeout(() => setHintId(null), 3200); }
       }, 780);
     }
-  }, [matched, pairs, attempts, showHints, playCue, burst, evt, finish, total]);
+  }, [matched, activePairs, pairs, attempts, showHints, playCue, burst, evt, onAllMatched, total]);
+
+  const doClearMatch = useCallback((methodId: string) => {
+    if (!methodId) return;
+    if (!matched.has(methodId)) { if (selected === methodId) setSelected(null); return; } // idempotent-safe
+    setMatched(prev => { const s = new Set(prev); s.delete(methodId); return s; });
+    setComplete(false);
+    setBanner({ kind: 'info', text: `${labelOf(pairs, methodId)} unmatched — try it again.` });
+    evt('item_placed', { itemId: methodId, matched: matched.size - 1, total, cleared: true });
+  }, [matched, selected, pairs, evt, total]);
+
+  const doCheckMatches = useCallback(() => {
+    const activeIds = activePairs.map(p => p.id);
+    const nextDone = activeIds.filter(id => matched.has(id)).length;
+    const detail = { total, matched: nextDone, remaining: activeIds.filter(id => !matched.has(id)) };
+    evt('answer_checked', detail);
+    if (nextDone === total && total > 0) evt('all_matched', { total, attempts, accuracy: Math.round((total / Math.max(attempts, 1)) * 100) });
+    return detail;
+  }, [activePairs, matched, total, attempts, evt]);
 
   const doHighlight = useCallback((target: string) => {
     if (!target) return;
@@ -386,15 +483,66 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
   const doReset = useCallback(() => {
     setSelected(null); setMatched(new Set()); setAttempts(0); setStreak(0);
     setWrongId(null); setCorrectId(null); setHintId(null); setComplete(false);
+    setFinished(false); setFinishSummary(null); setHintsUsed(0); setWrongEver(new Set());
     setMascot('idle'); setConfetti([]); setHighlight(null);
     setBanner({ kind: 'info', text: '' });
+    startedAtRef.current = Date.now();
     evt('reset', {});
   }, [evt]);
 
+  // --- mode + depth switch: used by props, setOperatorMode, AND the clickable toggle (§6.1) ---
+  const applyMode = useCallback((m: OperatorMode) => {
+    setMode(prev => {
+      if (prev === m) return prev;
+      // switching depth changes which pairs are in play — clear progress silently (no 'reset' event;
+      // this is a mode change, not a student reset) so the new depth starts clean.
+      setSelected(null); setMatched(new Set()); setAttempts(0); setStreak(0);
+      setWrongId(null); setCorrectId(null); setHintId(null); setComplete(false);
+      setFinished(false); setFinishSummary(null); setHintsUsed(0); setWrongEver(new Set());
+      setConfetti([]); setHighlight(null); setBanner({ kind: 'info', text: '' });
+      startedAtRef.current = Date.now();
+      return m;
+    });
+    const nextDepth = m === 'ai' ? 'lean' : 'full';
+    evt('operator_mode_changed', { mode: m, depth: nextDepth });
+  }, [evt]);
+
+  const doFinish = useCallback(() => {
+    if (mode !== 'student') return; // Finish is a student-mode-only control (§6.3)
+    const activeIds = activePairs.map(p => p.id);
+    const score = activeIds.filter(id => matched.has(id)).length;
+    const correctFirstTry = activeIds.filter(id => matched.has(id) && !wrongEver.has(id)).length;
+    const acc = score / Math.max(total, 1);
+    const st = score === 0 ? 0 : acc >= 0.9 && attempts <= total + 1 ? 3 : acc >= 0.6 ? 2 : 1;
+    const breakdown = activePairs.map(p => ({ id: p.id, correct: matched.has(p.id) }));
+    const learned = [
+      'A mixture can be separated because its parts differ in size, weight, magnetism, or solubility.',
+      'Winnowing and sieving separate solids by size and weight; magnetic separation uses magnetism.',
+      'Evaporation, condensation, sedimentation, decantation and filtration separate a solid from a liquid in different ways.',
+    ];
+    const detail = {
+      evaluated: true,
+      score, total, stars: st,
+      breakdown,
+      interactions: {
+        attempts, correctFirstTry, hintsUsed,
+        itemsExplored: activePairs.filter(p => matched.has(p.id)).map(p => p.id),
+        durationMs: Date.now() - startedAtRef.current,
+      },
+      learned,
+    };
+    setFinishSummary(detail);
+    setFinished(true);
+    setMascot('celebrate');
+    playCue('done');
+    if (!reduced) { const el = stageRef.current; const r = el?.getBoundingClientRect(); burst((r?.width || 640) / 2, (r?.height || 360) / 2); }
+    evt('finished', detail);
+  }, [mode, activePairs, matched, wrongEver, total, attempts, hintsUsed, playCue, burst, reduced, evt]);
+
   // ---------------------------------------------------- STUDENT CLICKS -------
-  const onFish = (id: string, e: React.MouseEvent) => { if (paused) return; doSelect(id, e.clientX, e.clientY); };
+  const onFish = (id: string, e: React.MouseEvent) => { if (paused || mode !== 'student') return; doSelect(id, e.clientX, e.clientY); };
   const onSlip = (id: string, e: React.MouseEvent) => {
-    if (paused) return;
+    if (paused || mode !== 'student') return;
     if (!selected) { setBanner({ kind: 'info', text: 'Tap a fish (a method) first, then its description.' }); doHighlight('tank_methods'); return; }
     doMatch(selected, id, e.clientX, e.clientY);
   };
@@ -407,6 +555,7 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
         case 'darkMode': setDarkMode(!!value); break;
         case 'showHints': setShowHints(value !== false); break;
         case 'animationSpeed': case 'speed': setSpeed(Number(value) || 1); break;
+        case 'operatorMode': applyMode(value === 'ai' ? 'ai' : 'student'); break;
         default: break;
       }
     },
@@ -414,14 +563,23 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
     pause: () => setPaused(true),
     reset: () => doReset(),
     highlight: (target: string) => doHighlight(target),
-    getState: () => emit({ type: 'state', state: {
-      selected, matched: [...matched], attempts, streak, total, complete,
-      remaining: pairs.filter(p => !matched.has(p.id)).map(p => p.id),
-    } }),
-    // tool-specific
+    getState: () => {
+      const s = {
+        selected, matched: [...matched], attempts, streak, total, complete, finished,
+        remaining: activePairs.filter(p => !matched.has(p.id)).map(p => p.id),
+        operatorMode: mode, depth, hintsUsed,
+      };
+      emit({ type: 'state', state: s }); // for passive listeners
+      return s;                          // so the command response carries it too
+    },
+    setOperatorMode: (m: string) => applyMode(m === 'ai' ? 'ai' : 'student'),
+    // tool-specific (matching subtype, §3.4)
     select: (methodId: string) => doSelect(methodId),
     match: (methodId: string, descriptionId: string) => doMatch(methodId, descriptionId),
-  }), [selected, matched, attempts, streak, total, complete, pairs, doReset, doHighlight, doSelect, doMatch]);
+    clearMatch: (methodId: string) => doClearMatch(methodId),
+    checkMatches: () => doCheckMatches(),
+  }), [selected, matched, attempts, streak, total, complete, finished, activePairs, mode, depth, hintsUsed,
+       doReset, doHighlight, doSelect, doMatch, doClearMatch, doCheckMatches, applyMode]);
 
   const apiRef = useRef(api); apiRef.current = api;
 
@@ -434,7 +592,7 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
         const fn = (apiRef.current as any)[d.method];
         let result;
         if (typeof fn === 'function') result = fn(...(Array.isArray(d.args) ? d.args : []));
-        if (d.id != null) emit({ type: 'response', id: d.id, result });
+        emit({ type: 'response', id: d.id, result }); // echo id + return value so queries correlate
       } catch { /* never throw out of the handler */ }
     };
     window.addEventListener('message', onMsg);
@@ -443,6 +601,12 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
     return () => window.removeEventListener('message', onMsg);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // keep in sync if the host changes the mode via props (§6.1)
+  useEffect(() => {
+    if (merged.operatorMode && merged.operatorMode !== mode) applyMode(merged.operatorMode === 'ai' ? 'ai' : 'student');
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [merged.operatorMode]);
 
   // keep the platform's optional step callback fed (harmless if absent)
   useEffect(() => { rawProps?.setStepDetails?.({ currentStep: done, totalSteps: total, isComplete: complete }); }, [done, total, complete]); // eslint-disable-line
@@ -502,6 +666,10 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
 
           {/* progress + stars + streak */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(8px, 1.4vmin, 16px)', flexWrap: 'wrap' }}>
+            {showModeToggle && (
+              <ModeToggle mode={mode} pal={pal} hl={hlActive('modeToggle')} onChange={applyMode} device={device} />
+            )}
+
             <div data-hl="progress" style={{ ...glass(pal), padding: '8px 16px', display: 'flex', alignItems: 'center', gap: 12, animation: hlActive('progress') ? 'wf-hlpulse 1s infinite' : undefined }}>
               <div style={{ textAlign: 'right' }}>
                 <div style={{ fontSize: rs.cap, fontWeight: 700, letterSpacing: 1, color: pal.textFaint, textTransform: 'uppercase' }}>Pairs</div>
@@ -521,18 +689,28 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
             </div>
 
             <button data-hl="mute" onClick={() => { ensureAudio(); setMuted(m => !m); }} title={muted ? 'Unmute' : 'Mute'}
-              style={{ ...iconBtn(pal), animation: hlActive('mute') ? 'wf-hlpulse 1s infinite' : undefined }}>
+              style={{ ...iconBtn(pal, device), animation: hlActive('mute') ? 'wf-hlpulse 1s infinite' : undefined }}>
               {muted ? <IcoMute size={18} color={pal.text} /> : <IcoSound size={18} color={pal.text} />}
             </button>
-            <button onClick={() => setDarkMode(d => !d)} title="Toggle light / dark" style={iconBtn(pal)}>
+            <button data-hl="theme" onClick={() => setDarkMode(d => !d)} title="Toggle light / dark"
+              style={{ ...iconBtn(pal, device), animation: hlActive('theme') ? 'wf-hlpulse 1s infinite' : undefined }}>
               <span style={{ fontSize: 16 }}>{darkMode ? '🌙' : '☀️'}</span>
             </button>
-            <button data-hl="reset" onClick={doReset} title="Reset"
-              style={{ ...pillBtn(pal), animation: hlActive('reset') ? 'wf-hlpulse 1s infinite' : undefined }}>
-              <IcoReset size={15} color={pal.text} /> Reset
-            </button>
+            {mode === 'student' && (
+              <button data-hl="reset" onClick={doReset} title="Reset"
+                style={{ ...pillBtn(pal, device), animation: hlActive('reset') ? 'wf-hlpulse 1s infinite' : undefined }}>
+                <IcoReset size={15} color={pal.text} /> Reset
+              </button>
+            )}
           </div>
         </div>
+
+        {/* Teacher mode: focused demo caption — student controls are hidden below (§6.1) */}
+        {mode === 'ai' && (
+          <div style={{ flexShrink: 0, textAlign: 'center', fontSize: rs.hint, fontWeight: 700, color: pal.accent2, padding: '2px 0' }}>
+            👩‍🏫 Your teacher is showing you this — watch, you'll get a turn
+          </div>
+        )}
 
         {/* ── HINT / FEEDBACK LINE ── */}
         <div style={{
@@ -555,13 +733,13 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
         </div>
 
         {/* ── TWO TANKS ── (fill remaining height; stack vertically on very narrow screens) */}
-        <div className="wf-tanks">
+        <div className="wf-tanks" style={{ pointerEvents: mode === 'ai' ? 'none' : 'auto', opacity: mode === 'ai' ? 0.92 : 1 }}>
           {selected && !reduced && (
             <div style={{ position: 'absolute', top: -4, left: '50%', transform: 'translateX(-50%)', fontSize: rs.emoji, zIndex: 8, pointerEvents: 'none', animation: 'wf-hook .5s ease-out', filter: `drop-shadow(0 6px 10px ${pal.gradB})` }}>🪝</div>
           )}
           {/* TANK 1 — methods */}
           <Tank pal={pal} label="Methods" sub="Tap to hook a fish" emoji="🐠" hl={hlActive('tank_methods')}>
-            {pairs.map((p, i) => {
+            {activePairs.map((p, i) => {
               const isMatched = matched.has(p.id);
               const isSel = selected === p.id;
               const isWrong = wrongId === p.id;
@@ -648,16 +826,37 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
           </Tank>
         </div>
 
-        {/* ── CAUGHT STRIP ── */}
-        <div style={{ flexShrink: 0, minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', ...glass(pal), padding: '4px 14px' }}>
-          <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: pal.textFaint, whiteSpace: 'nowrap' }}>Caught</span>
-          {done === 0 && <span style={{ fontSize: 12, color: pal.textFaint }}>Your matched pairs will collect here.</span>}
-          {pairs.filter(p => matched.has(p.id)).map(p => (
-            <span key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 20, whiteSpace: 'nowrap', background: pal.successBg, border: `1px solid ${pal.successStroke}`, animation: reduced ? 'none' : 'wf-pop .4s ease' }}>
-              <span style={{ fontSize: 13 }}>{p.emoji}</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: pal.success }}>{p.method}</span>
-            </span>
-          ))}
+        {/* ── CAUGHT STRIP + FINISH ── */}
+        <div style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ flex: 1, minHeight: 44, display: 'flex', alignItems: 'center', gap: 8, overflowX: 'auto', ...glass(pal), padding: '4px 14px' }}>
+            <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1, textTransform: 'uppercase', color: pal.textFaint, whiteSpace: 'nowrap' }}>Caught</span>
+            {done === 0 && <span style={{ fontSize: 12, color: pal.textFaint }}>Your matched pairs will collect here.</span>}
+            {activePairs.filter(p => matched.has(p.id)).map(p => (
+              <span key={p.id} style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '4px 11px', borderRadius: 20, whiteSpace: 'nowrap', background: pal.successBg, border: `1px solid ${pal.successStroke}`, animation: reduced ? 'none' : 'wf-pop .4s ease' }}>
+                <span style={{ fontSize: 13 }}>{p.emoji}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: pal.success }}>{p.method}</span>
+              </span>
+            ))}
+          </div>
+
+          {/* ⭐ Finish — the LAST control, student-mode only; no "Play again" replay loop anywhere (§6.3) */}
+          {mode === 'student' && (
+            <button
+              data-hl="finish"
+              onClick={doFinish}
+              title="Finish and see your results"
+              style={{
+                flexShrink: 0, height: device === 'smartboard' ? 64 : 44, padding: device === 'smartboard' ? '0 28px' : '0 20px', borderRadius: 14, border: 'none', cursor: 'pointer',
+                fontWeight: 800, fontSize: device === 'smartboard' ? 17 : 14, color: '#fff', display: 'flex', alignItems: 'center', gap: 8,
+                background: `linear-gradient(135deg, ${pal.accent2}, ${pal.gradB})`,
+                boxShadow: allMatched ? `0 10px 26px -6px ${pal.accent2}` : '0 6px 16px -8px rgba(0,0,0,0.4)',
+                animation: !reduced && allMatched ? 'wf-glow 1.4s ease-in-out infinite' : hlActive('finish') ? 'wf-hlpulse 1s infinite' : undefined,
+                opacity: allMatched ? 1 : 0.88,
+              }}
+            >
+              🏁 Finish
+            </button>
+          )}
         </div>
 
       </div>{/* /content column */}
@@ -667,34 +866,67 @@ function WiseFishMatcher(rawProps: ToolProps = {}) {
           <div key={c.id} style={{ position: 'absolute', left: c.x, top: c.y, width: 10, height: 10, background: c.c, borderRadius: i % 2 ? '50%' : 2, zIndex: 30, pointerEvents: 'none', animation: `wf-confetti ${1.4 + Math.random()}s ease-in forwards`, transform: `rotate(${Math.random() * 360}deg)` }} />
         ))}
 
-        {/* completion overlay */}
-        {complete && (
-          <div style={{ position: 'absolute', inset: 0, zIndex: 40, display: 'grid', placeItems: 'center', padding: 24, background: 'rgba(3,14,28,0.66)', backdropFilter: 'blur(10px)', animation: 'wf-fade .3s ease' }}>
-            <div style={{ width: 'min(560px, 92%)', borderRadius: 28, padding: '38px 40px', textAlign: 'center', background: `linear-gradient(150deg, ${pal.gradA}, ${pal.accent})`, border: '1px solid rgba(252,145,69,0.4)', boxShadow: '0 40px 90px rgba(0,0,0,0.6)' }}>
-              <div style={{ fontSize: 66, marginBottom: 10, animation: reduced ? 'none' : 'wf-trophy .8s ease' }}>🏆</div>
-              <div style={{ color: '#fff', fontWeight: 900, fontSize: 30, marginBottom: 6 }}>Every fish caught!</div>
-              <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 15, marginBottom: 22, lineHeight: 1.55 }}>
-                You paired all <b style={{ color: pal.gradB }}>{total} methods</b> of separation in <b style={{ color: '#fff' }}>{attempts}</b> tries.
-              </div>
-              <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-                {[
-                  { label: 'Matched', value: total, icon: '✅' },
-                  { label: 'Tries', value: attempts, icon: '🎣' },
-                  { label: 'Accuracy', value: `${Math.round((total / Math.max(attempts, 1)) * 100)}%`, icon: '🎯' },
-                ].map((s, i) => (
-                  <div key={i} style={{ flex: 1, borderRadius: 16, padding: '12px 8px', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)' }}>
-                    <div style={{ fontSize: 22 }}>{s.icon}</div>
-                    <div style={{ color: '#fff', fontWeight: 900, fontSize: 22, lineHeight: 1.1 }}>{s.value}</div>
-                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{s.label}</div>
-                  </div>
-                ))}
-              </div>
-              <button onClick={doReset} style={{ width: '100%', border: 'none', borderRadius: 16, padding: '15px', color: '#fff', fontWeight: 800, fontSize: 16, cursor: 'pointer', background: `linear-gradient(135deg, ${pal.accent2}, ${pal.gradB})`, boxShadow: '0 12px 30px -8px rgba(252,145,69,0.7)' }}>
-                Play again
-              </button>
-            </div>
+        {/* all-matched ambient nudge (not the finish screen — just prompts the student to press Finish) */}
+        {complete && !finished && mode === 'student' && (
+          <div style={{ position: 'fixed', left: '50%', bottom: 'calc(env(safe-area-inset-bottom, 0px) + 12px)', transform: 'translateX(-50%)', zIndex: 35, padding: '10px 18px', borderRadius: 14, background: pal.successBg, border: `1px solid ${pal.successStroke}`, color: pal.success, fontWeight: 700, fontSize: 13, animation: reduced ? 'none' : 'wf-pop .4s ease', pointerEvents: 'none' }}>
+            🎉 Every fish caught! Tap <b>Finish</b> to see your results.
           </div>
         )}
+
+        {/* ⭐ FINISH SCREEN — full-viewport overlay (§7.4/§6.3): evaluating tool → star rating + "What you have learned" */}
+        <AnimatePresence>
+          {finished && finishSummary && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'grid', placeItems: 'center', padding: 24, background: 'rgba(3,14,28,0.72)', backdropFilter: 'blur(12px)' }}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.86, y: 24 }} animate={{ opacity: 1, scale: 1, y: 0 }}
+                transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+                style={{ width: 'min(560px, 92%)', maxHeight: '92dvh', overflowY: 'auto', borderRadius: 28, padding: '34px 36px', textAlign: 'center', background: `linear-gradient(150deg, ${pal.gradA}, ${pal.accent})`, border: '1px solid rgba(252,145,69,0.4)', boxShadow: '0 40px 90px rgba(0,0,0,0.6)', position: 'relative', boxSizing: 'border-box' }}
+              >
+                <button onClick={() => setFinished(false)} aria-label="Close" style={{ position: 'absolute', top: 14, right: 14, width: 32, height: 32, borderRadius: 10, border: 'none', background: 'rgba(255,255,255,0.14)', color: '#fff', cursor: 'pointer', fontSize: 16, lineHeight: 1 }}>×</button>
+
+                <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginBottom: 8 }}>
+                  {[0, 1, 2].map(i => (
+                    <motion.span key={i}
+                      initial={{ scale: 0, rotate: -30 }} animate={{ scale: 1, rotate: 0 }}
+                      transition={{ delay: 0.15 + i * 0.14, type: 'spring', stiffness: 300, damping: 14 }}
+                      style={{ fontSize: 44, filter: i < finishSummary.stars ? 'none' : 'grayscale(1) opacity(0.32)' }}
+                    >⭐</motion.span>
+                  ))}
+                </div>
+                <div style={{ color: '#fff', fontWeight: 900, fontSize: 28, marginBottom: 6 }}>
+                  {finishSummary.score === finishSummary.total ? 'Every fish caught!' : 'Nice work, angler!'}
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.85)', fontSize: 15, marginBottom: 20, lineHeight: 1.55 }}>
+                  You matched <b style={{ color: pal.gradB }}>{finishSummary.score}/{finishSummary.total}</b> methods correctly in <b style={{ color: '#fff' }}>{finishSummary.interactions.attempts}</b> tries.
+                </div>
+
+                <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
+                  {[
+                    { label: 'Score', value: `${finishSummary.score}/${finishSummary.total}`, icon: '✅' },
+                    { label: 'Tries', value: finishSummary.interactions.attempts, icon: '🎣' },
+                    { label: 'Hints used', value: finishSummary.interactions.hintsUsed, icon: '💡' },
+                  ].map((s, i) => (
+                    <div key={i} style={{ flex: 1, borderRadius: 16, padding: '12px 8px', background: 'rgba(255,255,255,0.12)', border: '1px solid rgba(255,255,255,0.18)' }}>
+                      <div style={{ fontSize: 22 }}>{s.icon}</div>
+                      <div style={{ color: '#fff', fontWeight: 900, fontSize: 22, lineHeight: 1.1 }}>{s.value}</div>
+                      <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: 11 }}>{s.label}</div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ textAlign: 'left', borderRadius: 18, padding: '16px 18px', background: 'rgba(255,255,255,0.10)', border: '1px solid rgba(255,255,255,0.16)' }}>
+                  <div style={{ color: '#fff', fontWeight: 800, fontSize: 13, letterSpacing: 0.4, textTransform: 'uppercase', marginBottom: 8 }}>⭐ What you have learned</div>
+                  <ul style={{ margin: 0, paddingLeft: 18, color: 'rgba(255,255,255,0.92)', fontSize: 13.5, lineHeight: 1.6 }}>
+                    {finishSummary.learned.map((l: string, i: number) => <li key={i}>{l}</li>)}
+                  </ul>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
     </div>
   );
 }
@@ -708,11 +940,15 @@ function descOf(pairs: Pair[], id: string) { return pairs.find(p => p.id === id)
 function glass(pal: Palette): React.CSSProperties {
   return { background: pal.panel, border: `1px solid ${pal.stroke}`, borderRadius: 14, backdropFilter: 'blur(8px)' };
 }
-function iconBtn(pal: Palette): React.CSSProperties {
-  return { width: 40, height: 40, borderRadius: 12, display: 'grid', placeItems: 'center', cursor: 'pointer', background: pal.panel, border: `1px solid ${pal.stroke}`, color: pal.text, backdropFilter: 'blur(8px)' };
+// device-aware minimum tap target (§7.4/§8.1): mobile >= 24x24, smartboard >= 60x30 (bigger
+// absolute footprint for arm's-length / shared touch on a large display).
+function iconBtn(pal: Palette, device: 'mobile' | 'smartboard' = 'mobile'): React.CSSProperties {
+  const size = device === 'smartboard' ? 60 : 40;
+  return { width: size, height: size, borderRadius: device === 'smartboard' ? 16 : 12, display: 'grid', placeItems: 'center', cursor: 'pointer', background: pal.panel, border: `1px solid ${pal.stroke}`, color: pal.text, backdropFilter: 'blur(8px)' };
 }
-function pillBtn(pal: Palette): React.CSSProperties {
-  return { display: 'inline-flex', alignItems: 'center', gap: 6, height: 40, padding: '0 14px', borderRadius: 12, cursor: 'pointer', fontWeight: 700, fontSize: 13, background: pal.panel, border: `1px solid ${pal.stroke}`, color: pal.text, backdropFilter: 'blur(8px)', fontFamily: 'inherit' };
+function pillBtn(pal: Palette, device: 'mobile' | 'smartboard' = 'mobile'): React.CSSProperties {
+  const h = device === 'smartboard' ? 60 : 40;
+  return { display: 'inline-flex', alignItems: 'center', gap: 6, height: h, padding: device === 'smartboard' ? '0 20px' : '0 14px', borderRadius: device === 'smartboard' ? 16 : 12, cursor: 'pointer', fontWeight: 700, fontSize: device === 'smartboard' ? 16 : 13, background: pal.panel, border: `1px solid ${pal.stroke}`, color: pal.text, backdropFilter: 'blur(8px)', fontFamily: 'inherit' };
 }
 function badge(bg: string, color: string, stroke?: string): React.CSSProperties {
   return { padding: '3px 9px', borderRadius: 9, fontSize: 10, fontWeight: 800, color, background: bg, border: stroke ? `1px solid ${stroke}` : 'none', whiteSpace: 'nowrap' };

@@ -1,0 +1,92 @@
+{
+  "toolId": "cloud_formation_tool",
+
+  "title": "Cloud in a bottle",
+  "description": "The student squeezes and releases two closed plastic bottles side by side on screen — one holding only plain water, the other holding water with a scrap of burnt paper floating in it. Every squeeze-and-release cycle plays out as one smooth, physically realistic animation on both bottles at once: squeezing narrows the bottle and clears any haze, and the instant it is released a soft white cloud blooms inside the burnt-paper bottle while the plain-water bottle stays perfectly clear. A progress meter fills by 25% with each completed squeeze and reaches 100% at 4 squeezes, which unlocks the Finish button. Each cycle is logged automatically as an 'I observe / I wonder' entry, and the student can also type in their own notes, building up a running observation log as they repeat the squeeze and watch the cloud thicken.",
+  "context": "Class 6 Science, the chapter on condensation and cloud formation. This is an on-screen version of the classic cloud-in-a-bottle demonstration, where warm water vapour trapped in a sealed bottle is made to condense into a visible cloud by squeezing and releasing the bottle. The tool renders two bottles side by side so the student can directly compare a bottle with nothing extra in it against a bottle with a pinch of smoke-producing burnt paper floating in the water, making the role of dust and smoke particles as condensation nuclei impossible to miss. It sits at the point in the lesson where students have already discussed evaporation and condensation and are ready to see why clouds need more than just cooling air to form.",
+  "teachingNotes": "Run the comparison, not just the release: always squeeze and release BOTH bottles side by side so the contrast is visible in the same moment, not recalled from memory. The pedagogical move is repeated observation — squeeze and release the required 4 times so the cloud in the burnt-paper bottle visibly thickens cycle over cycle while the plain bottle never changes at all, then ask the student to explain the difference in their own words before offering the nucleation explanation. Pre-empt the common misconception that squeezing itself makes the cloud (it is the OPPOSITE — squeezing clears it and releasing forms it) and the misconception that the burnt paper itself becomes the cloud (it does not; it only gives water vapour something to condense onto). Land the idea that a visible cloud needs three things together: water vapour, cooling air, and tiny particles (dust, smoke, salt) to condense onto — and that real clouds in the sky form exactly the same way.",
+  "instructionsForStudent": "Look at the two bottles: the left one has only water, the right one has water with a little burnt paper floating in it. Press 'Squeeze & release' and watch both bottles closely as they squeeze in and then let go. Notice that nothing ever happens in the left bottle, but a cloud blooms in the right bottle the moment it is released. Read the observation that gets added automatically after each squeeze, then keep pressing 'Squeeze & release' until the progress meter reaches 4 of 4 squeezes (100%), watching the cloud in the right bottle get thicker each time. Type your own observation or question into the log at any point if you notice something the automatic notes did not mention. Once the meter reaches 100%, press 'Finish' to see what you have learned.",
+
+  "subtype": "simulation",
+  "conceptId": "cloud-formation-condensation-nuclei",
+  "relatedConceptIds": ["evaporation-and-condensation", "water-cycle"],
+  "module": "Condensation and clouds",
+
+  "placement": {
+    "beat": "Observe",
+    "where": "replaces the physical cloud-in-a-bottle demonstration; use it to show that a visible cloud needs condensation nuclei (dust/smoke), not just cooling air"
+  },
+
+  "sharedState": { "fields": ["cycles", "requiredSqueezes", "progress", "primed", "squeeze", "dustDensity", "observationsCount", "operatorMode", "depth", "muted", "finished"] },
+
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "squeeze()",
+      "addObservation(text)",
+      "clearLog()",
+      "finish()"
+    ]
+  },
+
+  "studentControls": [
+    { "control": "Press 'Squeeze & release'", "effect": "plays one full squeeze-then-release animation on both bottles; a cloud blooms in the burnt-paper bottle on release, an observation is logged automatically, and the progress meter fills by 25% (up to 4 squeezes = 100%)" },
+    { "control": "Type a note in the observation log and press the + button (or Enter)", "effect": "adds the student's own observation to the log" },
+    { "control": "Press the small eraser icon on the observation log", "effect": "clears all logged notes without affecting the bottles, squeeze count or progress meter" },
+    { "control": "Tap the Teacher | Student toggle", "effect": "switches between the lean teacher-demo view and the full student practice view" },
+    { "control": "Tap the speaker icon", "effect": "mutes or unmutes the sound cues" },
+    { "control": "Press 'Finish' (student mode only, enabled once the progress meter reaches 4/4 squeezes / 100%)", "effect": "ends the activity and opens the full-screen 'what you have learned' summary" }
+  ],
+
+  "validIds": {
+    "highlightTargets": ["plainBottle", "dustBottle", "squeezeButton", "observationLog", "modeToggle", "muteButton", "finishButton"],
+    "operatorModes": ["ai", "student"],
+    "paramNames": ["muted", "operatorMode"]
+  },
+
+  "props": {
+    "defaults": { "operatorMode": "student", "showModeToggle": true, "themeColor": "#4A4DC9", "darkMode": false, "device": "mobile", "muted": false },
+    "additionalProps": {
+      "vapourCount": 30,
+      "dustCount": 9,
+      "cloudColor": "#FFFFFF",
+      "requiredSqueezes": 4,
+      "bottleLabels": { "plain": "Plain water", "dust": "Water + burnt paper" }
+    }
+  },
+
+  "events": [
+    "ready",
+    "squeezed",
+    "cloud_formed",
+    "observation_added",
+    "log_cleared",
+    "operator_mode_changed",
+    "reset",
+    "finished"
+  ],
+
+  "scientificFacts": [
+    "Water vapour condenses into visible droplets far more easily when it has a tiny surface — a dust, smoke or salt speck — to gather on; these specks are called condensation nuclei.",
+    "Squeezing a sealed bottle slightly warms the trapped air and keeps water vapour invisible; releasing the squeeze lets the air expand and cool, which is when condensation can happen.",
+    "A bottle with nothing but clean water and air can cool exactly the same way but will not show a visible cloud, because it has no particles for the vapour to condense onto.",
+    "Real clouds in the sky form the same way: rising air cools, and the water vapour it carries condenses onto countless tiny dust, smoke and salt particles floating in the atmosphere."
+  ],
+
+  "agentInstructions": {
+    "description": "<description>Shows two side-by-side bottles — one plain water, one with burnt paper floating in it — that are squeezed and released together; a visible cloud blooms only in the burnt-paper bottle, demonstrating that water vapour needs dust or smoke particles to condense on. A progress meter fills 25% per squeeze and reaches 100% (unlocking Finish, in student mode) after 4 squeezes.</description>",
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS call squeeze() to run one full squeeze-and-release cycle on both bottles at once; NEVER call setParam to try to fake the cloud directly. ALWAYS run squeeze() at least twice so the student sees the cloud in the dust bottle build up and can compare it against the plain bottle, which never changes. ALWAYS use highlight(\"plainBottle\") and highlight(\"dustBottle\") to draw attention to the contrast right after a squeeze() completes, before explaining why. ALWAYS ask the student what they OBSERVED in each bottle before you explain the reason. NEVER ask the student to press the squeeze button or add notes in this mode — that is your job here. Use play() only for a short automatic repeated-squeeze demonstration and pause() to stop it; prefer explicit squeeze() calls for a single clean cycle you can narrate over.</teacher_tool_instruction>",
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS press 'Squeeze & release' repeatedly, watching both bottles closely each time, until the progress meter reaches 4 of 4 squeezes (100%). ALWAYS compare what happens in the burnt-paper bottle to what happens in the plain-water bottle on the same squeeze. ALWAYS read the automatic observation added after each squeeze, and add your own note if you notice something different. ALWAYS think about WHY only one bottle clouds up before pressing Finish once it unlocks.</student_tool_instruction>",
+    "teacherRealInstruction": "<teacher_real_instruction>A two-bottle cloud-formation simulation for the 'clouds need condensation nuclei' teaching point. Use it in place of the physical cloud-in-a-bottle demonstration when live burnt paper and matches are impractical in the classroom.</teacher_real_instruction>"
+  }
+}

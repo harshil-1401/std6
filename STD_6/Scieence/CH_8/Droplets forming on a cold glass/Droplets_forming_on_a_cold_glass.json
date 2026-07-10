@@ -1,159 +1,122 @@
 {
-    "id": "M2.S3.T4.2D1",
-    "toolName": "condensation_glass_tool",
-    "version": "1.0.0",
-    "type": "2d_tool",
-    "subtype": "image_reveal",
-    "title": "Droplets forming on a cold glass",
-    "concept_id": "M2.S3.T4.C12",
-    "related_concept_ids": ["M2.S3.T4.C13"],
-    "reused_in_topics": [],
-    "description": "An interactive before-and-after time-lapse where students start a cold ice-water glass and watch tiny droplets appear on its outer surface and merge into bigger drops as time advances. Replaces the hands-on observation so students can scrub time and feel the surface change.",
-    "context": "Class 6 physics, observing a cold tumbler: a glass of cold ice water is left undisturbed and tiny droplets appear on its outer surface and join into bigger drops, replacing the hands-on activity so students can scrub time and feel the surface change.",
-    "2d_tool_url": "./condensation_glass_tool.tsx",
-    "2d_tool_json": "./condensation_glass_tool_schema.json",
-  
-    "theme": {
-      "design_system": "Singularity",
-      "font": "Poppins",
-      "primary": "#4A4DC9",
-      "accent": "#FF7212",
-      "deep_purple": "#533086",
-      "soft_orange": "#FC9145",
-      "light_purple": "#C1C1EA",
-      "light_cream": "#FFF3E4",
-      "gradient": "linear-gradient(135deg, #533086 0%, #FC9145 100%)",
-      "button_shape": "pill (border-radius 999px, 12px x 24px padding)",
-      "states": ["enabled", "disabled", "hover", "pressed"],
-      "responsive": "Fluid layout: card max-width capped by `width`, SVG scales via viewBox, panels wrap, fonts use clamp()."
+  "toolId": "condensation_glass_tool",
+
+  "title": "Cold glass condensation time-lapse",
+  "description": "The student watches (or scrubs through) a several-minute time-lapse of a tumbler of ice-cold water sitting out on a table: its outer surface starts perfectly dry, then tiny droplets nucleate one by one, swell, and merge into bigger drops that slide down the glass while a faint misty haze spreads across it and the ice inside gradually melts. A 'touch the outer surface' action lets the student confirm, at any moment on the timeline, that the glass has turned cold and wet on the outside even though no water was poured on it.",
+  "context": "Grade 6 Science, States of Water / Water Around Us. This tool renders on-screen the familiar kitchen and dining-table observation of a chilled glass 'sweating': moisture appears on the dry outside of a cold tumbler even though nothing touched it from the outside. It matters because it is most students' first hands-on encounter with condensation — water vapour that was already present, invisibly, in the surrounding warm air, cooling against the cold glass surface and turning back into visible liquid droplets. The tool sits in the observe-and-notice part of the chapter, before the word 'condensation' and its explanation are formally introduced, so the student first watches the phenomenon build up over time and physically registers that the surface feels cold and wet, which the next part of the lesson explains.",
+  "teachingNotes": "Run this as a predict-then-observe demonstration: before pressing play, ask the student what they expect to see on the dry outside of the glass, since many will predict 'nothing' or assume any water must have come from inside the glass leaking through. Then play (or scrub) the time-lapse and let the droplets visibly nucleate, grow and merge, drawing attention to the ice slowly melting and the faint fog thickening on the glass. Use the touch-the-surface action once the surface is visibly wet to land the 'cold AND wet' sensory detail, and contrast it with the very start of the timeline where the glass was dry. Pre-empt the common misconception that the droplets are water that leaked or 'sweated' out through the glass from the ice water inside — the glass itself does not leak; the water was already in the air around the glass. The idea to land: water vapour in the air condenses into liquid droplets when it touches a surface cold enough to cool it down, and this is completely separate from the water sealed inside the glass.",
+  "instructionsForStudent": "1) Look at the glass at the very start of the timeline and notice that its outside is completely dry. 2) Predict out loud what you think will happen to the dry outside over the next few minutes. 3) Press Play and watch the time-lapse run, or drag the time slider yourself to move forward and backward through it. 4) Notice the tiny droplets appearing, growing bigger, and merging into drops that slide down, and notice the ice cubes inside slowly melting. 5) Once the surface looks wet, tap 'Touch the outer surface' to reveal how it actually feels. 6) Try scrubbing back to the start and forward again to compare the dry and wet states side by side. 7) When you have explored the whole time-lapse, tap 'Finish' to see a summary of what you noticed.",
+
+  "subtype": "simulation",
+  "conceptId": "M6.SOW.CONDENSATION",
+  "relatedConceptIds": ["M6.SOW.EVAPORATION", "M6.SOW.WATER_CYCLE"],
+  "module": "States of Water",
+
+  "placement": {
+    "beat": "Observe",
+    "where": "Before the term 'condensation' is introduced, the agent (or the student) runs the cold-glass time-lapse so droplets are noticed forming on a surface that started dry, setting up the explanation that follows. This is a non-evaluating explore/observe tool — there is no right or wrong action, only noticing and predicting."
+  },
+
+  "sharedState": { "fields": ["elapsedMinutes", "dropletCount", "dropletSize", "surfaceWet", "running", "touched", "operatorMode", "depth", "muted", "finished"] },
+
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
     },
-  
-    "parameters": {
-      "width": { "type": "number", "default": 780, "description": "Maximum card width in px; layout stays fluid below this." },
-      "height": { "type": "number", "default": 620, "description": "Advisory height; the stage is driven by the SVG viewBox." },
-      "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Primary (indigo) colour." },
-      "accentColor": { "type": "string", "default": "#FF7212", "description": "Accent (orange) colour for the touch action and wet-surface state." },
-      "darkMode": { "type": "boolean", "default": false, "description": "Dark theme toggle." },
-      "animationSpeed": { "type": "number", "default": 1, "description": "Playback speed multiplier for the time-lapse." },
-      "showControls": { "type": "boolean", "default": true, "description": "Show Play / Pause / Reset buttons." },
-      "showTimeSlider": { "type": "boolean", "default": true, "description": "Show the 0-to-max scrub slider." },
-      "showTouchButton": { "type": "boolean", "default": true, "description": "Show the 'Touch the outer surface' button." },
-      "showBeatBadge": { "type": "boolean", "default": true, "description": "Show the Predict / Observe teaching-beat badge." }
-    },
-  
-    "additionalProps": {
-      "maxMinutes": { "type": "number", "default": 5, "description": "Length of the time-lapse in minutes (slider range 0..maxMinutes)." },
-      "dropletCount": { "type": "number", "default": 26, "range": "6-80", "description": "Total droplets that can appear on the outer surface." },
-      "iceCubeCount": { "type": "number", "default": 4, "range": "0-8", "description": "Floating ice cubes in the water." },
-      "waterColor": { "type": "string", "default": "#BFE3F5", "description": "Pale-blue water colour." },
-      "glassTint": { "type": "string", "default": "#EAF6FC", "description": "Glass body tint." },
-      "startWet": { "type": "boolean", "default": false, "description": "Begin at maxMinutes with the surface already covered in droplets." },
-      "autoStart": { "type": "boolean", "default": false, "description": "Begin playing immediately on mount." },
-      "fullRunSeconds": { "type": "number", "default": 9, "description": "Real seconds taken for a full 0->maxMinutes play (before animationSpeed)." },
-      "highlightTarget": { "type": "string", "enum": ["glass", "droplets", "ice", "surface", null], "default": null, "description": "Visually emphasise part of the scene (used by agent highlight())." },
-      "instruction": { "type": "string", "default": "Predict what happens on the dry outside of the cold glass, then play the timer and watch droplets appear and grow.", "description": "Override the student instruction line." }
-    },
-  
-    "placement": {
-      "beat": "Observe",
-      "where": "replaces the hands-on activity of observing droplets on a cold ice-water tumbler"
-    },
-  
-    "shared_state": {
-      "fields": ["elapsedMinutes", "dropletCount", "dropletSize", "surfaceWet", "running"],
-      "schema": {
-        "elapsedMinutes": "number — current time on the time-lapse (0..maxMinutes)",
-        "dropletCount": "number — how many droplets are currently visible on the surface",
-        "dropletSize": "number — average current droplet radius (grows as drops merge)",
-        "surfaceWet": "boolean — true once droplets have started forming",
-        "running": "boolean — whether the time-lapse is playing"
-      }
-    },
-  
-    "agent_control": {
-      "postmessage": {
-        "in": "{ type:'command', method, args }",
-        "out": ["{ type:'state', state }", "{ type:'event', name, detail }"]
-      },
-      "window_namespace": "window.__condensationTool",
-      "window_tool_methods": [
-        "setParam(name,value)  — name in: elapsedMinutes | running | surfaceWet",
-        "play()",
-        "pause()",
-        "reset()",
-        "highlight(target)  — target in: glass | droplets | ice | surface | null",
-        "getState()  — returns the shared_state object"
-      ],
-      "events": [
-        "touch_surface  — emitted when the student touches the outer surface",
-        "state — current shared_state (emitted continuously and on getState)"
-      ]
-    },
-  
-    "student_controls": [
-      { "control": "Play / Pause / Reset buttons", "effect": "Runs, halts, or restarts the time-lapse of droplets forming on the glass." },
-      { "control": "Time slider (0 to maxMinutes)", "effect": "Scrubs forward so droplets appear and grow, or back so the surface returns to dry." },
-      { "control": "Touch-surface button", "effect": "Reveals a cue that the outer surface feels cold and wet at that moment." }
-    ],
-  
-    "visual_spec": {
-      "layout": "Single tumbler centred on a soft purple-to-cream stage with a live time readout and stat cards; droplets appear on the outside and grow as time advances.",
-      "objects": [
-        { "name": "glass tumbler", "count": 1, "shape": "tall tapered cylinder", "color": "clear glass, pale-blue water", "state": "cold, droplets forming over time", "position": "centre on a table", "relative_size": "main object" },
-        { "name": "ice cubes", "count": 4, "shape": "rounded cubes", "color": "white-blue", "state": "floating, gently bobbing", "position": "top of the water", "relative_size": "small, floating" },
-        { "name": "outer droplets", "count": 24, "shape": "round, growing to elongated drops", "color": "clear/blue-white", "state": "appearing, growing and merging; big drops slide down with a trail", "position": "outer glass surface", "relative_size": "small, increasing" }
-      ],
-      "palette": "clear glass, pale blue water, white-blue ice, indigo/orange UI accents",
-      "scientific_facts": [
-        "The outer surface starts dry and gains droplets over time.",
-        "Tiny droplets merge into bigger drops as time passes.",
-        "The outer surface feels cold and wet once droplets form."
-      ]
-    },
-  
-    "teaching_notes": "At Predict, ask what will appear on the dry outside; play at Observe to reveal growing droplets; explain condensation in the next topic.",
-    "instructions_for_student": "Predict what happens on the dry outside of the cold glass, then play the timer and watch droplets appear and grow.",
-  
-    "tool_call_examples": [
-      {
-        "name": "Default observe (Predict -> Observe)",
-        "frontend_action": "show_interactive_tool",
-        "data": {
-          "toolName": "condensation_glass_tool",
-          "parameters": {}
-        },
-        "instructions_for_student": "Predict, then play and watch the droplets form."
-      },
-      {
-        "name": "Show the finished, fully-wet glass",
-        "data": {
-          "toolName": "condensation_glass_tool",
-          "parameters": { "additionalProps": { "startWet": true } }
-        },
-        "instructions_for_student": "This is how the glass looks after a few minutes — covered in droplets."
-      },
-      {
-        "name": "Faster time-lapse with more droplets",
-        "data": {
-          "toolName": "condensation_glass_tool",
-          "parameters": {
-            "animationSpeed": 1.5,
-            "additionalProps": { "dropletCount": 40, "fullRunSeconds": 6 }
-          }
-        },
-        "instructions_for_student": "Watch a busier surface fill up quickly."
-      },
-      {
-        "name": "Minimal display for a focused observation",
-        "data": {
-          "toolName": "condensation_glass_tool",
-          "parameters": {
-            "showControls": false,
-            "showTimeSlider": false,
-            "additionalProps": { "autoStart": true, "highlightTarget": "droplets" }
-          }
-        },
-        "instructions_for_student": "Just watch — the droplets are highlighted as they grow."
-      }
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "scrub(minutes)",
+      "touchSurface()",
+      "finish()"
     ]
+  },
+
+  "studentControls": [
+    { "control": "Play / Pause button", "effect": "Runs or halts the time-lapse of droplets forming on the cold glass at the current speed." },
+    { "control": "Time slider (0 to the maximum minutes)", "effect": "Scrubs to any moment on the timeline — forward so more droplets appear and merge, or back so the surface returns toward dry." },
+    { "control": "Reset button", "effect": "Returns the glass to the dry, ice-full starting moment (agent-only reset also clears touch/progress)." },
+    { "control": "Touch-the-outer-surface button", "effect": "Reveals a result card describing how the outside of the glass feels at the current moment (cold and wet, once droplets have formed)." },
+    { "control": "Tap the Teacher | Your turn toggle", "effect": "Switches between the teacher's focused demo view (stage only, controls hidden) and the full student exploration view (slider, buttons, touch action, notes shown)." },
+    { "control": "Tap the mute icon", "effect": "Mutes or unmutes the tap/touch/finish sound cues." },
+    { "control": "Tap 'Finish' (student mode, after some exploration)", "effect": "Ends the session and opens a 'What you have noticed' summary screen (no score, since this tool has no right/wrong answer)." }
+  ],
+
+  "validIds": {
+    "highlightTargets": ["glass", "droplets", "ice", "surface", "timeSlider", "playButton", "touchButton", "modeToggle", "muteButton", "finishButton"],
+    "operatorModes": ["ai", "student"]
+  },
+
+  "answerKey": {
+    "note": "This is a non-evaluating Observe/explore tool: there is no correct id or scored action. The student explores freely and the Finish screen reports what was explored, never a score or stars."
+  },
+
+  "props": {
+    "defaults": {
+      "themeColor": "#4A4DC9",
+      "accentColor": "#FF7212",
+      "darkMode": false,
+      "operatorMode": "student",
+      "muted": false,
+      "showModeToggle": true,
+      "device": "mobile",
+      "animationSpeed": 1,
+      "seed": 20260623
+    },
+    "additionalProps": {
+      "maxMinutes": 5,
+      "dropletCount": 26,
+      "iceCubeCount": 4,
+      "waterColor": "#BFE3F5",
+      "glassTint": "#EAF6FC",
+      "startWet": false,
+      "autoStart": false,
+      "fullRunSeconds": 9,
+      "instruction": "Predict what happens on the dry outside of the cold glass, then play the timer and watch droplets appear and grow."
+    }
+  },
+
+  "events": [
+    "ready",
+    "time_changed",
+    "touched_surface",
+    "run_completed",
+    "operator_mode_changed",
+    "finished",
+    "reset"
+  ],
+
+  "eventDetail": {
+    "time_changed": "{ elapsedMinutes, dropletCount, surfaceWet, running }",
+    "touched_surface": "{ elapsedMinutes, dropletCount, surfaceWet }",
+    "run_completed": "{ elapsedMinutes, dropletCount }",
+    "operator_mode_changed": "{ operatorMode, depth }",
+    "finished": "{ evaluated:false, interactions:{ timesPlayed, scrubs, touches, maxReached, durationMs }, learned:[...] }",
+    "reset": "{}"
+  },
+
+  "scientificFacts": [
+    "The outer surface of the glass starts completely dry.",
+    "Tiny droplets of water appear on the outside over time and grow bigger.",
+    "Droplets merge into bigger drops that slide down the glass, leaving a wet trail.",
+    "The droplets come from water vapour already in the surrounding air cooling on the cold glass, not from water leaking through the glass itself.",
+    "The outer surface feels both cold and wet once droplets have formed."
+  ],
+
+  "agentInstructions": {
+    "description":
+      "<description>Shows a time-lapse of a cold ice-water tumbler whose dry outer surface gradually grows tiny droplets that swell and merge into bigger, sliding drops, letting the student confirm with a touch action that the surface has turned cold and wet.</description>",
+    "teacherToolInstruction":
+      "<teacher_tool_instruction>ALWAYS call setOperatorMode(\"ai\") before driving, then reset() to show the glass dry at the start and ask what the student predicts will happen. ALWAYS use scrub(minutes) or play() to move the time-lapse forward and let droplets visibly appear, grow and merge before speaking. ALWAYS call touchSurface() once droplets have formed to reveal the cold-and-wet result, and use highlight(target) with only ids from validIds.highlightTargets to point at the glass, the droplets, the melting ice, or the surface as you narrate. NEVER ask the student to drag the slider or tap the touch button in this mode — that is your job while they watch. NEVER call finish() in ai mode; Finish is a student-only action reached in student mode. ALWAYS ask a thinking question about what the student OBSERVED or why the outside got wet before revealing the explanation, and NEVER state the word 'condensation' or the underlying explanation before the student has watched at least one full run.</teacher_tool_instruction>",
+    "studentToolInstruction":
+      "<student_tool_instruction>ALWAYS look at the glass at the very start and predict what you think will happen to its dry outside before pressing Play. ALWAYS watch or scrub the whole time-lapse at least once, noticing when the first droplets appear and how they grow and merge. ALWAYS tap 'Touch the outer surface' once the glass looks wet to check how it actually feels. ALWAYS try scrubbing back to the start and forward again to compare the dry and wet states. ALWAYS tap 'Finish' once you have explored the time-lapse to see a summary of what you noticed — there is no score to get right or wrong here, just noticing carefully.</student_tool_instruction>",
+    "teacherRealInstruction":
+      "<teacher_real_instruction>A cold-glass condensation time-lapse for the 'water vapour condenses on a cold surface' observation beat in States of Water. Use it before introducing the term 'condensation', so students first notice droplets forming on a surface that started dry and feel that it turns cold and wet, before the mechanism is explained.</teacher_real_instruction>"
   }
+}

@@ -1,0 +1,127 @@
+{
+  "toolId": "pot_in_pot_cooler",
+
+  "title": "Pot-in-pot evaporative cooler",
+  "description": "The student assembles a traditional pot-in-pot (matka) cooler cross-section on screen in six ordered steps — a big earthen pot, a sand base, a smaller pot set inside it, sand packed into the gap, water poured over the sand, and a wet jute cloth covering the top — then the activity moves on to a cooling simulation where the student presses play and watches a thermometer fall as evaporation from the wet sand pulls heat out of the inner pot, keeping the vegetables inside fresh. It is one continuous, guided build-then-observe activity rather than a set of separate modes to pick from, and it ends with a celebratory 'What you have learned' summary once the cooler is fully built and has been run at least once.",
+  "context": "Grade 6 Science, the chapter on the states of water and how evaporation behaves in everyday life. This tool renders an on-screen version of building a pot-in-pot (matka) cooler, the traditional way many Indian households kept food and water cool before refrigeration existed. It shows the full cross-section of the cooler being assembled layer by layer, then demonstrates the physical reasoning behind why it works: water held in wet sand between the two pots keeps evaporating, and evaporation draws heat away from its surroundings, so the inner pot and the food inside it grow cooler over time. It sits at the point in the lesson where students have already learned that evaporation is a cooling process and are ready to see that idea applied to a real, familiar object.",
+  "teachingNotes": "Run the two parts in order — build, then watch it cool — so the student sees the object assembled before watching what it does. The pedagogical move is build-then-observe: let the student (or, in a demo, the agent) construct the cooler piece by piece, then run the cooling simulation and watch the thermometer fall while narrating that the wet sand is the engine of the cooling. Pre-empt the common misconception that the clay pot itself is cold, or that the cooling is caused by the shade or the sand alone rather than by evaporation specifically — the persistent explainer note shown during the cooling run is written to directly correct this. Land the exact idea: evaporation removes heat from whatever the evaporating water is touching, so a steadily evaporating wet surface around the inner pot keeps drawing heat out of it. Also draw out that a hot, dry day cools the pot fastest, because dry air lets water evaporate quicker. This tool is exploratory, not scored — there is no quiz — so use follow-up questions in conversation to check the student can explain WHY it works in their own words.",
+  "instructionsForStudent": "1) Tap Next to add each layer of the cooler in order — the big pot, the sand base, the small pot, the sand fill, the water, and finally the wet cloth cover — watching the cross-section come together, using Back if you want to undo a step. 2) Once every layer is placed, press 'Cool it!' to move on to the cooling simulation. 3) Press Play and watch the thermometer fall while the produce inside looks fresher, reading the note that explains why evaporation is cooling the pot. 4) Once the run finishes, press Finish to see a summary of what you have learned.",
+
+  "subtype": "simulation",
+  "conceptId": "evaporative-cooling-pot-in-pot",
+  "relatedConceptIds": ["evaporation-is-cooling", "states-of-water", "factors-affecting-evaporation"],
+  "module": "A Journey through States of Water",
+
+  "placement": {
+    "beat": "Apply",
+    "where": "After teaching that evaporation is a cooling process, the student builds the pot-in-pot cooler and runs the cooling simulation to apply the idea; the agent mostly demonstrates the assembly and the cooling run in Teacher mode, and highlights/coaches in Student mode."
+  },
+
+  "sharedState": { "fields": ["phase", "buildStep", "buildTotal", "buildProgress", "overallProgress", "playing", "temp", "freshness", "runCompletedOnce", "operatorMode", "depth", "muted", "finished"] },
+
+  "agentControl": {
+    "postmessage": {
+      "in": "{type:'command', id, method, args}",
+      "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+    },
+    "windowMethods": [
+      "setParam(name,value)",
+      "play()",
+      "pause()",
+      "reset()",
+      "highlight(target)",
+      "getState()",
+      "setOperatorMode(mode)",
+      "setPhase(phase)",
+      "placeStep(stepId)",
+      "undoStep()",
+      "finish()"
+    ],
+    "windowMethodNotes": {
+      "setPhase(phase)": "Switch which of the two phases is showing: 'build' or 'cool'. A value from validIds.phases.",
+      "placeStep(stepId)": "Adds the named build layer if it is the next one not yet placed (monotonic — calling an already-placed or out-of-order stepId no-ops). 'stepId' is a value from validIds.buildSteps, in order.",
+      "undoStep()": "Removes the most recently placed build layer, one at a time (no-op-safe at step 0).",
+      "play()": "Starts (or restarts, once fully cooled) the cooling-over-time run in the Cool phase; switches to the Cool phase if not already there.",
+      "pause()": "Pauses the cooling run where it stands.",
+      "finish()": "Ends the activity and opens the full-screen 'What you have learned' finish screen (no star rating — this tool does not score the student). Emits the uniform 'finished' event with evaluated:false.",
+      "reset()": "Returns everything to the very start: no build layers placed, temperature back to the starting value, back on the Build phase, cooling-run-completed flag cleared. Agent-only — there is no student-facing 'play again' control.",
+      "highlight(target)": "Non-destructive pointer — pulses a named element without performing any action. 'target' is a value from validIds.highlightTargets.",
+      "setParam(name,value)": "Tunables: 'muted' (boolean), 'operatorMode' ('ai'|'student'), 'phase' (same as setPhase)."
+    }
+  },
+
+  "studentControls": [
+    { "control": "Tap Next / Back", "effect": "adds or removes one construction layer of the cooler cross-section, in order" },
+    { "control": "Once all six layers are placed, press 'Cool it!'", "effect": "moves on to the cooling simulation" },
+    { "control": "In the cooling view, press Play / Pause", "effect": "runs or pauses the cooling-over-time simulation; the thermometer falls and the produce inside looks fresher as it runs" },
+    { "control": "In the cooling view, press Restart", "effect": "starts the whole guided activity over from Build step 1 — returns to the Build phase with no layers placed, and clears the cooling run (temperature back to the starting value, run-completed flag cleared) so Finish re-locks until the cooler is rebuilt and run again" },
+    { "control": "Tap the Teacher | Your turn toggle", "effect": "switches between the lean teacher-demo view and the full student practice view" },
+    { "control": "Tap the speaker icon", "effect": "mutes or unmutes the sound cues" },
+    { "control": "Press Finish (enabled once the cooler is fully built and the cooling run has completed at least once)", "effect": "ends the activity and opens the full-screen 'What you have learned' summary — no star rating, this tool does not score the student" }
+  ],
+
+  "validIds": {
+    "note": "Every argument value any windowMethod accepts. placeStep(stepId) and undoStep() work on buildSteps, in the given order; highlight(target) takes a value from highlightTargets; setPhase(phase)/setParam('phase',phase) take a value from phases; setOperatorMode(mode)/setParam('operatorMode',mode) take a value from operatorModes.",
+    "phases": ["build", "cool"],
+    "buildSteps": ["bigPot", "sandBase", "smallPot", "fillGap", "pourWater", "cover"],
+    "buildStepLabels": {
+      "bigPot": "Big clay pot",
+      "sandBase": "Sand base",
+      "smallPot": "Small pot in",
+      "fillGap": "Fill the gap",
+      "pourWater": "Pour water",
+      "cover": "Cover it"
+    },
+    "highlightTargets": ["bigPot", "sandBase", "smallPot", "cover", "thermometer", "playButton", "modeToggle", "muteButton", "finishButton"],
+    "highlightTargetsNote": "Only these nine elements carry a visible highlight effect. Of the six build layers, highlighting 'bigPot', 'sandBase' or 'smallPot' glows that layer as it sits in the cross-section, and 'cover' glows the jute cloth; 'fillGap' and 'pourWater' are valid buildSteps for placeStep()/undoStep() but are NOT valid highlight(target) values — the sand-fill and water-pour moments are shown as brief in-scene animations rather than a persistently highlightable element, so do not call highlight() with them.",
+    "operatorModes": ["ai", "student"],
+    "operatorModesNote": "'ai' (Teacher) collapses to a lean, watch-only demo with depth 'lean': the build Next/Back, Play/Pause/Restart and Finish buttons are hidden and a 'watch' caption shows in their place; the illustrated scene and the step journey rail (or, on the tightest mobile frame, the step-dot row) still render so the student can watch along, and the agent drives everything via placeStep/play/pause. 'student' renders the full interactive experience with depth 'full': the complete six-step build sequence, full cooling run controls, and the Finish button once eligible. There is no separate example set to trim beyond this (the build is a fixed six-layer sequence and the cool run is one continuous simulation), so the two depths differ mainly in which controls are shown, not in how much content exists. There is no visible progress-bar element in this tool at all — progress reads from the step journey rail and the thermometer, in both modes. Set via setOperatorMode(mode), setParam('operatorMode', mode), the host prop, or the on-screen Teacher|Your-turn toggle (hidden when props.showModeToggle is false).",
+    "paramNames": ["muted", "operatorMode", "phase"]
+  },
+
+  "props": {
+    "defaults": { "themeColor": "#4A4DC9", "darkMode": false, "operatorMode": "student", "muted": false, "showModeToggle": true, "device": "mobile" },
+    "additionalProps": {
+      "weather": "'dry' | 'humid' — fixed air condition for the Cool phase; 'dry' cools to about 18°C, 'humid' to about 26°C. Default 'dry'.",
+      "startTemp": "number — starting temperature in °C on the thermometer (0-40 scale). Default 36.",
+      "seed": "number — reserved for deterministic variation. Default 42."
+    }
+  },
+
+  "events": [
+    "ready",
+    "operator_mode_changed",
+    "phase_changed",
+    "step_placed",
+    "step_undone",
+    "build_completed",
+    "play",
+    "pause",
+    "run_completed",
+    "reset",
+    "finished"
+  ],
+  "eventNotes": {
+    "phase_changed": "detail: { phase } — the visible phase (build/cool) changed.",
+    "step_placed": "detail: { stepId, buildStep, total } — a build layer was added.",
+    "step_undone": "detail: { buildStep } — the last build layer was removed.",
+    "build_completed": "detail: {} — the sixth and final build layer (the wet cloth cover) was placed.",
+    "run_completed": "detail: { finalTemp, weather } — the cooling run reached its target temperature; this is also what unlocks the Finish button (together with the build being complete).",
+    "operator_mode_changed": "detail: { operatorMode, depth } — mode flipped via the toggle, a verb, or the host.",
+    "finished": "detail: { evaluated:false, interactions:{buildStepsCompleted,coolPlays,hintsUsed,runCompletedOnce,durationMs}, learned:string[] } — fired when Finish is pressed (or finish() is called); opens the star-less 'What you have learned' finish screen. This tool does not score the student, so there is no score/stars/breakdown field."
+  },
+
+  "scientificFacts": [
+    "Evaporation is a cooling process: turning liquid water into vapour uses up heat energy, which is drawn from whatever the water is touching.",
+    "In a pot-in-pot cooler, water held in wet sand between the two pots keeps evaporating from the outer surface, steadily pulling heat away from the inner pot and the food inside it.",
+    "A porous clay pot lets water slowly seep through to its outer surface, which is why a matka keeps water cooler than a sealed, non-porous steel container.",
+    "The cooler works fastest on hot, dry days, because dry air lets water evaporate more quickly, which means more heat is carried away in the same time."
+  ],
+
+  "agentInstructions": {
+    "description": "<description>Shows a pot-in-pot (matka) evaporative cooler being assembled cross-section by cross-section in six steps, then a cooling simulation where a thermometer falls as evaporation from the wet sand pulls heat out of the inner pot. It is one continuous build-then-observe activity with no quiz or score, ending in a 'What you have learned' summary on Finish.</description>",
+    "teacherToolInstruction": "<teacher_tool_instruction>ALWAYS use setPhase(\"build\") first and call placeStep with each id from validIds.buildSteps in order (\"bigPot\", \"sandBase\", \"smallPot\", \"fillGap\", \"pourWater\", \"cover\") so the student watches the cooler assemble one layer at a time; ALWAYS pause after a step or two to ask what they OBSERVE. ALWAYS then call setPhase(\"cool\") and play() to run the cooling simulation, and use highlight(\"thermometer\") to draw attention to the falling temperature while it runs; NEVER call setParam to fake the temperature directly. NEVER ask the student to tap Next, Play, or any control in this mode — that is your job here. ALWAYS ask a thinking question about what they observed or why the temperature is dropping before moving on. NEVER call finish() unless you want to show the finish screen as part of the demo — it is not required in Teacher mode, and NEVER claim it produces a score or stars, since this tool does not evaluate the student.</teacher_tool_instruction>",
+    "studentToolInstruction": "<student_tool_instruction>ALWAYS build the cooler one step at a time with Next, watching the cross-section grow, then press 'Cool it!' once all six layers are placed. ALWAYS press Play in the cooling view and watch the thermometer fall, reading the note that explains why evaporation is cooling the pot. ALWAYS think about WHY the temperature is dropping before pressing Finish once it is available, and be ready to explain the idea in your own words.</student_tool_instruction>",
+    "teacherRealInstruction": "<teacher_real_instruction>An interactive build-and-run simulation of the traditional pot-in-pot (matka) evaporative cooler for the 'evaporation causes cooling' teaching point. It is exploratory rather than scored, so pair it with a follow-up question in conversation to check understanding. Use it in place of a physical matka demonstration when building or observing one in class is impractical.</teacher_real_instruction>"
+  }
+}

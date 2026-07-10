@@ -1,126 +1,122 @@
 {
-    "toolName": "condensation_mass_balance_tool",
-    "version": "1.0.0",
-    "description": "Predict-Observe-Explain digital-balance simulation. A covered glass of iced water sits on a digital balance; the student first predicts whether the mass will increase, decrease, or stay the same, then steps a 5-minute timer to watch droplets condense on the cold outer wall and the reading climb. A toggleable 'inside level' mark settles the question of whether the water seeped out. Targets the misconception that the droplets come from inside the sealed tumbler. Ends with a gamified score reveal (stars + confetti) and a review phase explaining every wrong answer.",
-  
-    "concept": {
-      "subject": "Science",
-      "grade": "Class 6 (NCERT 'Curiosity', Ch.9 Methods of Separation in Everyday Life) — extends to Class 9 conservation of mass / states of water",
-      "bigIdea": "Condensation deposits water vapour from the surrounding air onto a cold surface, ADDING mass to the setup; the sealed water inside is unchanged.",
-      "misconception": {
-        "belief": "A covered glass can lose or hold steady mass; the droplets on the outside 'come from the cold water inside' seeping through the glass.",
-        "resolution": "The reading climbs because water vapour already in the surrounding air condenses on the cold outer surface, adding mass. Glass is non-porous; the inside water level is unchanged."
+    "toolId": "condensation_mass_balance_tool",
+
+    "title": "Cold tumbler on a digital balance",
+    "description": "A covered glass tumbler of iced water sits on a digital balance. The student steps a five-minute timer forward again and again, watching droplets bead and merge on the tumbler's cold outer wall while the balance reading climbs on its own, with a floating '+mass' badge confirming every gain. Once the run finishes, the student reveals a mark showing the water level sealed inside the tumbler, seeing for themselves that it has not moved, before a full mechanism explainer ties the observation together and a 'What you have learned' finish screen closes out the activity.",
+    "context": "Grade 6 Science, in the cluster of lessons on physical changes, condensation and the conservation of mass that follows the study of methods of separating substances. The tool renders, entirely on screen, the classic classroom demonstration of a cold drink or a covered glass of ice water 'sweating' on the outside: a phenomenon every student has seen on a humid day but rarely connects to a change in mass. It matters because it is the cleanest everyday encounter with the idea that matter is conserved and can move between states and locations — water vapour already present in the surrounding air changes state and deposits onto a cold surface, adding real, measurable mass to the setup, while the sealed liquid inside neither leaks nor evaporates away. It sits after condensation has been named and defined, using the tool to let the student watch the live, numeric read-out and the unchanged inside-level mark demonstrate the idea directly, rather than being asked to answer questions about it.",
+    "teachingNotes": "Run this as a pure watch-and-explain observation, not a quiz: let the student work the timer at their own pace and watch the mass climb, with nothing to answer along the way. Pre-empt the specific misconception this tool targets: that a sealed, covered tumbler can only lose mass or hold steady, and that the droplets forming outside must be water that has 'seeped' or 'sweated' through the glass from the cold water inside. Use the toggleable inside-level mark as the decisive, undeniable piece of evidence — point out that the level does not drop even though the outside is now covered in droplets. The idea to land: condensation is water vapour from the surrounding air changing state onto a cold surface, and this adds mass to the whole setup even though the sealed contents are completely unchanged.",
+    "instructionsForStudent": "1) Read the setup: a covered glass of iced water is sitting on a digital balance. 2) Tap 'Step +5 min' repeatedly to advance the timer and watch the tumbler's outer wall and the digital reading. 3) Notice how droplets gather on the outside and the reading keeps climbing on its own. 4) Once the run finishes, tap 'Mark inside level' to reveal whether the sealed water level inside has changed. 5) Tap 'Explain it' to see the full mechanism behind what you just observed. 6) Tap 'Finish' to see a summary of what you've learned.",
+
+    "subtype": "simulation",
+    "conceptId": "M6.SEP.CONDENSATION_MASS",
+    "relatedConceptIds": ["M6.SEP.EVAPORATION", "M6.STATES.CONDENSATION", "M9.CHEM.CONSERVATION_OF_MASS"],
+    "module": "Condensation and Conservation of Mass",
+
+    "placement": {
+      "beat": "Observe",
+      "where": "After condensation has been introduced, the student steps the timer to watch droplets form and the reading climb, then reveals the inside-level mark as evidence before opening the explanation. In Teacher mode the agent demonstrates the same full run and hands the tool to the student; in Student mode the student drives the full run and the agent coaches with highlight() and reacts to reported events."
+    },
+
+    "sharedState": { "fields": ["subPhase", "intervalIdx", "showLevelMark", "operatorMode", "depth", "muted", "finished"] },
+
+    "agentControl": {
+      "postmessage": {
+        "in": "{type:'command', id, method, args}",
+        "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+      },
+      "windowMethods": [
+        "setParam(name,value)",
+        "play()",
+        "pause()",
+        "reset()",
+        "highlight(target)",
+        "getState()",
+        "setOperatorMode(mode)",
+        "step()",
+        "toggleLevel()",
+        "explain()",
+        "finish()"
+      ]
+    },
+
+    "studentControls": [
+      { "control": "Tap 'Step +5 min'", "effect": "Advances the timer by one interval — droplets grow on the tumbler wall, ice shrinks, and the reading counts up." },
+      { "control": "Tap 'Mark inside level' (after the run finishes)", "effect": "Reveals the dashed inside-level line on the tumbler, showing it has not moved." },
+      { "control": "Tap 'Explain it'", "effect": "Opens the mechanism panel explaining where the extra mass came from." },
+      { "control": "Tap the Teacher | Your turn toggle", "effect": "Switches between the teacher's focused demo caption and the student run — both step through the same full set of timer intervals." },
+      { "control": "Tap the mute icon", "effect": "Mutes or unmutes the tap/step/finish sound cues." },
+      { "control": "Tap 'Finish' (appears once the explain panel has been seen)", "effect": "Ends the activity and opens the 'What you have learned' finish screen." }
+    ],
+
+    "validIds": {
+      "highlightTargets": [
+        "tumbler", "balanceDisplay", "stepButton",
+        "levelToggle", "explainButton", "recordTable",
+        "modeToggle", "muteButton", "finishButton"
+      ],
+      "operatorModes": ["ai", "student"]
+    },
+
+    "answerKey": {
+      "note": "This is a non-evaluating Observe tool: there is no correct id, choice, or scored action anywhere — it asks the student no questions. The student watches the timer run and reveals the inside-level evidence themselves, and the Finish screen reports what was explored, never a score or stars."
+    },
+
+    "props": {
+      "defaults": {
+        "gradeLevel": 6,
+        "operatorMode": "student",
+        "muted": false,
+        "showModeToggle": true,
+        "darkMode": false,
+        "themeColor": "#4A4DC9",
+        "device": "mobile"
+      },
+      "additionalProps": {
+        "startReading": 248.0,
+        "ratePerInterval": 0.8,
+        "intervalMinutes": 5,
+        "totalIntervals": 6,
+        "liquidLabel": "iced water",
+        "unit": "g",
+        "animationSpeed": 1,
+        "seed": 42
       }
     },
-  
-    "parameters": {
-      "width": { "type": "number", "default": 860, "description": "Maximum component width in pixels; the layout is fully fluid below this." },
-      "height": { "type": "number", "default": 640, "description": "Reference height; the figure scales responsively." },
-      "initialMode": { "type": "string", "enum": ["learn"], "default": "learn", "description": "Single learn/POE mode." },
-      "showModeSelector": { "type": "boolean", "default": false, "description": "Hidden by default (single mode)." },
-      "enabledModes": { "type": "array", "items": { "type": "string" }, "default": ["learn"], "description": "Enabled modes." },
-      "showNavigation": { "type": "boolean", "default": true, "description": "Show step controls." },
-      "showPlayPause": { "type": "boolean", "default": true, "description": "Gate the timer-step control." },
-      "showStepIndicator": { "type": "boolean", "default": true, "description": "Show the Predict / Observe (min) / Explain step chip in the header." },
-      "animationSpeed": { "type": "number", "default": 1, "description": "Multiplier for the count-up / droplet animation (0.5 = slower, 2 = faster)." },
-      "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Primary brand colour (Singularity indigo)." },
-      "darkMode": { "type": "boolean", "default": false, "description": "Reserved; tool ships light-themed by design." }
+
+    "events": [
+      "ready",
+      "step_taken",
+      "level_toggled",
+      "completed",
+      "operator_mode_changed",
+      "finished",
+      "reset"
+    ],
+
+    "eventDetail": {
+      "step_taken": "{ intervalIdx, minutesElapsed, reading }",
+      "level_toggled": "{ shown }",
+      "completed": "{}",
+      "operator_mode_changed": "{ operatorMode, depth }",
+      "finished": "{ evaluated:false, interactions:{stepsTaken,levelChecked,reachedExplain,durationMs}, learned:[...] }",
+      "reset": "{}"
     },
-  
-    "additionalProps": {
-      "description": "Tool-specific dynamic content the agent can pass to retune the experiment.",
-      "schema": {
-        "startReading": { "type": "number", "default": 248.0, "description": "Balance reading in grams at minute 0 (the covered tumbler + iced water)." },
-        "ratePerInterval": { "type": "number", "default": 0.8, "description": "Mass gained, in the chosen unit, per timer interval as vapour condenses." },
-        "intervalMinutes": { "type": "number", "default": 5, "description": "Minutes advanced per 'Step' press; also the row spacing of the record table." },
-        "totalIntervals": { "type": "number", "default": 6, "description": "Number of timer steps before the run completes (6 x 5 min = 30 min, matching the textbook 0-30 min record table)." },
-        "liquidLabel": { "type": "string", "default": "iced water", "description": "Label for the cold liquid inside the tumbler." },
-        "unit": { "type": "string", "default": "g", "description": "Mass unit shown on the digital display." },
-        "correctPrediction": { "type": "string", "enum": ["increase", "decrease", "same"], "default": "increase", "description": "The scientifically correct prediction (increase, for condensation)." }
-      },
-      "examples": {
-        "default_iced_water": {
-          "startReading": 248.0,
-          "ratePerInterval": 0.9,
-          "intervalMinutes": 5,
-          "totalIntervals": 4
-        },
-        "humid_day_faster_condensation": {
-          "startReading": 312.5,
-          "ratePerInterval": 1.6,
-          "intervalMinutes": 5,
-          "totalIntervals": 4,
-          "liquidLabel": "ice-cold lassi"
-        },
-        "slow_air_conditioned_room": {
-          "startReading": 205.0,
-          "ratePerInterval": 0.4,
-          "intervalMinutes": 5,
-          "totalIntervals": 6
-        },
-        "long_run_thirty_minutes": {
-          "startReading": 260.0,
-          "ratePerInterval": 0.7,
-          "intervalMinutes": 5,
-          "totalIntervals": 6
-        }
-      }
-    },
-  
-    "phases": {
-      "predict": "Student commits to increase / decrease / stay-the-same before anything moves. Stored as checkpoint 1. The textbook record table is shown empty (all rows blank).",
-      "observe": "Student presses 'Step +5 min' repeatedly; the reading count-ups, droplets grow and ice melts, a '+0.8 g' gain badge floats up, and the matching row of the record table fills (with a highlight pulse). A 'source' checkpoint fires after 10 minutes.",
-      "level": "After the run, student toggles the inside level mark; a 'level unchanged' checkpoint fires.",
-      "explain": "Mechanism panel: the mass came from water vapour in the air condensing on the cold surface; the sealed water inside is unchanged. Compares prediction vs result.",
-      "result": "Count-up score out of 3, 5 stars, confetti, encouragement line, Review / Play-again CTAs.",
-      "review": "Shows each wrong answer with the chosen vs correct option and a 2-4 sentence concept explanation."
-    },
-  
-    "recordTable": {
-      "description": "Textbook-style worksheet table rendered below the figure, matching the NCERT 'Time / Mass of water' record sheet. Auto-fills one row per timer step.",
-      "columns": ["Time (min)", "Mass of water (g)"],
-      "rows": "0, 5, 10, ... up to intervalMinutes x totalIntervals (default 0-30 min, 7 rows)",
-      "behaviour": "Rows are blank until reached; the just-filled row pulses light-orange; values use the live balance reading (tabular-nums)."
-    },
-  
-    "checkpoints": {
-      "cp-predict": { "prompt": "Over 20 minutes, the reading will...", "correct": "Increase", "scored": true },
-      "cp-source": { "prompt": "Where did the droplets on the OUTSIDE come from?", "correct": "Water vapour in the surrounding air condensed on the cold surface", "scored": true },
-      "cp-level": { "prompt": "What happened to the water level INSIDE the sealed tumbler?", "correct": "It is unchanged — the outside water came from the air", "scored": true }
-    },
-  
-    "steps": {
-      "1": { "title": "The Setup", "phase": "predict" },
-      "2": { "title": "Minute 0 to 5", "phase": "observe" },
-      "3": { "title": "Minute 5 to 10", "phase": "observe" },
-      "4": { "title": "Minute 10 to 15", "phase": "observe" },
-      "5": { "title": "Minute 15 to 20", "phase": "observe" },
-      "6": { "title": "Where did it come from?", "phase": "explain" }
-    },
-  
-    "theme": {
-      "font": "Poppins",
-      "palette": {
-        "primary": "#4A4DC9",
-        "primaryDark": "#533086",
-        "primaryLight": "#C1C1EA",
-        "primaryGhost": "#EDEDF8",
-        "accent": "#FF7212",
-        "accentDark": "#FC9145",
-        "accentLight": "#FFF3E4",
-        "gray700": "#4E4E4E",
-        "gray400": "#CACACA",
-        "gray200": "#EBEBEB",
-        "gray100": "#F5F5F5"
-      },
-      "buttons": "Pill-shaped (radius 9999); Contained primary / Contained accent (CTA) / Outlined / Ghost variants; 48px min touch target",
-      "headerGradient": "linear-gradient(135deg, #533086, #FF7212)",
-      "source": "Matches the supplied design system (Poppins, #4A4DC9 + #FF7212, purple-to-orange gradient, pill buttons)."
-    },
-  
-    "responsive": {
-      "breakpoint": "575px (ResizeObserver on the component wrapper)",
-      "mobile": "Single-column prediction and explain grids, smaller figure (300px), 14-15px body, full-width stacked CTAs, 48px touch targets.",
-      "desktop": "Three-up prediction grid, 360px figure, two-column explain cards, inline CTA row."
+
+    "scientificFacts": [
+      "Condensation is water vapour in the air changing back into liquid water when it touches a cold surface.",
+      "The droplets that form on the outside of a cold, covered tumbler add real mass to the whole setup — the balance reading genuinely goes up.",
+      "Glass is non-porous, so the water sealed inside a covered tumbler cannot leak or seep through it; the inside water level stays exactly the same.",
+      "Matter is conserved: the extra mass on the balance did not appear from nothing — it moved from water vapour already present in the surrounding air."
+    ],
+
+    "agentInstructions": {
+      "description":
+        "<description>Shows a covered tumbler of iced water gaining mass on a digital balance as water vapour from the surrounding air condenses on its cold outer wall, while the sealed water level inside stays visibly unchanged.</description>",
+      "teacherToolInstruction":
+        "<teacher_tool_instruction>ALWAYS call setOperatorMode(\"ai\") before driving. ALWAYS call step() repeatedly through the full run and let the balance reading and droplets animate fully before speaking. ALWAYS call toggleLevel() once the run finishes to reveal the inside-level evidence, then call explain() to open the mechanism panel. ALWAYS use highlight(target) with ids from validIds.highlightTargets — most usefully \"tumbler\" or \"balanceDisplay\" — to draw the student's eye before you speak. NEVER call finish() in this mode and NEVER ask the student to tap the step button or any control — in this mode driving the tool is your job. ALWAYS ask a thinking question about what the student OBSERVED (what is forming on the glass, what the reading is doing) before advancing, and NEVER reveal the mechanism before the student has watched the droplets form and the reading rise.</teacher_tool_instruction>",
+      "studentToolInstruction":
+        "<student_tool_instruction>ALWAYS watch the tumbler's outer wall closely as you step the timer: notice where the droplets are forming and what the digital reading is doing. ALWAYS tap 'Mark inside level' once the run finishes and check for yourself whether the sealed water level really moved. ALWAYS open 'Explain it' and see whether the mechanism matches what you expected. ALWAYS tap 'Finish' once you've seen the explanation.</student_tool_instruction>",
+      "teacherRealInstruction":
+        "<teacher_real_instruction>A watch-and-explain digital-balance simulation for the 'condensation adds mass' beat in Condensation and Conservation of Mass. Use it in place of, or alongside, a live cold-glass demonstration so students see a numeric read-out confirm the idea and confront the specific misconception that the outside droplets 'seeped' from the sealed water inside — with no quiz questions, just direct observation and evidence.</teacher_real_instruction>"
     }
-  }
+}

@@ -1,108 +1,149 @@
 {
-    "toolName": "melting_ice_cube_tool",
-    "version": "1.1.0",
-    "description": "PREDICT -> OBSERVE -> EXPLAIN -> RECAP thinking tool for NCERT Class 6 Science Chapter 8 (A Journey through States of Water). A learner predicts what happens to an ice cube, then scrubs or plays a 0-10 minute melt animation (a chunky cube floats and shrinks in a wide cup while a shallow pool grows), sees the concept reveal (solid -> liquid = melting), and compares the result with their prediction. A Practice mode adds a multiple-choice quiz whose answer positions are shuffled (no positional pattern). Fully responsive (stacks on small screens). Styled with the Singularity design system (Poppins, indigo #4A4DC9, pill buttons).",
-    "subject": "Science",
-    "grade": 6,
-    "board": "CBSE / NCERT",
-    "chapter": "8 - A Journey through States of Water",
-    "concepts": ["states of water", "solid", "liquid", "melting", "same substance"],
-    "output": {
-      "format": "single-file React/TSX component",
-      "styling": "CSS-in-JS only (no Tailwind / external CSS)",
-      "dependencies": ["react", "lucide-react"],
-      "default_export": "MeltingIceCubeTool"
+    "toolId": "melting_ice_cube",
+
+    "title": "Melting ice cube simulator",
+    "description": "The student first commits a prediction about what will happen to an ice cube left in a cup on the table, then watches or scrubs a ten-minute melt timeline in which a chunky ice cube floats and steadily shrinks while a meltwater pool visibly grows beneath it; a progressive concept reveal explains that the solid has turned into the very same substance in its liquid state, the student compares that reveal against their own prediction, and finally works through a short multiple-choice practice set to check they can apply the idea of melting to new situations.",
+    "context": "Grade 6 Science, A Journey through States of Water. This tool renders on-screen the everyday moment of an ice cube left out at room temperature — the exact scene a student sees when a cube is taken from the freezer and set down in a cup — so they can watch, at a pace they control, the cube shrink and a small pool of water rise around it over about ten simulated minutes. It matters because melting is the first and most familiar change of state a Class 6 student encounters, and this tool makes visible what is otherwise too slow to observe directly in class: that the solid ice and the liquid meltwater are the same substance, water, simply in different states, and that warmth from the surroundings is what drives the change. It sits early in the chapter, right after states of matter have been introduced, as the anchor experience for the idea of melting before the chapter moves on to evaporation, condensation and freezing.",
+    "teachingNotes": "Run this as a predict-then-reveal activity: have the student commit a prediction about the fate of the ice cube before they are allowed to watch it melt, since research on conceptual change shows a stated prediction sharpens attention to the reveal that follows. Let them scrub or auto-play the melt timeline freely, then walk through the progressive concept-reveal panel, and finally have them compare their original prediction with what actually happened in the recap. Re-run the timeline at different speeds or scrub back and forth to reinforce that the change is gradual and continuous, not instantaneous. Pre-empt the common misconception that melting ice 'disappears' or turns into a different substance altogether — repeatedly reinforce that the total amount of water present never changes, only its state does, and that the same idea reverses under cooling (freezing). The idea to land: warming a solid past its melting point turns it into a liquid of the very same substance, and nothing is gained or lost in the process. The short multiple-choice practice set at the end checks whether the student can transfer this idea to freezing, evaporation and conservation-of-matter style questions, not just recall the word 'melting'.",
+    "instructionsForStudent": "1) Read the scene — an ice cube has been placed in a cup on the table — and tap the option that best predicts what will happen to it, then tap 'Next'. 2) On the Observe screen, either press Play to watch the ten-minute melt happen on its own, or drag the time slider yourself to scrub back and forth, and watch the ice shrink while the pool beneath it grows. 3) Once the ice is fully melted, tap 'Next' to open the Explain screen and read through the concept lines as they reveal, one at a time. 4) On the Recap screen, compare what you predicted with what actually happened, then tap 'Next' to move into practice. 5) Answer each practice question by choosing an option and tapping 'Check answer'; read the explanation, then tap 'Next question' to continue. 6) Once every practice question is answered, tap 'Finish' to see your score and what you've learned.",
+
+    "subtype": "simulation",
+    "conceptId": "M6.SOM.MELTING",
+    "relatedConceptIds": ["M6.SOM.STATES", "M6.SOM.FREEZING", "M6.SOM.EVAPORATION"],
+    "module": "A Journey through States of Water",
+
+    "placement": {
+      "beat": "Explain",
+      "where": "After states of matter have been introduced, the student predicts, then watches or scrubs the melt timeline and the concept reveal to see WHY ice becomes water; a short practice set at the end lets them apply the idea. In Teacher mode the agent demonstrates predict -> observe -> explain with one practice question; in Student mode the student drives the full walkthrough and the agent coaches with highlight() and reacts to events."
     },
-    "parameters": {
-      "width": { "type": "number", "default": 880, "description": "Max width of the tool in px (it is fluid up to this)" },
-      "height": { "type": "number", "default": 600, "description": "Reference height; layout is responsive and height is auto" },
-      "initialMode": { "type": "string", "enum": ["learn", "practice"], "default": "learn" },
-      "showModeSelector": { "type": "boolean", "default": true },
-      "enabledModes": { "type": "array", "items": { "enum": ["learn", "practice"] }, "default": ["learn", "practice"] },
-      "showNavigation": { "type": "boolean", "default": true },
-      "showPlayPause": { "type": "boolean", "default": true },
-      "showStepIndicator": { "type": "boolean", "default": true },
-      "initialStep": { "type": "number", "description": "Step id to open on (1=Predict, 2=Observe, 3=Explain, 4=Recap)" },
-      "filterSteps": { "type": "array", "items": { "type": "number" }, "description": "Restrict to these step ids" },
-      "animationSpeed": { "type": "number", "default": 1, "description": "Multiplier; 2 = melt twice as fast" },
-      "autoPlayDuration": { "type": "number", "default": 0, "description": "Auto-advance is disabled for this interactive tool" },
-      "themeColor": { "type": "string", "default": "#4A4DC9", "description": "Singularity primary indigo" },
-      "darkMode": { "type": "boolean", "default": false }
+
+    "sharedState": { "fields": ["step", "prediction", "minute", "quizQuestionId", "quizScore", "quizTotal", "quizDone", "operatorMode", "depth", "muted", "finished"] },
+
+    "agentControl": {
+      "postmessage": {
+        "in": "{type:'command', id, method, args}",
+        "out": ["{type:'ready', toolId}", "{type:'state', state}", "{type:'event', name, detail}", "{type:'response', id, result}"]
+      },
+      "windowMethods": [
+        "setParam(name,value)",
+        "play()",
+        "pause()",
+        "reset()",
+        "highlight(target)",
+        "getState()",
+        "setOperatorMode(mode)",
+        "goToStep(stepId)",
+        "predict(optionId)",
+        "setMinute(minute)",
+        "choose(optionId)",
+        "submit()",
+        "next()",
+        "prev()",
+        "finish()"
+      ]
     },
-    "additionalProps": {
-      "totalMinutes": { "type": "number", "default": 10, "description": "Simulated minutes from full ice to fully melted" },
-      "meltDurationMs": { "type": "number", "default": 16000, "description": "Real-time ms for one full auto-melt (divided by animationSpeed)" },
-      "startMinute": { "type": "number", "default": 0, "description": "Initial elapsed minute" },
-      "showPrediction": { "type": "boolean", "default": true, "description": "Lock the experiment until the learner makes a prediction" },
-      "predictionOptions": {
-        "type": "array",
-        "description": "Override the predict-scene choices; exactly one should have correct:true",
-        "items": { "id": "string", "label": "string", "correct": "boolean" },
-        "default": [
-          { "id": "same", "label": "Ice stays the same", "correct": false },
-          { "id": "water", "label": "Ice turns into water", "correct": true },
-          { "id": "gone", "label": "Ice disappears completely", "correct": false }
-        ]
-      },
-      "teacherPrompts": {
-        "type": "object",
-        "description": "Bilingual (Gujarati/English) teacher prompt per scene",
-        "properties": { "predict": "string", "observe": "string", "explain": "string", "recap": "string" },
-        "default": {
-          "predict": "Socho! Cup ne table par mukshu to ice nu shu thashe? (Predict before you observe)",
-          "observe": "Dhyaan thi juo - ice motu thay chhe ke nanu? Pani kya thi aavyu?",
-          "explain": "Ice gayab nathi thayu... ae pani ma convert thayu. Aa process ne 'melting' kahevay.",
-          "recap": "Tamari prediction sachi hati ke nahi? Compare karo!"
-        }
-      },
-      "conceptLines": {
-        "type": "array",
-        "items": { "type": "string" },
-        "description": "Lines revealed one-by-one in the Explain scene",
-        "default": [
-          "Ice is water in the SOLID state.",
-          "Water is the same substance in the LIQUID state.",
-          "On warming, solid -> liquid. This process is called MELTING.",
-          "Nothing was added or lost - it is the same water!"
-        ]
-      },
+
+    "studentControls": [
+      { "control": "Tap a prediction option on the Predict screen", "effect": "Locks in that prediction so it can be compared with the real result later." },
+      { "control": "Press 'Play' on the Observe screen", "effect": "Auto-plays the melt timeline from the current minute to fully melted." },
+      { "control": "Drag the time slider", "effect": "Scrubs the melt timeline to any minute between 0 and 10, updating the cube and pool instantly." },
+      { "control": "Tap 'Next' / 'Back'", "effect": "Moves forward or backward between Predict, Observe, Explain, Recap and Practice." },
+      { "control": "Tap a practice option, then 'Check answer'", "effect": "Selects an answer for the current practice question, then locks it in and shows whether it was correct with an explanation." },
+      { "control": "Tap 'Next question'", "effect": "Moves to the next practice question once the current one has been checked." },
+      { "control": "Tap the Teacher | Your turn toggle", "effect": "Switches between the teacher's focused demo view (fewer steps, one practice question, controls hidden) and the full student practice view (all steps, full practice set)." },
+      { "control": "Tap the mute icon", "effect": "Mutes or unmutes the tap/drip/correct/wrong/finish sound cues." },
+      { "control": "Tap 'Finish' (appears once every practice question is answered)", "effect": "Ends the activity and opens the star finish screen with a 'What you have learned' summary." }
+    ],
+
+    "validIds": {
+      "steps": ["predict", "observe", "explain", "recap", "practice"],
+      "predictionOptions": ["staysSame", "becomesWater", "disappears"],
+      "quizOptions": ["optA", "optB", "optC", "optD"],
+      "highlightTargets": [
+        "stage", "slider", "playButton",
+        "predict_staysSame", "predict_becomesWater", "predict_disappears",
+        "explainPanel", "recapPanel", "quizOptions",
+        "stepDots", "nextButton", "prevButton", "finishButton",
+        "modeToggle", "muteButton"
+      ],
+      "operatorModes": ["ai", "student"]
+    },
+
+    "answerKey": {
+      "correctPrediction": "becomesWater",
       "quiz": {
-        "type": "array",
-        "description": "Practice-mode questions. Option order is automatically shuffled at runtime so the correct answer has no positional pattern; answerIndex refers to the order as written here.",
-        "items": { "question": "string", "options": ["string"], "answerIndex": "number", "explanation": "string" },
-        "default": [
-          { "question": "When ice changes into water, this process is called...", "options": ["Evaporation", "Freezing", "Melting", "Condensation"], "answerIndex": 2, "explanation": "Solid to liquid is melting. Liquid to solid is freezing." },
-          { "question": "Ice and water are...", "options": ["Two different substances", "The same substance in different states", "Not related at all"], "answerIndex": 1, "explanation": "Ice and water are the same substance - just solid and liquid states." },
-          { "question": "To turn water back into ice, we should...", "options": ["Heat it", "Cool it in a freezer", "Add salt"], "answerIndex": 1, "explanation": "Cooling liquid water in a freezer makes it freeze into ice." },
-          { "question": "What makes an ice cube melt when left on a table?", "options": ["It loses heat to the room", "It gains heat from the warm room", "Nothing - it melts on its own"], "answerIndex": 1, "explanation": "The warm surroundings supply heat to the ice, so it melts into water." },
-          { "question": "Which property is TRUE for ice (solid state)?", "options": ["It flows and takes the shape of the container", "It keeps its own fixed shape", "It spreads to fill all space"], "answerIndex": 1, "explanation": "A solid keeps its shape. A liquid takes the container's shape; a gas fills all space." },
-          { "question": "A puddle of water dries up in the sun. The water has...", "options": ["Frozen", "Melted", "Evaporated into water vapour", "Condensed"], "answerIndex": 2, "explanation": "Liquid water turning into vapour is evaporation - it speeds up in sunlight." },
-          { "question": "As the ice cube melts, what happens to the amount of water in the cup?", "options": ["It decreases", "It increases", "It stays exactly zero"], "answerIndex": 1, "explanation": "The melting ice turns into liquid water, so the water level rises." }
-        ]
+        "q1": "optC",
+        "q2": "optB",
+        "q3": "optB",
+        "q4": "optB",
+        "q5": "optB",
+        "q6": "optB"
+      },
+      "note": "Each practice question shows only some of quizOptions (a question with 3 options uses optA/optB/optC; a 4-option question also uses optD) — always pick optionId from the options actually shown for the current questionId, never a positional id the on-screen question doesn't display."
+    },
+
+    "props": {
+      "defaults": {
+        "operatorMode": "student",
+        "muted": false,
+        "showModeToggle": true,
+        "darkMode": false,
+        "device": "mobile",
+        "themeColor": "#2E86DE"
+      },
+      "additionalProps": {
+        "totalMinutes": 10,
+        "width": 900,
+        "height": 620
       }
     },
-    "modes": {
-      "learn": "Guided 4-scene flow: Predict -> Observe -> Explain -> Recap",
-      "practice": "Multiple-choice quick check with shuffled answers, instant feedback, and scoring (no animation/stage shown)"
+
+    "events": [
+      "ready",
+      "step_changed",
+      "prediction_made",
+      "minute_changed",
+      "melt_completed",
+      "option_chosen",
+      "answer_checked",
+      "answer_correct",
+      "answer_incorrect",
+      "completed",
+      "operator_mode_changed",
+      "finished",
+      "reset"
+    ],
+
+    "eventDetail": {
+      "step_changed": "{ step }",
+      "prediction_made": "{ optionId }",
+      "minute_changed": "{ minute }",
+      "melt_completed": "{ minute }",
+      "option_chosen": "{ questionId, optionId }",
+      "answer_checked": "{ questionId, optionId, correct }",
+      "answer_correct": "{ questionId, optionId }",
+      "answer_incorrect": "{ questionId, optionId, hint }",
+      "completed": "{ score, total }",
+      "operator_mode_changed": "{ operatorMode, depth }",
+      "finished": "{ evaluated, score, total, stars, breakdown:[{id,correct,chose}], interactions:{attempts,correctFirstTry,hintsUsed,itemsExplored,durationMs}, learned:[...] }",
+      "reset": "{}"
     },
-    "steps": {
-      "1": { "title": "Predict", "type": "predict", "mode": "learn" },
-      "2": { "title": "Observe", "type": "observe", "mode": "learn" },
-      "3": { "title": "Explain", "type": "explain", "mode": "learn" },
-      "4": { "title": "Recap", "type": "recap", "mode": "learn" },
-      "10": { "title": "Quick Check", "type": "practice", "mode": "practice" }
-    },
-    "example_tool_call": {
-      "frontend_action": "show_interactive_tool",
-      "title": "Melting Ice Cube",
-      "data": {
-        "toolName": "melting_ice_cube_tool",
-        "parameters": {
-          "initialMode": "learn",
-          "themeColor": "#4A4DC9",
-          "additionalProps": { "totalMinutes": 10 }
-        }
-      },
-      "instructions_for_student": "First predict what will happen, then watch the ice melt!"
+
+    "scientificFacts": [
+      "Ice is water in its solid state; liquid water is the very same substance.",
+      "Warming a solid past its melting point turns it into a liquid — this change of state is called melting.",
+      "Nothing is created or lost when ice melts — only its state changes, from solid to liquid.",
+      "Cooling liquid water in a freezer reverses the change and turns it back into solid ice (freezing)."
+    ],
+
+    "agentInstructions": {
+      "description":
+        "<description>Shows the student predicting, then watching or scrubbing a ten-minute timeline of an ice cube melting in a cup, followed by a concept reveal (solid to liquid = melting) and a short practice set.</description>",
+      "teacherToolInstruction":
+        "<teacher_tool_instruction>ALWAYS call setOperatorMode(\"ai\") before driving, then use goToStep(\"predict\") and predict(optionId) with an id from validIds.predictionOptions to model committing a prediction, followed by goToStep(\"observe\") and play() (or setMinute(minute) to jump straight to a moment) to reveal the melt, letting the animation run before speaking. ALWAYS use highlight(target) with an id from validIds.highlightTargets to point at the stage, the slider, or the concept panel rather than narrating blind. ALWAYS move to goToStep(\"explain\") to show the concept reveal, then use choose(optionId) and submit() with the correct id from answerKey.quiz for the current quiz question to demonstrate one practice question, letting the checked result show before you speak. NEVER call submit() with an optionId other than the one in answerKey.quiz for the active questionId when demonstrating — that would model a wrong answer. NEVER ask the student to tap the prediction options, the slider, the practice options, or the Finish button in this mode; call setOperatorMode(\"student\") when it is their turn. ALWAYS ask a thinking question about what the student OBSERVED (what happened to the cube, what happened to the pool) before moving to the next step, and NEVER reveal the practice answer before the student has had a turn to reason about it themselves.</teacher_tool_instruction>",
+      "studentToolInstruction":
+        "<student_tool_instruction>ALWAYS make your own prediction before watching the ice melt — try to reason out what will happen rather than guessing. ALWAYS watch the full melt timeline (play it or scrub it yourself) and compare what you see against your prediction in the Recap step. ALWAYS read every concept line on the Explain screen before moving on. ALWAYS choose an option and tap 'Check answer' for each practice question, read the explanation whether you were right or wrong, and only tap 'Finish' once every practice question has been answered.</student_tool_instruction>",
+      "teacherRealInstruction":
+        "<teacher_real_instruction>A melting-ice predict-observe-explain-practice tool for the 'states of water' beat in A Journey through States of Water. Use it right after introducing states of matter, so students first predict, then watch the ice-to-water change unfold on a controllable timeline, get the concept explained, and finish with a short practice check.</teacher_real_instruction>"
     }
   }

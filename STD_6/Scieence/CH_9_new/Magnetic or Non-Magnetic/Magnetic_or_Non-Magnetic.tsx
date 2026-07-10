@@ -43,6 +43,7 @@ interface ToolProps {
     operatorMode?: OperatorMode;
     muted?: boolean;
     seed?: number;
+    showModeToggle?: boolean;
     additionalProps?: Record<string, any>;
   };
   setStepDetails?: (s: any) => void;
@@ -475,6 +476,7 @@ function MagnetSortGame({ props = {} }: ToolProps) {
 
   // ---- operator mode: 'student' (full controls) | 'ai' (collapsed demo view) ----
   const [operatorMode, setOperatorMode] = useState<OperatorMode>(props.operatorMode ?? "student");
+  const modeRef = useRef<OperatorMode>(operatorMode); modeRef.current = operatorMode; // always-fresh mirror (avoid stale closures)
 
   // ---- sound (Web Audio, lazy, mutable) ----
   const muted = useRef<boolean>(!!props.muted);
@@ -524,67 +526,117 @@ function MagnetSortGame({ props = {} }: ToolProps) {
   const [dragging, setDragging] = useState(false);
   const [autoMoving, setAutoMoving] = useState(false);
   const [hasTested, setHasTested] = useState(false);
-  const [showResults, setShowResults] = useState(false);
   const [highlighted, setHighlighted] = useState<string | null>(null);
   const highlightTimer = useRef<number | null>(null);
   const dragOffset = useRef({ x: 0, y: 0 });
 
+  // ---- §6.2 content depth: Teacher(ai) = lean single demo pair, Student = full pool ----
+  const depth: "lean" | "full" = operatorMode === "ai" ? "lean" : "full";
+
+  // ---- predict-then-reveal scoring (makes this an EVALUATING tool, §6.3) ----
+  const [predictions, setPredictions] = useState<Record<string, "magnetic" | "nonmagnetic">>({});
+  const [pendingPrediction, setPendingPrediction] = useState<"magnetic" | "nonmagnetic" | null>(null);
+  const pendingRef = useRef<"magnetic" | "nonmagnetic" | null>(null);
+  const [finished, setFinished] = useState(false);
+  const [finishSummary, setFinishSummary] = useState<any>(null);
+  const attemptsRef = useRef(0);
+  const hintsUsedRef = useRef(0);
+  const startTimeRef = useRef<number>(Date.now());
+
   // ---- layout ----
+  // Height-aware: the magnet (top), the object (middle) and the two trays
+  // (bottom) are packed into the measured lab so they NEVER overlap. When the
+  // lab is short, the trays shrink first, then the magnet, so the object always
+  // keeps a clear band of its own between the poles and the trays.
   const L = useMemo(() => {
-    const M = 16;
-    const innerW = size.w - 2 * M;
-    const innerH = size.h - 2 * M;
-    const magSize = size.w < 520 ? 76 : 96;          // the magnet is the hero
+    const M = 14;
+    const W = Math.max(240, size.w);
+    const Hh = Math.max(260, size.h);
+    const innerW = W - 2 * M;
+    const innerH = Hh - 2 * M;
+
+    // fixed breathing gaps
+    const topGap = 8;        // above the magnet's tallest point
+    const magGap = 12;       // between the magnet poles and the object
+    const objTrayGap = 12;   // between the object's name and the trays
+
+    // reserved room for the object's name (up to ~2 lines)
+    const labelFont = clamp(W * 0.022, 12, 15);
+    const nameBand = labelFont * 2.3 + 12;
+
+    const MIN_ICON = 44;
+
+    // preferred magnet + tray sizes, then shrink to fit the available height
+    let magSize = W < 520 ? 74 : 92;                 // the magnet is the hero
+    let trayH = clamp(innerH * 0.24, 88, 140);
+
+    const zoneOf = () => innerH - topGap - magSize * 1.24 - magGap - objTrayGap - trayH;
+    let iconSize = zoneOf() - nameBand;
+
+    // 1) recover room by trimming the trays toward a floor
+    if (iconSize < MIN_ICON) {
+      trayH = Math.max(72, trayH - (MIN_ICON - iconSize));
+      iconSize = zoneOf() - nameBand;
+    }
+    // 2) still tight? shrink the magnet toward a floor
+    if (iconSize < MIN_ICON) {
+      magSize = Math.max(54, magSize - (MIN_ICON - iconSize) / 1.24);
+      iconSize = zoneOf() - nameBand;
+    }
+
     const magH = magSize * 1.24;
 
-    // ── magnet home (top centre) — drag it DOWN onto the objects ──
-    const dock = { x: size.w / 2, y: M + magH + 6 };  // poles rest here; body rises above
-
-    // ── magnetic objects cling here, fanned out below the poles (like nails) ──
-    const clusterU = clamp(magSize * 0.62, 52, 70);
-    const clusterReach = clusterU * 1.55;
+    // ── magnet parks at top-centre: poles at dock.y, U-body rises above ──
+    const dock = { x: W / 2, y: M + topGap + magH };
 
     // ── two collection trays along the bottom ──
     const trayGap = clamp(innerW * 0.03, 8, 16);
-    const trayH = clamp(innerH * 0.26, 108, 148);
-    const trayY = size.h - M - trayH;
     const trayW = (innerW - trayGap) / 2;
+    const trayY = Hh - M - trayH;
     const magTray = { x: M, y: trayY, w: trayW, h: trayH };
     const nonTray = { x: M + trayW + trayGap, y: trayY, w: trayW, h: trayH };
 
-    // ── the playing zone: the strip between the resting magnet and the trays ──
-    // The idle object only needs to sit below the poles — the full cling fan is
-    // reserved only while an object is actually stuck — so reclaim that space.
-    const labelFont = clamp(size.w * 0.022, 12, 15);
-    const nameBand = labelFont * 2.4 + 14;                 // reserved room for the name (up to ~2 lines)
-    const zoneTop = dock.y + clusterReach * 0.5 + 12;
-    const zoneBottom = trayY - 14;
-    const zoneH = Math.max(70, zoneBottom - zoneTop);
-
-    // Size the object so the icon AND its name both fit inside the zone — never
-    // forced so large that the name spills down onto the trays.
-    const availIcon = zoneH - nameBand;
-    const iconSize = clamp(Math.min(innerW * 0.2, availIcon), 52, 108);
+    // ── safe zone for the object, centred between the magnet and the trays ──
+    const zoneTop = dock.y + magGap;
+    const zoneBottom = trayY - objTrayGap;
+    const zoneAvail = Math.max(40, zoneBottom - zoneTop);
+    iconSize = clamp(Math.min(iconSize, innerW * 0.34, zoneAvail - nameBand), 34, 104);
     const blockH = iconSize + nameBand;
-    const blockTop = zoneTop + Math.max(0, (zoneH - blockH) / 2);
-    const station = { x: size.w / 2, y: blockTop + iconSize / 2 };  // icon centred; name sits in the band below
-    const objW = clamp(iconSize + 44, 130, 210);
+    const blockTop = zoneTop + Math.max(0, (zoneAvail - blockH) / 2);
+    const station = { x: W / 2, y: blockTop + iconSize / 2 };  // icon centred; name in the band below
+    const objW = clamp(iconSize + 44, 120, Math.min(210, innerW - 24));
 
     // tray chips size to the measured width — bigger on wide screens, compact on phones
-    const chipSize = clamp(size.w * 0.062, 24, 36);
+    const chipSize = clamp(W * 0.062, 22, 34);
     const chipIcon = chipSize * 0.66;
 
-    const CONTACT = clamp(size.w * 0.08, 52, 88);
+    const CONTACT = clamp(W * 0.08, 50, 88);
     const FIELD = CONTACT * 2.2;
 
-    return { M, innerW, innerH, magSize, magH, dock, clusterU, clusterReach,
-             trayH, trayY, magTray, nonTray, zoneTop, zoneBottom, iconSize, station,
+    return { M, innerW, innerH, magSize, magH, dock,
+             trayH, trayY, magTray, nonTray, iconSize, station,
              objW, labelFont, chipSize, chipIcon, CONTACT, FIELD };
   }, [size]);
 
   const makeObj = (obj: ObjectDef): Cur => ({ obj, phase: "idle", key: keyCounter.current++, dx: 0, dy: 0 });
 
+  const setPending = (v: "magnetic" | "nonmagnetic" | null) => { pendingRef.current = v; setPendingPrediction(v); };
+
+  // ── §6.2: Teacher(ai)/lean shows ONE representative magnetic + ONE non-magnetic item
+  // (a crisp single demo); Student(full) gets the whole pool. Same data, same code path. ──
+  const buildOrder = useCallback((dep: "lean" | "full", seed: number): ObjectDef[] => {
+    const rng = makeRng(seed);
+    const shuffled = shuffleMixed(config.objects, rng);
+    if (dep === "lean") {
+      const mag = shuffled.find((o) => o.magnetic);
+      const non = shuffled.find((o) => !o.magnetic);
+      return shuffleMixed([mag, non].filter(Boolean) as ObjectDef[], rng);
+    }
+    return shuffled;
+  }, [config.objects]);
+
   const spawnNext = useCallback(() => {
+    setPending(null);
     if (nextIndex.current < TOTAL) {
       const o = order[nextIndex.current];
       nextIndex.current += 1;
@@ -594,11 +646,11 @@ function MagnetSortGame({ props = {} }: ToolProps) {
     }
   }, [order, TOTAL]);
 
-  const startGame = useCallback(() => {
+  const startGame = useCallback((dep: "lean" | "full" = depth) => {
     clearTimers();
     // advance the seed each round so replays vary, yet stay deterministic per seed
     seedRef.current = (seedRef.current * 1664525 + 1013904223) >>> 0;
-    const fresh = shuffleMixed(config.objects, makeRng(seedRef.current));
+    const fresh = buildOrder(dep, seedRef.current);
     setOrder(fresh);
     keyCounter.current = 0;
     nextIndex.current = 1;
@@ -606,14 +658,20 @@ function MagnetSortGame({ props = {} }: ToolProps) {
     stuckRef.current = false;
     if (autoReleaseRef.current) { window.clearTimeout(autoReleaseRef.current); autoReleaseRef.current = null; }
     setResults({});
+    setPredictions({});
+    setPending(null);
+    attemptsRef.current = 0;
+    hintsUsedRef.current = 0;
+    startTimeRef.current = Date.now();
     setHasTested(false);
-    setShowResults(false);
+    setFinished(false);
+    setFinishSummary(null);
     setHighlighted(null);
     setCurrent(makeObj(fresh[0]));
     emit({ type: "event", name: "reset", detail: { total: fresh.length } });
-  }, [config.objects]);
+  }, [buildOrder, depth]);
 
-  useEffect(() => { startGame(); /* eslint-disable-next-line */ }, []);
+  useEffect(() => { startGame(operatorMode === "ai" ? "lean" : "full"); /* eslint-disable-next-line */ }, []);
   useEffect(() => () => clearTimers(), []);
 
   // measure tray
@@ -656,12 +714,23 @@ function MagnetSortGame({ props = {} }: ToolProps) {
     addTimer(window.setTimeout(() => { spawnNext(); lockRef.current = false; }, 520));
   }, [L, spawnNext]);
 
+  // student mode requires a prediction locked in before the magnet may test the
+  // object (this is what makes the round EVALUATED, §6.3); Teacher/lean demo skips it.
+  // Reads modeRef/pendingRef (not the render-scoped variables) so it never goes stale.
+  const needsPrediction = () => modeRef.current === "student" && !pendingRef.current;
+
   // ---- the magnet has reached the object: does it stick? ----
   const beginTest = useCallback(() => {
     if (lockRef.current || !current || current.phase !== "idle") return;
+    if (needsPrediction()) return;
     lockRef.current = true;
     const obj = current.obj;
     setHasTested(true);
+    attemptsRef.current += 1;
+    if (pendingRef.current) {
+      const guess = pendingRef.current;
+      setPredictions((p) => ({ ...p, [obj.id]: guess }));
+    }
 
     if (obj.magnetic) {
       // It STICKS — the object leaps onto the magnet's poles and rides with it.
@@ -696,7 +765,7 @@ function MagnetSortGame({ props = {} }: ToolProps) {
 
   const runHitTest = useCallback(
     (mx: number, my: number) => {
-      if (lockRef.current || !current || current.phase !== "idle") return;
+      if (lockRef.current || !current || current.phase !== "idle" || needsPrediction()) return;
       if (Math.hypot(mx - L.station.x, my - L.station.y) < L.CONTACT) beginTest();
     },
     [current, L, beginTest]
@@ -704,7 +773,7 @@ function MagnetSortGame({ props = {} }: ToolProps) {
 
   // ---- drag ----
   const onPointerDown = (e: React.PointerEvent) => {
-    if (lockRef.current) return;
+    if (lockRef.current || needsPrediction()) return;
     e.preventDefault();
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     const r = labRef.current!.getBoundingClientRect();
@@ -731,17 +800,28 @@ function MagnetSortGame({ props = {} }: ToolProps) {
 
   // ---- tap / verb to test the current object (mobile / accessibility / agent demo) ----
   const tapObject = useCallback(() => {
-    if (lockRef.current || !current || current.phase !== "idle" || dragging) return;
+    if (lockRef.current || !current || current.phase !== "idle" || dragging || needsPrediction()) return;
     playCue("tap");
     setAutoMoving(true);
     setMagnet({ x: L.station.x, y: L.station.y });
     addTimer(window.setTimeout(() => { beginTest(); }, 430));
   }, [current, dragging, L, beginTest, playCue]);
 
+  // ---- predict: student (or agent, for demo/testing) locks a guess before testing ----
+  // ⭐ tool-specific verb — this is what turns the round into a scored/evaluated activity.
+  const doPredict = useCallback((guess: "magnetic" | "nonmagnetic") => {
+    if (!current || current.phase !== "idle") return;
+    const g = guess === "magnetic" ? "magnetic" : "nonmagnetic";
+    setPending(g);
+    playCue("tap");
+    emit({ type: "event", name: "predicted", detail: { itemId: current.obj.id, guess: g } });
+  }, [current, playCue]);
+
   // ---- highlight: the agent's pointer/laser — pulse a named element, non-destructive ----
   const doHighlight = useCallback((target: string) => {
     if (highlightTimer.current) window.clearTimeout(highlightTimer.current);
     setHighlighted(target);
+    hintsUsedRef.current += 1;
     emit({ type: "event", name: "highlighted", detail: { target } });
     highlightTimer.current = window.setTimeout(() => setHighlighted(null), 2600);
   }, []);
@@ -749,31 +829,80 @@ function MagnetSortGame({ props = {} }: ToolProps) {
   // ---- keep the API's state snapshot fresh ----
   const stateSnap = () => ({
     operatorMode,
+    depth,
     tested: Object.keys(results).length,
     total: TOTAL,
     current: current?.obj.id ?? null,
+    pendingPrediction,
     magnetic: order.filter((o) => results[o.id] === "magnetic").map((o) => o.id),
     nonmagnetic: order.filter((o) => results[o.id] === "nonmagnetic").map((o) => o.id),
-    done: showResults,
+    finished,
   });
+
+  // ---- Finish (student mode only) — computes the uniform performance summary (§6.3) ----
+  const computeFinishSummary = useCallback(() => {
+    const testedObjs = order.filter((o) => results[o.id]);
+    const scored = testedObjs.filter((o) => predictions[o.id]);
+    const correct = scored.filter((o) => (predictions[o.id] === "magnetic") === o.magnetic).length;
+    const total = scored.length;
+    const pct = total ? correct / total : 0;
+    const stars = total === 0 ? 0 : pct >= 0.9 ? 3 : pct >= 0.5 ? 2 : correct > 0 ? 1 : 0;
+    return {
+      evaluated: true,
+      score: correct,
+      total,
+      stars,
+      breakdown: scored.map((o) => ({ id: o.id, correct: (predictions[o.id] === "magnetic") === o.magnetic, chose: predictions[o.id] })),
+      interactions: {
+        attempts: attemptsRef.current,
+        correctFirstTry: correct,
+        hintsUsed: hintsUsedRef.current,
+        itemsExplored: testedObjs.map((o) => o.id),
+        durationMs: Date.now() - startTimeRef.current,
+      },
+      learned: [
+        "A magnet attracts only some materials — these are called magnetic materials.",
+        "Iron and steel (steel contains iron) cling to a magnet; glass, wood, plastic, rubber, copper, aluminium and brass do not.",
+        "Whether an object is magnetic depends on what it is made of, not its size, shape or colour.",
+      ],
+    };
+  }, [order, results, predictions]);
+
+  const handleFinish = useCallback(() => {
+    const summary = computeFinishSummary();
+    setFinishSummary(summary);
+    setFinished(true);
+    playCue("done");
+    emit({ type: "event", name: "finished", detail: summary });
+  }, [computeFinishSummary, playCue]);
+
+  // ---- mode + depth switch: used by props, setOperatorMode, AND the clickable toggle (§6.1) ----
+  const applyMode = useCallback((m: OperatorMode) => {
+    setOperatorMode(m);
+    modeRef.current = m;
+    const d = m === "ai" ? "lean" : "full";
+    startGame(d);
+    emit({ type: "event", name: "operator_mode_changed", detail: { operatorMode: m, mode: m, depth: d } });
+  }, [startGame]);
 
   // ---- the agent API: every windowMethod in the JSON lives here ----
   const api = {
     setParam: (name: string, value: any) => {
       if (name === "muted") muted.current = !!value;
-      else if (name === "operatorMode") setOperatorMode(value === "ai" ? "ai" : "student");
+      else if (name === "operatorMode") applyMode(value === "ai" ? "ai" : "student");
       else if (name === "seed") seedRef.current = (value | 0) >>> 0;
     },
     play: () => { tapObject(); },
     pause: () => { /* no continuous timeline to pause */ },
     reset: () => { startGame(); },
     highlight: doHighlight,
-    getState: () => emit({ type: "state", state: stateSnap() }),
-    setOperatorMode: (mode: OperatorMode) => {
-      const m: OperatorMode = mode === "ai" ? "ai" : "student";
-      setOperatorMode(m);
-      emit({ type: "event", name: "operator_mode_changed", detail: { operatorMode: m } });
+    getState: () => {
+      const s = stateSnap();
+      emit({ type: "state", state: s });   // passive listeners
+      return s;                             // and as the command response result
     },
+    setOperatorMode: (mode: OperatorMode) => applyMode(mode === "ai" ? "ai" : "student"),
+    predict: doPredict,                      // ⭐ tool-specific: lock a magnetic/non-magnetic guess
     testObject: () => { tapObject(); },      // ⭐ tool-specific: test the current object
   };
   const apiRef = useRef(api); apiRef.current = api;
@@ -797,18 +926,18 @@ function MagnetSortGame({ props = {} }: ToolProps) {
   }, []);
 
   // reflect host-driven prop changes
-  useEffect(() => { if (props.operatorMode) setOperatorMode(props.operatorMode); }, [props.operatorMode]);
+  useEffect(() => { if (props.operatorMode && props.operatorMode !== modeRef.current) applyMode(props.operatorMode); }, [props.operatorMode]); // eslint-disable-line
   useEffect(() => { muted.current = !!props.muted; }, [props.muted]);
 
   // ---- derived ----
   const testedCount = Object.keys(results).length;
   const magList = order.filter((o) => results[o.id] === "magnetic");
   const nonList = order.filter((o) => results[o.id] === "nonmagnetic");
+  const [allTestedAnnounced, setAllTestedAnnounced] = useState(false);
   useEffect(() => {
-    if (current === null && testedCount === TOTAL && !showResults) {
+    if (current === null && testedCount === TOTAL && !allTestedAnnounced) {
       const t = window.setTimeout(() => {
-        setShowResults(true);
-        playCue("done");
+        setAllTestedAnnounced(true);
         emit({
           type: "event", name: "completed",
           detail: {
@@ -820,7 +949,8 @@ function MagnetSortGame({ props = {} }: ToolProps) {
       }, 420);
       return () => window.clearTimeout(t);
     }
-  }, [current, testedCount, TOTAL, showResults]);
+    if (testedCount < TOTAL && allTestedAnnounced) setAllTestedAnnounced(false);
+  }, [current, testedCount, TOTAL, allTestedAnnounced]);
 
   const nearMagnetic =
     !!current && current.phase === "idle" && current.obj.magnetic &&
@@ -867,13 +997,30 @@ function MagnetSortGame({ props = {} }: ToolProps) {
               <p style={St.h1sub}>{config.subtitle}</p>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
-              <span
-                title="Who is driving"
-                onClick={() => api.setOperatorMode(operatorMode === "ai" ? "student" : "ai")}
-                style={St.modeChip}
-              >
-                {operatorMode === "ai" ? "👩‍🏫 Teacher" : "🙋 Your turn"}
-              </span>
+              {(props.showModeToggle ?? true) && (
+                <div style={St.segTrack} role="tablist" aria-label="Who is driving">
+                  <button
+                    type="button"
+                    role="tab"
+                    className="segBtn"
+                    aria-selected={operatorMode === "ai"}
+                    onClick={() => applyMode("ai")}
+                    style={{ ...St.segBtn, ...(operatorMode === "ai" ? St.segBtnActive : {}) }}
+                  >
+                    👩‍🏫 Teacher
+                  </button>
+                  <button
+                    type="button"
+                    role="tab"
+                    className="segBtn"
+                    aria-selected={operatorMode === "student"}
+                    onClick={() => applyMode("student")}
+                    style={{ ...St.segBtn, ...(operatorMode === "student" ? St.segBtnActive : {}) }}
+                  >
+                    🙋 Your turn
+                  </button>
+                </div>
+              )}
               <button
                 aria-label={muted.current ? "Unmute" : "Mute"}
                 onClick={() => { muted.current = !muted.current; setHighlighted((h) => h); playCue("tap"); }}
@@ -893,8 +1040,46 @@ function MagnetSortGame({ props = {} }: ToolProps) {
           <p style={St.instruction}>
             {operatorMode === "ai"
               ? "👩‍🏫 Your teacher is showing you how the magnet tests each object — watch, you'll get a turn."
-              : config.instruction}
+              : pendingPrediction
+                ? "Now drag (or tap) the magnet down onto the object to reveal the truth!"
+                : "First, guess: will this object cling to the magnet?"}
           </p>
+
+          {/* predict-then-reveal guess bar — student mode only; this is the graded step */}
+          {operatorMode === "student" && current && current.phase === "idle" && !finished && (
+            <div style={St.predictRow}>
+              <button
+                type="button"
+                className="predictBtn"
+                onClick={() => api.predict("magnetic")}
+                disabled={!!pendingPrediction}
+                style={{
+                  ...St.predictBtn,
+                  borderColor: C.magBorder,
+                  color: C.mag,
+                  ...(pendingPrediction === "magnetic" ? { background: C.mag, color: "#fff" } : {}),
+                  ...(highlighted === "predictMagnetButton" ? St.predictBtnGlow : {}),
+                }}
+              >
+                🧲 Magnetic
+              </button>
+              <button
+                type="button"
+                className="predictBtn"
+                onClick={() => api.predict("nonmagnetic")}
+                disabled={!!pendingPrediction}
+                style={{
+                  ...St.predictBtn,
+                  borderColor: C.nonBorder,
+                  color: C.non,
+                  ...(pendingPrediction === "nonmagnetic" ? { background: C.non, color: "#fff" } : {}),
+                  ...(highlighted === "predictNonMagnetButton" ? St.predictBtnGlow : {}),
+                }}
+              >
+                🚫 Not magnetic
+              </button>
+            </div>
+          )}
 
           {/* test table */}
           <div ref={labRef} style={St.lab}>
@@ -976,7 +1161,8 @@ function MagnetSortGame({ props = {} }: ToolProps) {
               </div>
             )}
 
-            {/* the draggable magnet — student mode only (agent drives via verbs in ai mode) */}
+            {/* the draggable magnet — student mode only (agent drives via verbs in ai mode).
+                Locked (dim, no pointer) until the student has locked in a prediction. */}
             {operatorMode === "student" && (
               <div
                 onPointerDown={onPointerDown}
@@ -986,8 +1172,10 @@ function MagnetSortGame({ props = {} }: ToolProps) {
                 style={{
                   ...St.magnetWrap,
                   left: magnet.x, top: magnet.y,
-                  cursor: dragging ? "grabbing" : "grab",
-                  transition: autoMoving ? "left .42s cubic-bezier(.4,0,.2,1), top .42s cubic-bezier(.4,0,.2,1)" : "none",
+                  cursor: dragging ? "grabbing" : pendingPrediction ? "grab" : "not-allowed",
+                  opacity: !pendingPrediction && current?.phase === "idle" ? 0.45 : 1,
+                  pointerEvents: !pendingPrediction && current?.phase === "idle" ? "none" : "auto",
+                  transition: autoMoving ? "left .42s cubic-bezier(.4,0,.2,1), top .42s cubic-bezier(.4,0,.2,1), opacity .25s ease" : "opacity .25s ease",
                   touchAction: "none",
                   WebkitUserSelect: "none",
                   userSelect: "none",
@@ -1012,28 +1200,42 @@ function MagnetSortGame({ props = {} }: ToolProps) {
               </div>
             )}
 
-            {/* first-run hint — student mode only */}
-            {operatorMode === "student" && !hasTested && current && (
+            {/* first-run hint — student mode only, once a prediction is locked in */}
+            {operatorMode === "student" && !hasTested && current && pendingPrediction && (
               <div style={{ position: "absolute", left: magnet.x, top: magnet.y, transform: "translate(-50%, 16px)", pointerEvents: "none", zIndex: 45 }}>
                 <span style={St.hintPill}>👇 Drag me down onto the object</span>
               </div>
             )}
           </div>
+
+          {/* the last control — student mode only; ends the activity, no "play again" loop (§6.3) */}
+          {operatorMode === "student" && testedCount === TOTAL && !finished && (
+            <button type="button" className="finishBtn" style={St.finishBtn} onClick={handleFinish}>
+              🏁 Finish
+            </button>
+          )}
         </div>
       </div>
 
-      {showResults && (
-        <ResultsTable magList={magList} nonList={nonList} tier={tier} onReset={startGame} />
+      {finished && finishSummary && (
+        <FinishScreen magList={magList} nonList={nonList} tier={tier} summary={finishSummary} />
       )}
     </div>
   );
 }
 
-/* ------------------------------------------------------------------ */
-function ResultsTable({
-  magList, nonList, tier, onReset,
+/* ------------------------------------------------------------------ *
+ * FinishScreen — the uniform, full-viewport completion overlay (§6.3/§7.4).
+ * This IS an evaluating tool (the predict-then-reveal guess is scored), so it
+ * always shows the ⭐ star rating earned from performance, PLUS a
+ * "What you have learned" panel. There is NO replay control here — the
+ * student's forward path ends at Finish; reset() remains an agent-only verb.
+ * ------------------------------------------------------------------ */
+function FinishScreen({
+  magList, nonList, tier, summary,
 }: {
-  magList: ObjectDef[]; nonList: ObjectDef[]; tier: typeof TIER[6 | 7 | 8]; onReset: () => void;
+  magList: ObjectDef[]; nonList: ObjectDef[]; tier: typeof TIER[6 | 7 | 8];
+  summary: { score: number; total: number; stars: number; learned: string[] };
 }) {
   const rows = Math.max(magList.length, nonList.length);
   return (
@@ -1051,7 +1253,21 @@ function ResultsTable({
 
       <div style={St.card2} className="cardIn">
         <div style={St.cardHead}>
-          <div style={{ ...St.scoreNum, fontSize: `clamp(30px, 11vw, ${tier.scorePx}px)` }}>Sorted!</div>
+          <div style={St.starsRow}>
+            {[0, 1, 2].map((i) => (
+              <span key={i} className="starPop" style={{ animationDelay: `${i * 0.12}s`, opacity: i < summary.stars ? 1 : 0.25 }}>⭐</span>
+            ))}
+          </div>
+          {summary.total > 0 ? (
+            <>
+              <div style={{ ...St.scoreNum, fontSize: `clamp(30px, 12vw, ${tier.scorePx}px)` }}>
+                {summary.score}/{summary.total}
+              </div>
+              <div style={St.scoreLabel}>guessed right!</div>
+            </>
+          ) : (
+            <div style={{ ...St.scoreNum, fontSize: `clamp(24px, 8vw, ${tier.scorePx}px)` }}>Sorted!</div>
+          )}
           <p style={St.cardSub}>Here is what the magnet found.</p>
         </div>
 
@@ -1080,9 +1296,14 @@ function ResultsTable({
               </tr>
             </tbody>
           </table>
-        </div>
 
-        <button style={St.runAgain} onClick={onReset}>{tier.again}</button>
+          <div style={St.learnedBox}>
+            <div style={St.learnedTitle}>💡 What you have learned</div>
+            <ul style={St.learnedList}>
+              {summary.learned.map((l, i) => <li key={i}>{l}</li>)}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1091,14 +1312,16 @@ function ResultsTable({
 /* ------------------------------------------------------------------ */
 const St: Record<string, React.CSSProperties> = {
   root: { fontFamily: "Poppins, system-ui, sans-serif", color: C.text, background: C.page, minHeight: "100%", width: "100%", padding: "clamp(8px,2.5vw,16px)", boxSizing: "border-box" },
-  frame: { maxWidth: 880, margin: "0 auto", background: "#fff", borderRadius: 22, overflow: "hidden", boxShadow: "0 18px 50px rgba(40,30,90,.12)", border: `1px solid ${C.line}` },
+  frame: { maxWidth: 880, margin: "0 auto", background: "#fff", borderRadius: 22, overflow: "hidden", boxShadow: "0 18px 50px rgba(40,30,90,.12)", border: `1px solid ${C.line}`, boxSizing: "border-box" },
   header: { background: "linear-gradient(125deg,#7C2FE0 0%,#4A45D6 48%,#C0327E 100%)", color: "#fff", padding: "clamp(16px,4.2vw,20px) clamp(15px,5vw,24px) clamp(14px,3.6vw,18px)" },
   headerRow: { display: "flex", gap: 14, alignItems: "center" },
   headerIcon: { width: 50, height: 50, borderRadius: 14, flexShrink: 0, background: "rgba(255,255,255,.16)", display: "flex", alignItems: "center", justifyContent: "center" },
   h1: { margin: 0, fontSize: "clamp(18px,3.4vw,27px)", fontWeight: 800, letterSpacing: "-0.5px" },
   h1sub: { margin: "3px 0 0", fontSize: "clamp(12px,2.8vw,13.5px)", opacity: 0.92, fontWeight: 500 },
   progressRow: { display: "flex", alignItems: "center", gap: 12, marginTop: 14 },
-  modeChip: { display: "inline-flex", alignItems: "center", gap: 4, fontSize: 11.5, fontWeight: 700, color: "#fff", background: "rgba(255,255,255,.18)", border: "1px solid rgba(255,255,255,.28)", padding: "5px 10px", borderRadius: 99, cursor: "pointer", whiteSpace: "nowrap", userSelect: "none" },
+  segTrack: { display: "inline-flex", gap: 2, background: "rgba(255,255,255,.16)", border: "1px solid rgba(255,255,255,.28)", borderRadius: 99, padding: 3 },
+  segBtn: { appearance: "none", border: "none", background: "transparent", color: "rgba(255,255,255,.78)", fontSize: 11.5, fontWeight: 700, padding: "6px 10px", borderRadius: 99, cursor: "pointer", whiteSpace: "nowrap", userSelect: "none", transition: "background .2s ease, color .2s ease, transform .15s ease" },
+  segBtnActive: { background: "#fff", color: "#4A45D6", boxShadow: "0 2px 6px rgba(20,10,50,.25)" },
   muteBtn: { width: 34, height: 34, minWidth: 34, borderRadius: 10, border: "1px solid rgba(255,255,255,.28)", background: "rgba(255,255,255,.16)", color: "#fff", fontSize: 15, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, lineHeight: 1 },
   bar: { flex: 1, height: 8, borderRadius: 99, background: "rgba(255,255,255,.25)", overflow: "hidden" },
   barFill: { height: "100%", borderRadius: 99, background: "linear-gradient(90deg,#ffd25b,#ffb01f)", transition: "width .4s ease" },
@@ -1107,7 +1330,7 @@ const St: Record<string, React.CSSProperties> = {
   body: { padding: "clamp(12px,3.6vw,16px) clamp(12px,4vw,18px) clamp(16px,4vw,22px)" },
   instruction: { margin: "0 0 14px", fontSize: "clamp(13px,3.4vw,14.5px)", color: C.text, lineHeight: 1.5 },
 
-  lab: { position: "relative", width: "100%", height: "clamp(460px, 62vh, 580px)", borderRadius: 18, background: "radial-gradient(120% 100% at 50% 0%, #FBFAFF 0%, #EEEDF8 100%)", border: `1.5px solid ${C.line}`, overflow: "hidden", touchAction: "none", userSelect: "none" },
+  lab: { position: "relative", width: "100%", height: "clamp(300px, 56vh, 580px)", borderRadius: 18, background: "radial-gradient(120% 100% at 50% 0%, #FBFAFF 0%, #EEEDF8 100%)", border: `1.5px solid ${C.line}`, overflow: "hidden", touchAction: "none", userSelect: "none", boxSizing: "border-box" },
 
   tally: { position: "absolute", zIndex: 20, display: "inline-flex", alignItems: "center", gap: 6, fontSize: 12.5, fontWeight: 700, padding: "5px 11px", borderRadius: 99, border: "1.5px solid", background: "#fff" },
   tray: { position: "absolute", borderRadius: 14, border: "1.5px solid", padding: 8, display: "flex", flexDirection: "column", gap: 6, overflow: "hidden", zIndex: 20, boxShadow: "0 4px 12px rgba(40,30,90,.06)", boxSizing: "border-box" },
@@ -1129,12 +1352,13 @@ const St: Record<string, React.CSSProperties> = {
   tagTest: { position: "absolute", top: -24, left: "50%", transform: "translateX(-50%)", background: "#3A3A52", color: "#fff", fontSize: 11.5, fontWeight: 700, padding: "3px 12px", borderRadius: 99, whiteSpace: "nowrap", animation: "popIn .3s ease both", zIndex: 5 },
 
   overlay: { position: "fixed", inset: 0, background: "rgba(20,16,40,.55)", display: "flex", alignItems: "center", justifyContent: "center", padding: 16, zIndex: 100, backdropFilter: "blur(2px)", overflow: "hidden" },
-  card2: { background: "#fff", borderRadius: 22, width: "100%", maxWidth: 560, maxHeight: "92vh", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 24px 70px rgba(20,10,50,.4)", position: "relative", zIndex: 2 },
+  card2: { background: "#fff", borderRadius: 22, width: "100%", maxWidth: 560, maxHeight: "92vh", overflow: "hidden", display: "flex", flexDirection: "column", boxShadow: "0 24px 70px rgba(20,10,50,.4)", position: "relative", zIndex: 2, boxSizing: "border-box" },
   cardHead: { padding: "20px 24px 12px", textAlign: "center", background: "linear-gradient(120deg,#F6F3FF,#FFF)", borderBottom: `1px solid ${C.line}`, flexShrink: 0 },
-  scoreNum: { fontWeight: 800, letterSpacing: "-0.5px", lineHeight: 1, textAlign: "center", whiteSpace: "nowrap", animation: "scoreIn .5s cubic-bezier(.34,1.4,.5,1) both" },
+  scoreNum: { fontWeight: 800, letterSpacing: "-0.5px", lineHeight: 1.04, textAlign: "center", whiteSpace: "nowrap", animation: "scoreIn .5s cubic-bezier(.34,1.4,.5,1) both" },
+  scoreLabel: { margin: "4px 0 0", fontSize: "clamp(15px,4.6vw,20px)", fontWeight: 800, color: C.text, lineHeight: 1.15, textAlign: "center" },
   cardSub: { margin: "8px 0 0", fontSize: 13.5, color: C.sub },
 
-  tableScroll: { overflow: "auto", padding: "10px 16px 2px", flex: "0 1 auto", minHeight: 0 },
+  tableScroll: { overflow: "auto", padding: "10px 16px 16px", flex: "1 1 auto", minHeight: 0 },
   table: { width: "100%", borderCollapse: "separate", borderSpacing: 6, tableLayout: "fixed" },
   th: { fontSize: "clamp(11px,2.8vw,13px)", fontWeight: 800, padding: "8px 6px", borderRadius: 9, border: "1.5px solid", textAlign: "center" },
   td: { fontSize: "clamp(11px,2.7vw,13px)", fontWeight: 600, padding: "6px 8px", borderRadius: 9, border: "1px solid transparent", verticalAlign: "middle" },
@@ -1143,7 +1367,16 @@ const St: Record<string, React.CSSProperties> = {
   cellTxt: { overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", minWidth: 0 },
   totalTd: { fontSize: 11.5, fontWeight: 800, padding: "6px 8px", textAlign: "center", textTransform: "uppercase", letterSpacing: ".4px" },
 
-  runAgain: { margin: 16, padding: "13px", border: "none", borderRadius: 13, background: C.text, color: "#fff", fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "Poppins, sans-serif", flexShrink: 0 },
+  starsRow: { display: "flex", justifyContent: "center", gap: 6, fontSize: "clamp(22px,6vw,30px)", marginBottom: 4 },
+  learnedBox: { margin: "12px 0 0", padding: "12px 14px", borderRadius: 14, background: "#F6F3FF", border: `1px solid ${C.line}`, flexShrink: 0 },
+  learnedTitle: { fontSize: 13, fontWeight: 800, color: C.text, marginBottom: 6 },
+  learnedList: { margin: 0, paddingLeft: 18, fontSize: 12.5, color: C.sub, lineHeight: 1.55, display: "flex", flexDirection: "column", gap: 3 },
+
+  predictRow: { display: "flex", gap: 10, marginBottom: 12, boxSizing: "border-box" },
+  predictBtn: { flex: 1, minHeight: 44, padding: "10px 12px", borderRadius: 13, border: "2px solid", background: "#fff", fontSize: "clamp(12.5px,3.2vw,14px)", fontWeight: 800, cursor: "pointer", fontFamily: "Poppins, sans-serif", transition: "transform .15s ease, background .2s ease, color .2s ease", boxSizing: "border-box" },
+  predictBtnGlow: { boxShadow: "0 0 0 4px rgba(245,179,1,.35)" },
+
+  finishBtn: { marginTop: 12, width: "100%", minHeight: 48, border: "none", borderRadius: 14, background: "linear-gradient(120deg,#7C2FE0,#4A45D6)", color: "#fff", fontSize: 15.5, fontWeight: 800, cursor: "pointer", fontFamily: "Poppins, sans-serif", boxShadow: "0 8px 20px rgba(76,45,214,.32)", boxSizing: "border-box" },
 };
 
 const CSS = `
@@ -1156,6 +1389,12 @@ const CSS = `
 .chipScroll::-webkit-scrollbar { width: 0; height: 0; }
 .chipScroll { scrollbar-width: none; }
 @keyframes scoreIn { 0%{ transform: scale(.5); opacity:0;} 100%{ transform: scale(1); opacity:1;} }
+.starPop { display:inline-block; animation: starPop .5s cubic-bezier(.34,1.56,.64,1) both; }
+@keyframes starPop { 0%{ transform: scale(0) rotate(-30deg); } 70%{ transform: scale(1.3) rotate(8deg); } 100%{ transform: scale(1) rotate(0); } }
+.segBtn:hover { color:#fff; } .segBtn:active { transform: scale(.96); }
+.predictBtn:disabled { opacity:.55; cursor: default; }
+.predictBtn:not(:disabled):hover { transform: translateY(-1px); }
+.finishBtn:hover { transform: translateY(-1px); } .finishBtn:active { transform: scale(.98); }
 @keyframes polePulse { 0%,100%{ opacity:.25;} 50%{ opacity:.55;} }
 @keyframes countPop { 0%{ transform: scale(1);} 35%{ transform: scale(1.5);} 100%{ transform: scale(1);} }
 .countPop { animation: countPop .45s ease; display:inline-block; font-size:15px; font-weight:800; }

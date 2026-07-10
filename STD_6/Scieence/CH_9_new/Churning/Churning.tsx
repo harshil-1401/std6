@@ -3,7 +3,7 @@
 // Concept: Churning separates butter (lighter, floats) from buttermilk (heavier, sinks)
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
-import { Play, RotateCcw, Award, Star, RefreshCw, ChevronRight, ChevronLeft, X, Check, Lightbulb, Volume2, VolumeX } from "lucide-react";
+import { Play, RotateCcw, Award, Star, ChevronRight, ChevronLeft, X, Check, Lightbulb, Volume2, VolumeX } from "lucide-react";
 
 /* ─── Tool identity ─────────────────────────────────────────────────────────── */
 const TOOL_ID = "churning_butter_labeller";
@@ -11,7 +11,7 @@ const emit = (m: any) => { try { window.parent.postMessage(m, "*"); } catch {} }
 
 /* ─── Types ──────────────────────────────────────────────────────────────────── */
 type OperatorMode = "ai" | "student";
-type Phase = "play" | "result" | "review";
+type Phase = "play" | "result" | "review" | "finished";
 type PlayStage = "intro" | "churning" | "checkpoint";
 type TagValue = "lighter" | "heavier";
 
@@ -78,6 +78,12 @@ const ALL_CHECKPOINTS: Checkpoint[] = [
 const LEAN_CHECKPOINTS: Checkpoint[] = [ALL_CHECKPOINTS[1]];
 const HINT_LINE = "Floating things are usually lighter — watch which layer rose to the top.";
 const TAG_LABEL: Record<TagValue, string> = { lighter: "Lighter component", heavier: "Heavier component" };
+const LEARNED_POINTS = [
+  "Things that float to the top are lighter (less dense) than the liquid around them.",
+  "Butter is the lighter component — churning makes fat globules clump together until they rise to the top.",
+  "Buttermilk is the heavier, watery component that is left behind at the bottom of the pot.",
+  "It is density — not how solid or heavy something looks — that decides whether it floats or sinks.",
+];
 
 /* ─── Design tokens ─────────────────────────────────────────────────────────── */
 const DS = {
@@ -375,6 +381,12 @@ function ChurningButterLabeller(props: ToolProps) {
   const [answers, setAnswers] = useState<UserAnswer[]>([]);
   const recordedRef = useRef<Set<string>>(new Set());
 
+  /* ── interaction tracking (for the finished-event summary) ── */
+  const sessionStartRef = useRef<number>(typeof performance !== "undefined" ? performance.now() : 0);
+  const attemptsRef = useRef(0);
+  const hintsUsedRef = useRef(0);
+  const exploredRef = useRef<Set<string>>(new Set());
+
   /* ── result / review ── */
   const [reviewIdx, setReviewIdx] = useState(0);
   const [scoreShown, setScoreShown] = useState(0);
@@ -404,6 +416,7 @@ function ChurningButterLabeller(props: ToolProps) {
 @keyframes cbl-pulse    { 0%,100%{opacity:.6;transform:scale(1);} 50%{opacity:1;transform:scale(1.04);} }
 @keyframes cbl-starPop  { 0%{transform:scale(0);opacity:0;} 70%{transform:scale(1.15);} 100%{transform:scale(1);opacity:1;} }
 @keyframes cbl-hlRing   { 0%,100%{opacity:.55;transform:scale(1);} 50%{opacity:1;transform:scale(1.03);} }
+@keyframes cbl-fadeOutDelay { 0%,58%{opacity:1;transform:scale(1);} 100%{opacity:0;transform:scale(1.06);} }
 .cbl-root *{box-sizing:border-box;}
 .cbl-btn{font-family:Poppins,sans-serif;cursor:pointer;border:none;transition:transform .12s ease,box-shadow .15s ease,background .15s ease,opacity .15s ease;}
 .cbl-btn:hover:not(:disabled){transform:scale(1.04);}
@@ -438,6 +451,8 @@ function ChurningButterLabeller(props: ToolProps) {
       setJustLocked(null); setPredictPick(null); setPredictDone(false);
       setAnswers([]); recordedRef.current = new Set(); setReviewIdx(0); setScoreShown(0);
       setHighlightTarget(null);
+      attemptsRef.current = 0; hintsUsedRef.current = 0; exploredRef.current = new Set();
+      sessionStartRef.current = performance.now();
     }
     emit({ type:"event", name:"operator_mode_changed", detail:{ mode:m, depth: m==="ai"?"lean":"full" }});
   }, []);
@@ -488,9 +503,11 @@ function ChurningButterLabeller(props: ToolProps) {
     if (predictDone) return;
     setPredictPick(idx);
     const correct = idx === currentCp.correctIdx;
+    attemptsRef.current += 1;
+    exploredRef.current.add(currentCp.id);
     recordAnswer(currentCp.id, currentCp.options![idx], correct);
     setPredictDone(true);
-    if (!correct) { setHint(HINT_LINE); playCue("wrong"); } else { setHint(null); playCue("correct"); }
+    if (!correct) { setHint(HINT_LINE); hintsUsedRef.current += 1; playCue("wrong"); } else { setHint(null); playCue("correct"); }
     emit({ type:"event", name:"answer_checked", detail:{ checkpointId:"predict", correct, pick:currentCp.options![idx] }});
   };
   const handlePredictContinue = () => { setPredictDone(false); setPredictPick(null); setHint(null); setCpIdx(i => i+1); };
@@ -499,19 +516,22 @@ function ChurningButterLabeller(props: ToolProps) {
   const handleRegionTap = (region: "top"|"bottom") => {
     if (stage!=="checkpoint" || currentCp.kind!=="tag") return;
     if (region !== currentCp.region || lockedTags[region]) return;
+    exploredRef.current.add(region);
     playCue("tap"); setChipsOpen(true); setActiveRegion(region);
     emit({ type:"event", name:"item_tapped", detail:{ region }});
   };
   const handleTagPick = (tag: TagValue) => {
     if (!activeRegion || !currentCp.correctTag) return;
     const correct = tag === currentCp.correctTag;
+    attemptsRef.current += 1;
+    exploredRef.current.add(currentCp.id);
     recordAnswer(currentCp.id, TAG_LABEL[tag], correct);
     if (correct) {
       setLockedTags(p => ({...p, [activeRegion]:tag})); setChipsOpen(false); setHint(null);
       setJustLocked(currentCp.id); setActiveRegion(null); playCue("correct");
       emit({ type:"event", name:"answer_correct", detail:{ region:activeRegion, tag }});
     } else {
-      setHint(HINT_LINE); setShakeKey(k => k+1); playCue("wrong");
+      setHint(HINT_LINE); setShakeKey(k => k+1); hintsUsedRef.current += 1; playCue("wrong");
       emit({ type:"event", name:"answer_incorrect", detail:{ region:activeRegion, tag }});
     }
   };
@@ -548,7 +568,37 @@ function ChurningButterLabeller(props: ToolProps) {
     setJustLocked(null); setPredictPick(null); setPredictDone(false);
     setAnswers([]); recordedRef.current = new Set(); setReviewIdx(0); setScoreShown(0);
     setHighlightTarget(null);
+    attemptsRef.current = 0; hintsUsedRef.current = 0; exploredRef.current = new Set();
+    sessionStartRef.current = performance.now();
     emit({ type:"event", name:"reset", detail:{} });
+  };
+
+  /* ─── Finish (student mode only) — uniform `finished` event, §6.3 ─── */
+  const handleFinish = () => {
+    if (phase === "finished") return;
+    const breakdown = CHECKPOINTS.map(cp => {
+      const a = answers.find(x => x.cpId === cp.id);
+      return { id: cp.id, correct: !!a?.correct, chose: a?.firstPick ?? null };
+    });
+    const durationMs = Math.round(performance.now() - sessionStartRef.current);
+    cancelFrame();
+    setPhase("finished");
+    setConfettiActive(true);
+    setTimeout(() => setConfettiActive(false), 2600);
+    playCue("done");
+    emit({ type:"event", name:"finished", detail:{
+      evaluated: true,
+      score, total, stars,
+      breakdown,
+      interactions: {
+        attempts: attemptsRef.current,
+        correctFirstTry: score,
+        hintsUsed: hintsUsedRef.current,
+        itemsExplored: Array.from(exploredRef.current),
+        durationMs,
+      },
+      learned: LEARNED_POINTS,
+    }});
   };
 
   /* ─── agent API ─── */
@@ -887,14 +937,20 @@ function ChurningButterLabeller(props: ToolProps) {
                   <div style={{ fontSize:isMobile?14:15, fontWeight:500, color:DS.c.g700, marginTop:12, maxWidth:400, margin:"12px auto 0" }}>
                     {score===total ? "You've locked this concept down — lighter floats, heavier settles." : score>=2 ? "Strong work. Review the one you'd like to polish." : "Let's walk through why butter floats and buttermilk sinks."}
                   </div>
-                  <div style={{ display:"flex", gap:10, justifyContent:"center", marginTop:20, flexWrap:"wrap" }}>
-                    <button className="cbl-btn" style={pillBtn(DS.c.accent)} onClick={() => { setReviewIdx(0); setPhase("review"); }}>
-                      Review answers
-                    </button>
-                    <button className="cbl-btn" style={outlineBtn(DS.c.primary)} onClick={handlePlayAgain}>
-                      <RefreshCw size={16}/> Play again
-                    </button>
-                  </div>
+                  {mode === "student" ? (
+                    <div style={{ display:"flex", gap:10, justifyContent:"center", marginTop:20, flexWrap:"wrap" }}>
+                      <button className="cbl-btn" style={outlineBtn(DS.c.primary)} onClick={() => { setReviewIdx(0); setPhase("review"); }}>
+                        Review answers
+                      </button>
+                      <button className="cbl-btn" style={pillBtn(DS.c.accent)} onClick={handleFinish}>
+                        Finish <Check size={16}/>
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ marginTop:18, fontSize:13, fontWeight:500, color:DS.c.g700 }}>
+                      👩‍🏫 Demo complete — call reset() to run it again for the next student.
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -958,8 +1014,8 @@ function ChurningButterLabeller(props: ToolProps) {
                             Next <ChevronRight size={16}/>
                           </button>
                         ) : (
-                          <button className="cbl-btn" style={pillBtn(DS.c.primary)} onClick={handlePlayAgain}>
-                            <RefreshCw size={16}/> Play again
+                          <button className="cbl-btn" style={pillBtn(DS.c.primary)} onClick={handleFinish}>
+                            Finish <Check size={16}/>
                           </button>
                         )}
                       </div>
@@ -967,6 +1023,50 @@ function ChurningButterLabeller(props: ToolProps) {
                   );
                 })()}
               </div>
+            )}
+
+            {/* ── FINISHED PHASE — uniform finish screen, §6.3 ── */}
+            {phase==="finished" && (
+              <>
+                {/* full-viewport celebration overlay — escapes any pinned/scroll container */}
+                <div aria-hidden style={{ position:"fixed", inset:0, zIndex:9999, pointerEvents:"none" }}>
+                  <ConfettiCanvas active={confettiActive} />
+                  <div style={{ position:"absolute", inset:0, display:"flex", alignItems:"center", justifyContent:"center" }}>
+                    <div style={{ animation:"cbl-popIn .5s ease both, cbl-fadeOutDelay 2.6s ease both", textAlign:"center", padding:"0 20px" }}>
+                      <div style={{ fontSize:isMobile?32:52, fontWeight:800, color:"#fff", textShadow:"0 4px 24px rgba(0,0,0,.4)" }}>
+                        {score===total ? "Brilliant! 🎉" : "Well done! 🎉"}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="cbl-popIn"
+                  style={{ background:"#fff", borderRadius:DS.r.xl, padding:isMobile?20:28, textAlign:"center", boxShadow:"0 10px 30px rgba(0,0,0,.10)" }}>
+                  <div style={{ width:60, height:60, borderRadius:DS.r.pill, background:DS.grad.result, display:"inline-flex", alignItems:"center", justifyContent:"center", boxShadow:"0 8px 22px rgba(255,114,18,.35)" }}>
+                    <Award size={30} color="#fff"/>
+                  </div>
+                  <div style={{ fontSize:isMobile?18:20, fontWeight:800, marginTop:12 }}>Activity finished</div>
+                  <div style={{ fontSize:isMobile?38:46, fontWeight:800, color:DS.c.primary, fontVariantNumeric:"tabular-nums", marginTop:4 }}>
+                    {score} / {total}
+                  </div>
+                  <div style={{ display:"flex", gap:5, justifyContent:"center", marginTop:8 }}>
+                    {[0,1,2,3,4].map(i => (
+                      <Star key={i} size={isMobile?20:24} fill={i<stars?DS.c.amber:"none"} color={i<stars?DS.c.amber:DS.c.g400}/>
+                    ))}
+                  </div>
+                  <div style={{ textAlign:"left", marginTop:18, background:DS.c.primaryGhost, border:`1px solid ${DS.c.primaryLight}`, borderRadius:DS.r.lg, padding:isMobile?12:16 }}>
+                    <div style={{ fontSize:12, fontWeight:700, color:DS.c.primaryDark, marginBottom:8, textTransform:"uppercase", letterSpacing:.4 }}>
+                      What you've learned
+                    </div>
+                    {LEARNED_POINTS.map((l,i) => (
+                      <div key={i} style={{ display:"flex", gap:8, alignItems:"flex-start", marginBottom:6, fontSize:isMobile?12.5:13.5, lineHeight:1.5, color:DS.c.g900 }}>
+                        <Check size={14} color={DS.c.successDk} style={{flexShrink:0, marginTop:2}}/>
+                        <span>{l}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </>
             )}
 
           </div>{/* end controls col */}
